@@ -853,20 +853,26 @@
         async function checkTextModelConfigured() {
             const res = await fetch('/ai/settings');
             aiSettings = await res.json();
-            
+
+            // Sync form elements if they exist (in case the modal is open or needs default values)
+            const sttProviderSelect = document.getElementById('sttProviderSelect');
+            if (sttProviderSelect && aiSettings.stt_provider) {
+                sttProviderSelect.value = aiSettings.stt_provider;
+            }
+
             const input = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
             const micBtn = document.getElementById('micBtn');
             const chatContainer = document.getElementById('chatContainer');
             const emptyState = document.querySelector('.empty-state');
             const sttSupported = isSTTSupported();
-            
+
             if (!aiSettings.configured || !aiSettings.model) {
                 input.disabled = true;
                 input.placeholder = 'Configure AI Settings to start chatting';
                 sendBtn.disabled = true;
                 micBtn.disabled = true;
-                
+
                 if (emptyState) {
                     emptyState.innerHTML = '<p>Please configure your AI Settings to start chatting.</p><button class="btn-primary" onclick="openSettings()">Configure AI Settings</button>';
                 }
@@ -874,15 +880,14 @@
                 input.disabled = false;
                 input.placeholder = 'Type a message...';
                 sendBtn.disabled = false;
-                
+
                 updateMicButtonState();
-                
+
                 if (emptyState && !currentSessionId) {
                     emptyState.innerHTML = '<p>Start a new conversation or select an existing one from the sidebar.</p>';
                 }
             }
-        }
-        
+        }        
         // STT - Speech to Text
         let recognition = null;
         let isListening = false;
