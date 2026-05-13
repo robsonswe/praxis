@@ -680,6 +680,22 @@
             }
         }
         
+        function updateMicButtonState() {
+            const micBtn = document.getElementById('micBtn');
+            const sttProvider = document.getElementById('sttProviderSelect').value;
+            const supported = ('SpeechRecognition' in window) || ('webkitSpeechRecognition' in window);
+            
+            if (sttProvider === 'browser' && !supported) {
+                micBtn.disabled = true;
+                micBtn.title = 'Unsupported browser. Please use Chrome/Edge or pick a provider.';
+                micBtn.style.opacity = '0.3';
+            } else {
+                micBtn.disabled = false;
+                micBtn.title = 'Voice input';
+                micBtn.style.opacity = '';
+            }
+        }
+        
         async function updateSTTUI() {
             const provider = document.getElementById('sttProviderSelect').value;
             const modeContainer = document.getElementById('sttModeContainer');
@@ -692,6 +708,7 @@
             }
             
             await loadSTTModels();
+            updateMicButtonState();
         }
         
         async function maybeLoadSTTModels() {
@@ -850,14 +867,6 @@
                 sendBtn.disabled = true;
                 micBtn.disabled = true;
                 
-                const sttProvider = aiSettings.stt_provider || 'browser';
-                const useBrowserSTT = sttProvider === 'browser';
-                if (useBrowserSTT && !sttSupported) {
-                    micBtn.title = 'Voice input not supported in this browser';
-                } else {
-                    micBtn.title = 'Voice input (chat not configured)';
-                }
-                
                 if (emptyState) {
                     emptyState.innerHTML = '<p>Please configure your AI Settings to start chatting.</p><button class="btn-primary" onclick="openSettings()">Configure AI Settings</button>';
                 }
@@ -866,19 +875,7 @@
                 input.placeholder = 'Type a message...';
                 sendBtn.disabled = false;
                 
-                // Enable mic if using API STT, or if browser supports STT
-                const sttProvider = aiSettings.stt_provider || 'browser';
-                const useBrowserSTT = sttProvider === 'browser';
-                
-                if (!useBrowserSTT || sttSupported) {
-                    micBtn.disabled = false;
-                    micBtn.title = 'Voice input';
-                    micBtn.style.opacity = '';
-                } else {
-                    micBtn.disabled = true;
-                    micBtn.title = 'Voice input not supported in this browser';
-                    micBtn.style.opacity = '0.3';
-                }
+                updateMicButtonState();
                 
                 if (emptyState && !currentSessionId) {
                     emptyState.innerHTML = '<p>Start a new conversation or select an existing one from the sidebar.</p>';
@@ -915,6 +912,17 @@
             recognition.onerror = (event) => {
                 console.error('STT Error:', event.error);
                 stopSTT();
+                
+                // If it's a network/not-allowed error in Browser mode, proactively disable it
+                const sttProvider = document.getElementById('sttProviderSelect').value;
+                if (sttProvider === 'browser') {
+                    showAlert('Speech Recognition Unavailable', 'Your browser does not reliably support native speech recognition or there was a network error (' + event.error + '). Please try using Chrome or Edge, or switch to an external STT provider in Settings.');
+                    
+                    const micBtn = document.getElementById('micBtn');
+                    micBtn.disabled = true;
+                    micBtn.style.opacity = '0.3';
+                    micBtn.title = 'Browser STT unavailable. Please select an external provider.';
+                }
             };
             
             recognition.onend = () => {
@@ -933,13 +941,20 @@
         }
         
         async function startSTT() {
-            const useBrowser = !aiSettings || aiSettings.stt_provider === 'browser';
+            const sttProvider = document.getElementById('sttProviderSelect').value;
+            const useBrowser = sttProvider === 'browser';
             
             if (useBrowser) {
+                if (!isSTTSupported()) {
+                    showAlert('STT Not Supported', 'Your browser does not support speech recognition. Please switch to Chrome or Edge, or configure an external STT provider in Settings.');
+                    return;
+                }
+                
                 if (!recognition) {
-                    if (!initSTT()) {
-                        showAlert('STT Not Available', 'Your browser does not support speech recognition. Please use Chrome, Edge, or Safari.');
-                        return;
+                    recognition = initSTT();
+                    if (!recognition) {
+                         showAlert('STT Error', 'Failed to initialize browser speech recognition.');
+                         return;
                     }
                 }
                 try {
@@ -1052,9 +1067,13 @@
                                 if (data.text) {
                                     document.getElementById('messageInput').value += (document.getElementById('messageInput').value ? ' ' : '') + data.text;
                                 } else if (data.error) {
-                                    showAlert('STT Error', data.error);
-                                }
-                            } catch (e) {
+                                    try {
+                                        const errObj = JSON.parse(data.error);
+                                        showAlert('STT Error', errObj.error?.message || data.error);
+                                    } catch {
+                                        showAlert('STT Error', data.error);
+                                    }
+                                }                            } catch (e) {
                                 console.error('External STT error:', e);
                             } finally {
                                 document.getElementById('sttStatus').textContent = '';
@@ -1151,10 +1170,15 @@
                     }
                 } catch (e) {
                     console.error('External TTS error:', e);
-                    showAlert('TTS Error', e.message);
-                    if (event && event.currentTarget) {
-                        event.currentTarget.innerHTML = originalContent || '🔊';
-                        event.currentTarget.disabled = false;
+                    let message = e.message;
+                    try {
+                        const errObj = JSON.parse(e.message);
+                        message = errObj.error?.message || e.message;
+                    } catch {}
+                    showAlert('TTS Error', message);
+                    if (btn) {
+                        btn.innerHTML = originalContent || '🔊';
+                        btn.disabled = false;
                     }
                 }
             }
