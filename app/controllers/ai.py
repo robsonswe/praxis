@@ -29,45 +29,62 @@ async def stt_websocket(websocket: WebSocket):
         return
 
     try:
-        async with ai_service.connect_live_stt(user_id) as ai_session:
-            
+        settings = await ai_service.get_user_settings(user_id)
+        provider = settings.get("stt_provider", "gemini")
+        
+        # Need audio stream for Mistral
+        audio_queue = asyncio.Queue()
+        
+        async def audio_generator():
+            while True:
+                chunk = await audio_queue.get()
+                if chunk is None: break
+                yield chunk
+
+        async with ai_service.connect_live_stt(user_id, audio_generator() if provider == "mistral" else None) as ai_session:
             async def receive_from_ai():
                 try:
-                    async for message in ai_session.receive():
-                        # We are looking for input_transcription (ASR)
-                        if message.server_content and message.server_content.input_transcription:
-                            transcription = message.server_content.input_transcription
-                            transcript = transcription.text
-                            # Use getattr to safely check for final status
-                            is_final = getattr(transcription, 'is_final', False)
-                            await websocket.send_json({
-                                "type": "transcript",
-                                "text": transcript,
-                                "is_final": is_final
-                            })
-                        elif message.server_content and message.server_content.turn_complete:
-                            # Log but don't close; keep session alive for continuous streaming
-                            print("DEBUG: Turn complete received, keeping session alive")
+                    if provider == "mistral":
+                        from mistralai.client.models import TranscriptionStreamTextDelta, TranscriptionStreamDone
+                        accumulated = ""
+                        async for event in ai_session:
+                            if isinstance(event, TranscriptionStreamTextDelta):
+                                accumulated += event.text
+                                await websocket.send_json({"type": "transcript", "text": accumulated, "is_final": False})
+                            elif isinstance(event, TranscriptionStreamDone):
+                                await websocket.send_json({"type": "transcript", "text": accumulated, "is_final": True})
+                                accumulated = ""  # Reset for next utterance
+                    else:
+                        async for message in ai_session.receive():
+                            if message.server_content and message.server_content.input_transcription:
+                                transcript = message.server_content.input_transcription.text
+                                # turn_complete is the real "final" signal for Gemini Live
+                                is_final = bool(getattr(message.server_content, 'turn_complete', False)) or \
+                                           bool(getattr(message.server_content.input_transcription, 'is_final', False))
+                                if transcript:
+                                    await websocket.send_json({"type": "transcript", "text": transcript, "is_final": is_final})
+                            elif message.server_content and getattr(message.server_content, 'turn_complete', False):
+                                # turn_complete with no transcription text — commit whatever was shown
+                                await websocket.send_json({"type": "transcript", "text": "", "is_final": True})
                 except Exception as e:
                     print(f"Error receiving from AI: {e}")
 
-            # Start receiver task
             receiver_task = asyncio.create_task(receive_from_ai())
-            
             try:
                 while True:
-                    # Receive audio chunks from browser
                     data = await websocket.receive_bytes()
-                    # Gemini Live API expects raw PCM 16-bit 16kHz
-                    # Wrap audio data in types.Blob
-                    audio_blob = types.Blob(data=data, mime_type="audio/pcm;rate=16000")
-                    await ai_session.send_realtime_input(audio=audio_blob)
+                    if provider == "mistral":
+                        await audio_queue.put(data)
+                    else:
+                        # Gemini expect types.Blob
+                        audio_blob = types.Blob(data=data, mime_type="audio/pcm;rate=16000")
+                        await ai_session.send_realtime_input(audio=audio_blob)
             except WebSocketDisconnect:
-                print("DEBUG: WebSocket disconnected")
+                if provider == "mistral":
+                    await audio_queue.put(None) # Signal stream end
                 pass
             finally:
-                receiver_task.cancel()
-                
+                receiver_task.cancel()                
     except Exception as e:
         print(f"STT WebSocket Error: {e}")
         await websocket.send_json({"type": "error", "message": str(e)})
@@ -120,6 +137,7 @@ async def get_settings(request: Request):
         "model": settings["model"],
         "stt_provider": settings.get("stt_provider", "browser"),
         "stt_model": settings.get("stt_model", "Browser Built In"),
+        "stt_mode": settings.get("stt_mode", "batch"),
         "tts_provider": settings.get("tts_provider", "browser"),
         "tts_model": settings.get("tts_model", "Browser Built In"),
     })

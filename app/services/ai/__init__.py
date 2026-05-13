@@ -3,12 +3,14 @@ from .openrouter import OpenRouterProvider
 from .openai import OpenAIProvider
 from .anthropic import AnthropicProvider
 from .gemini import GeminiProvider
+from .mistral import MistralProvider
 
 PROVIDERS = {
     "openrouter": OpenRouterProvider,
     "openai": OpenAIProvider,
     "anthropic": AnthropicProvider,
     "gemini": GeminiProvider,
+    "mistral": MistralProvider,
 }
 
 def get_available_providers():

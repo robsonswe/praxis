@@ -621,7 +621,7 @@
             } else {
                 sttModeContainer.style.display = 'none';
                 sttModelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
-                sttModelSelect.value = settings.stt_model || 'Browser Built In';
+                sttModelSelect.value = "Browser Built In";
                 sttModelSelect.dataset.loaded = "true";
             }
             
@@ -983,23 +983,39 @@
                             lastFinalText = ""; // Reset baseline
                         };
                         
-                        // Define lastFinalText in outer scope for sttSocket closure if needed
+                        // Define lastFinalText in outer scope for sttSocket closure
                         let lastFinalText = "";
-                        sttSocket.onmessage = (event) => {
-                            const data = JSON.parse(event.data);
-                            if (data.type === 'transcript') {
-                                const input = document.getElementById('messageInput');
-                                // If this was a final transcript, update our baseline
-                                if (data.is_final) {
-                                    lastFinalText += data.text + " ";
-                                }
-                                // Show the base text plus the current interim
-                                input.value = lastFinalText + data.text;
-                            } else if (data.type === 'error') {
-                                showAlert('STT Error', data.message);
-                                stopSTT();
-                            }
+                        
+                        sttSocket.onopen = () => {
+                            sttSocket.send(JSON.stringify({ user_id: {{ user.id }} }));
+                            document.getElementById('sttStatus').textContent = 'Live Transcribing...';
+                            lastFinalText = document.getElementById('messageInput').value; // Start from current input
                         };
+
+						sttSocket.onmessage = (event) => {
+							const data = JSON.parse(event.data);
+							if (data.type === 'transcript') {
+								const input = document.getElementById('messageInput');
+								if (data.is_final) {
+									// Commit: if provider sent the full text, append it; if text is empty
+									// (e.g. Gemini turn_complete), commit whatever is currently displayed.
+									if (data.text) {
+										lastFinalText = [lastFinalText, data.text].filter(Boolean).join(" ").trim();
+									} else {
+										lastFinalText = input.value.trim(); // commit current display as-is
+									}
+									input.value = lastFinalText;
+								} else {
+									// Interim: backend sends cumulative text for current utterance.
+									// Append it to whatever was already confirmed.
+									input.value = [lastFinalText, data.text].filter(Boolean).join(" ").trim();
+								}
+							} else if (data.type === 'error') {
+								showAlert('STT Error', data.message);
+								stopSTT();
+							}
+						};
+
                         
                         sttSocket.onclose = () => {
                             stopSTT();

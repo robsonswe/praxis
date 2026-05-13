@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, AsyncIterator
 from contextlib import asynccontextmanager
 from app.repositories.ai_settings import AISettingsRepository
 from app.services.ai import get_available_providers, get_provider, PROVIDERS
@@ -104,7 +104,7 @@ class AIService:
         return await provider.tts(text, model)
 
     @asynccontextmanager
-    async def connect_live_stt(self, user_id: int):
+    async def connect_live_stt(self, user_id: int, audio_stream: Optional[AsyncIterator[bytes]] = None):
         """Connect to the configured STT provider's live session"""
         settings = await self.repo.get_by_user(user_id)
         if not settings or settings.get("stt_provider", "browser") == "browser":
@@ -115,14 +115,17 @@ class AIService:
 
         provider = get_provider(provider_name)
 
-        # We assume streaming/live STT only uses providers that support Live API
-        config = {
-            "response_modalities": ["TEXT"],
-            "transcribe_input": True
-        }
-
-        async with provider.connect_live(model, config) as session:
-            yield session
+        if provider_name == "mistral":
+            async with provider.connect_live_stt(model, audio_stream) as session:
+                yield session
+        else:
+            # We assume streaming/live STT only uses providers that support Live API
+            config = {
+                "response_modalities": ["TEXT"],
+                "transcribe_input": True
+            }
+            async with provider.connect_live(model, config) as session:
+                yield session
 
     async def generate_title(self, user_id: int, username: str, message: str) -> str:
         """Generate a short title for a chat based on the first message"""
