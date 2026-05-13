@@ -4,6 +4,7 @@ from .openai import OpenAIProvider
 from .anthropic import AnthropicProvider
 from .gemini import GeminiProvider
 from .mistral import MistralProvider
+from .zai import ZaiProvider
 
 PROVIDERS = {
     "openrouter": OpenRouterProvider,
@@ -11,6 +12,7 @@ PROVIDERS = {
     "anthropic": AnthropicProvider,
     "gemini": GeminiProvider,
     "mistral": MistralProvider,
+    "zai": ZaiProvider,
 }
 
 def get_available_providers():
