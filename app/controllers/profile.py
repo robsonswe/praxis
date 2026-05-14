@@ -671,3 +671,18 @@ async def delete_project(request: Request, proj_id: int):
     if not success:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"success": True}
+
+
+@router.get("/jobs/interview/{session_id}")
+async def interview_report_page(request: Request, session_id: str):
+    user_id = get_current_user(request)
+    if not user_id:
+        return RedirectResponse(url="/login")
+    
+    user = await user_service.get_user(user_id)
+    template = env.get_template("mock_interview_report.html")
+    return HTMLResponse(content=template.render(
+        user_name=user.name,
+        session_id=session_id,
+        active_page="jobs"
+    ))

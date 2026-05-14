@@ -2,6 +2,8 @@ import os
 import io
 import wave
 import asyncio
+import httpx
+import json
 from typing import List, Dict, Optional
 from google import genai
 from google.genai import types
@@ -92,7 +94,8 @@ class GeminiProvider(AIProvider):
             capabilities = []
         
         supports_streaming = "generateContentStream" in capabilities
-        supports_thinking = getattr(raw_model, "thinking", False) if isinstance(raw_model, object) else False
+        # Check if the model ID itself suggests thinking capability if metadata is missing
+        supports_thinking = "thinking" in model_id.lower() or raw_model.get("thinking", False)
         
         category = categorize_model(model_id, capabilities)
         
@@ -206,6 +209,9 @@ class GeminiProvider(AIProvider):
     def _format_error(self, e: Exception) -> str:
         error_str = str(e)
         
+        if "Cannot find field" in error_str:
+            return "AI Provider Error: The SDK failed to parse the model response. This usually happens with 'thinking' models if the SDK is not the latest version. Try a non-thinking model or update dependencies."
+            
         try:
             if "{'error':" in error_str:
                 import ast
@@ -232,27 +238,43 @@ class GeminiProvider(AIProvider):
         
         await limiter.wait_if_needed()
         
-        try:
-            client = self._get_client(model)
-            
-            system_instruction = None
-            for msg in messages:
-                if msg["role"] == "system":
-                    system_instruction = msg["content"]
-                    break
-            
-            contents = self._convert_messages_to_contents([m for m in messages if m["role"] != "system"])
-            
-            response = await client.aio.models.generate_content(
-                model=model,
-                contents=contents,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction
-                ) if system_instruction else None
-            )
-            return response.text
-        except Exception as e:
-            raise Exception(self._format_error(e))
+        # We switch to the OpenAI-compatible endpoint to bypass SDK Protobuf decoding issues
+        # especially common with "thinking" models or newer API fields.
+        api_key = os.getenv("GOOGLE_API_KEY")
+        url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    url,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": model,
+                        "messages": messages,
+                    },
+                    timeout=60.0
+                )
+                
+                if response.status_code != 200:
+                    # Try to parse error message from JSON
+                    try:
+                        err_data = response.json()
+                        if "error" in err_data:
+                            raise Exception(err_data["error"].get("message", response.text))
+                    except:
+                        pass
+                    raise Exception(f"Gemini API Error ({response.status_code}): {response.text}")
+                
+                data = response.json()
+                return data["choices"][0]["message"]["content"]
+                
+            except httpx.TimeoutException:
+                raise Exception("The request to Gemini timed out. Try a smaller prompt or a faster model.")
+            except Exception as e:
+                raise Exception(self._format_error(e))
     
     async def chat_streaming(self, messages: List[Dict[str, str]], model: str):
         limiter = get_rate_limiter(self.name, self.get_rate_limit_config()["requests_per_minute"])

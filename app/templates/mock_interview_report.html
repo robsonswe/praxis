@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report-page">
+    <div class="report-container">
+        <!-- Header -->
+        <header class="report-view-header">
+            <div class="header-nav">
+                <a href="/jobs" class="back-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Back to Jobs
+                </a>
+                <div class="session-badge">Session #{{ session_id }}</div>
+            </div>
+            
+            <div class="header-main">
+                <div class="score-visualization">
+                    <svg class="score-ring" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" class="ring-bg" />
+                        <circle cx="50" cy="50" r="45" class="ring-progress" id="overallRing" />
+                    </svg>
+                    <div class="score-text">
+                        <span id="overallScore">0%</span>
+                        <label>Overall Fit</label>
+                    </div>
+                </div>
+                <div class="report-title-area">
+                    <h1>Interview Complete</h1>
+                    <p id="reportSummary">Review your performance across technical and behavioral dimensions.</p>
+                    <div class="meta-pills">
+                        <span class="meta-pill" id="sessionDate">May 12, 2026</span>
+                        <span class="meta-pill" id="sessionDuration">18 mins</span>
+                        <span class="meta-pill" id="sessionType">General Behavioral</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="report-nav">
+            <button class="report-nav-btn active" data-report-tab="summary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Overall Report
+            </button>
+            <button class="report-nav-btn" data-report-tab="breakdown">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                Answer Breakdown
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="report-body">
+            <!-- Summary Tab -->
+            <div class="report-pane active" id="pane-summary">
+                <div class="summary-grid">
+                    <div class="feedback-card highlight">
+                        <div class="card-header">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                            <h3>AI Executive Summary</h3>
+                        </div>
+                        <p id="executiveSummary"></p>
+                    </div>
+
+                    <div class="summary-insights">
+                        <div class="insight-group">
+                            <label>Key Strengths</label>
+                            <ul id="keyStrengths" class="insight-list positive"></ul>
+                        </div>
+                        <div class="insight-group">
+                            <label>Growth Areas</label>
+                            <ul id="growthAreas" class="insight-list corrective"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breakdown Tab -->
+            <div class="report-pane" id="pane-breakdown">
+                <div class="breakdown-list" id="breakdownList">
+                    <!-- Dynamic Answer Cards -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-page {
+        min-height: 100vh;
+        background: #f8fafc;
+        padding: 2rem;
+    }
+    .report-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .report-view-header {
+        margin-bottom: 2.5rem;
+    }
+    .header-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .back-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: #2563eb; }
+    .session-badge {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    .header-main {
+        display: flex;
+        align-items: center;
+        gap: 3rem;
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: 24px;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+    }
+
+    .score-visualization {
+        position: relative;
+        width: 120px;
+        height: 120px;
+    }
+    .score-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: #f1f5f9; stroke-width: 8; }
+    .ring-progress {
+        fill: none;
+        stroke: #10b981;
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 1s ease-out;
+    }
+    .score-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .score-text span { font-size: 1.75rem; font-weight: 800; color: #1e293b; }
+    .score-text label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+
+    .report-title-area h1 { font-size: 2rem; font-weight: 800; color: #1e293b; margin: 0 0 0.5rem 0; }
+    .report-title-area p { color: #64748b; margin: 0 0 1.5rem 0; font-size: 1rem; }
+    .meta-pills { display: flex; gap: 0.75rem; }
+    .meta-pill {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Tabs */
+    .report-nav {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 1rem;
+    }
+    .report-nav-btn {
+        background: none;
+        border: none;
+        padding: 1rem 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #94a3b8;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+        transition: color 0.2s;
+    }
+    .report-nav-btn:hover { color: #64748b; }
+    .report-nav-btn.active { color: #2563eb; }
+    .report-nav-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #2563eb;
+        border-radius: 3px 3px 0 0;
+    }
+
+    /* Panes */
+    .report-pane { display: none; }
+    .report-pane.active { display: block; animation: slideUp 0.3s ease-out; }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Summary Tab */
+    .summary-grid { display: grid; gap: 1.5rem; }
+    .feedback-card {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+    .feedback-card.highlight { background: #eff6ff; border-color: #bfdbfe; }
+    .feedback-card .card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; color: #2563eb; }
+    .feedback-card h3 { font-size: 1.1rem; font-weight: 800; margin: 0; }
+    .feedback-card p { margin: 0; line-height: 1.7; color: #1e3a8a; font-size: 1.05rem; }
+
+    .summary-insights { display: grid; grid-template-cols: 1fr 1fr; gap: 1.5rem; }
+    .insight-group { background: #fff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e2e8f0; }
+    .insight-group label { display: block; font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 1.25rem; }
+    .insight-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .insight-list li {
+        position: relative;
+        padding-left: 1.75rem;
+        font-size: 0.95rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+    .insight-list li::before {
+        content: '•';
+        position: absolute;
+        left: 0.5rem;
+        font-weight: 900;
+    }
+    .insight-list.positive li::before { color: #10b981; content: '✓'; }
+    .insight-list.corrective li::before { color: #f59e0b; content: '△'; }
+
+    /* Breakdown List */
+    .breakdown-list { display: flex; flex-direction: column; gap: 1.5rem; }
+    .answer-card {
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .card-title-bar {
+        background: #f8fafc;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .q-info { display: flex; align-items: center; gap: 1rem; }
+    .q-number {
+        background: #eef2ff;
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 0.85rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+    }
+    .q-text { font-weight: 700; color: #1e293b; font-size: 1rem; }
+    .q-score { font-weight: 800; color: #10b981; font-size: 1.1rem; }
+
+    .card-columns { display: grid; grid-template-cols: 1fr 1fr; divide-x: 1px solid #e2e8f0; }
+    .col-user, .col-ai { padding: 2rem; }
+    .col-ai { background: #f0fdf4; border-left: 1px solid #e2e8f0; }
+    
+    .col-user label, .col-ai label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    .col-user p, .col-ai p { margin: 0; line-height: 1.6; color: #334155; font-size: 0.95rem; }
+    
+    .follow-up-block { margin-top: 1.5rem; padding: 1rem; background: #fff; border: 1px solid #eef2ff; border-radius: 12px; }
+    .fu-q { font-size: 0.85rem; font-weight: 700; color: #4f46e5; margin-bottom: 0.5rem; line-height: 1.4; }
+    .fu-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; background: #eef2ff; padding: 0.1rem 0.4rem; border-radius: 4px; margin-right: 0.4rem; }
+    .fu-a { font-size: 0.9rem; color: #475569; border-left: 2px solid #e0e7ff; padding-left: 1rem; line-height: 1.5; font-style: italic; }
+
+    .ai-feedback-section { margin-top: 1.5rem; }
+    .ai-feedback-section h5 {
+        font-size: 0.75rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .ai-feedback-section.strengths h5 { color: #059669; }
+    .ai-feedback-section.improvements h5 { color: #d97706; }
+    .bullet-list { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; color: #475569; display: flex; flex-direction: column; gap: 0.4rem; }
+    .bullet-list li { position: relative; padding-left: 1.25rem; }
+    .bullet-list li::before { content: '•'; position: absolute; left: 0; font-weight: 900; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Mock Session Data (Mirroring the structure for all roles for now)
+        const sessionData = {
+            score: 82,
+            date: 'May 12, 2026',
+            duration: '18 mins',
+            type: 'General Behavioral',
+            executive_summary: "You demonstrated high emotional intelligence and strong problem-solving skills. Your 'Conflict Resolution' example was particularly effective, showing a clear ability to navigate complex interpersonal dynamics. However, try to avoid corporate jargon and focus more on quantifiable impact in your answers to make them more memorable.",
+            strengths: [
+                "Clear, structured communication using the STAR method",
+                "Strong alignment with company cultural values",
+                "Authentic and engaging delivery style"
+            ],
+            growth: [
+                "Quantify results more explicitly (use numbers/percentages)",
+                "Reduce reliance on filler words during technical explanations",
+                "Ensure concluding statements link back to the job requirements"
+            ],
+            answers: [
+                {
+                    question: "Tell me about a time you faced a significant technical challenge.",
+                    answer: "I had to migrate a legacy database with zero downtime. I created a dual-write system and carefully monitored the transition over a weekend. It was stressful but successful.",
+                    score: 90,
+                    strengths: ["Great technical solution described", "Focused on reliability and risk management"],
+                    improvements: ["Mention team coordination efforts", "Provide specific metrics on data volume"],
+                    follow_up: {
+                        question: "Could you elaborate more on the specific metrics you monitored during that weekend?",
+                        answer: "I closely tracked the replication lag between the old and new clusters, as well as the 'Write' success rate on the new dual-write endpoint to ensure no data loss occurred."
+                    }
+                },
+                {
+                    question: "Why do you want to join our company?",
+                    answer: "I've been following your mission to democratize financial data and I feel my experience with API design fits perfectly with your current roadmap.",
+                    score: 75,
+                    strengths: ["Shows research on company mission", "Direct link to personal skill set"],
+                    improvements: ["Mention a specific product feature you like", "Articulate long-term career alignment more clearly"]
+                }
+            ]
+        };
+
+        // Initialize Page Content
+        document.getElementById('overallScore').textContent = `${sessionData.score}%`;
+        const ring = document.getElementById('overallRing');
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference - (sessionData.score / 100) * circumference;
+        ring.style.strokeDashoffset = offset;
+
+        document.getElementById('sessionDate').textContent = sessionData.date;
+        document.getElementById('sessionDuration').textContent = sessionData.duration;
+        document.getElementById('sessionType').textContent = sessionData.type;
+        document.getElementById('executiveSummary').textContent = sessionData.executive_summary;
+
+        const strengthList = document.getElementById('keyStrengths');
+        sessionData.strengths.forEach(s => {
+            const li = document.createElement('li');
+            li.textContent = s;
+            strengthList.appendChild(li);
+        });
+
+        const growthList = document.getElementById('growthAreas');
+        sessionData.growth.forEach(g => {
+            const li = document.createElement('li');
+            li.textContent = g;
+            growthList.appendChild(li);
+        });
+
+        const list = document.getElementById('breakdownList');
+        sessionData.answers.forEach((a, i) => {
+            const card = document.createElement('div');
+            card.className = 'answer-card';
+            card.innerHTML = `
+                <div class="card-title-bar">
+                    <div class="q-info">
+                        <span class="q-number">Question ${i + 1}</span>
+                        <span class="q-text">${a.question}</span>
+                    </div>
+                    <div class="q-score">${a.score}%</div>
+                </div>
+                <div class="card-columns">
+                    <div class="col-user">
+                        <label>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Your Answer
+                        </label>
+                        <p>${a.answer}</p>
+                        
+                        ${a.follow_up ? `
+                            <div class="follow-up-block">
+                                <div class="fu-q">
+                                    <span class="fu-label">Follow-up:</span> ${a.follow_up.question}
+                                </div>
+                                <div class="fu-a">
+                                    ${a.follow_up.answer}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="col-ai">
+                        <label>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                            AI Feedback
+                        </label>
+                        <div class="ai-feedback-section strengths">
+                            <h5>Strengths</h5>
+                            <ul class="bullet-list">
+                                ${a.strengths.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="ai-feedback-section improvements">
+                            <h5>Improvements</h5>
+                            <ul class="bullet-list">
+                                ${a.improvements.map(im => `<li>${im}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+
+        // Tab Logic
+        const tabs = document.querySelectorAll('.report-nav-btn');
+        const panes = document.querySelectorAll('.report-pane');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.reportTab;
+                tabs.forEach(t => t.classList.remove('active'));
+                panes.forEach(p => p.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`pane-${target}`).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}
