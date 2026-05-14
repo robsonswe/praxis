@@ -197,6 +197,23 @@ async def _create_tables(conn: aiosqlite.Connection):
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
+
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            company TEXT NOT NULL,
+            location TEXT DEFAULT '',
+            job_type TEXT DEFAULT 'full-time',
+            salary TEXT DEFAULT '',
+            link TEXT DEFAULT '',
+            description TEXT DEFAULT '',
+            company_description TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
     
     await conn.commit()
 
@@ -208,6 +225,13 @@ async def _create_tables(conn: aiosqlite.Connection):
     })
     await _ensure_columns(conn, "work_experience", {
         "experience_type": "experience_type TEXT DEFAULT 'employment'"
+    })
+    await _ensure_columns(conn, "jobs", {
+        "job_type": "job_type TEXT DEFAULT 'full-time'",
+        "salary": "salary TEXT DEFAULT ''",
+        "link": "link TEXT DEFAULT ''",
+        "description": "description TEXT DEFAULT ''",
+        "company_description": "company_description TEXT DEFAULT ''"
     })
 
 

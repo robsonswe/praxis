@@ -91,6 +91,7 @@ from app.models.profile import (
     ProjectCreate,
     UserProfile,
 )
+from app.models.job import JobPost, JobPostCreate
 
 __all__ = [
     "User",
@@ -112,4 +113,6 @@ __all__ = [
     "Project",
     "ProjectCreate",
     "UserProfile",
+    "JobPost",
+    "JobPostCreate",
 ]

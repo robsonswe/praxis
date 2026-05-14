@@ -7,10 +7,13 @@ from app.services.user import UserService
 from app.repositories.user import UserRepository
 from app.repositories.profile import ProfileRepository
 from app.services.profile import ProfileService
+from app.repositories.job import JobRepository
+from app.services.job import JobService
 from app.models.profile import (
     ProfileBasic, WorkExperienceCreate, EducationCreate, CertificationCreate,
     CourseCreate, AchievementCreate, SkillCreate, ProjectCreate, UserProfile
 )
+from app.models.job import JobPostCreate
 from app.database import init_db, get_connection, close_connection
 
 router = APIRouter()
@@ -26,6 +29,9 @@ user_service = UserService(user_repo)
 
 profile_repo = ProfileRepository()
 profile_service = ProfileService(profile_repo)
+
+job_repo = JobRepository()
+job_service = JobService(job_repo)
 
 
 @router.get("/setup")
@@ -188,6 +194,54 @@ async def logout():
     response = RedirectResponse(url="/login")
     response.set_cookie("user_id", "", expires=0)
     return response
+
+
+@router.get("/jobs")
+async def jobs_page(request: Request):
+    user_id = get_current_user(request)
+    if not user_id:
+        return RedirectResponse(url="/login")
+
+    await user_repo.initialize()
+    user = await user_service.get_user(user_id)
+    if not user:
+        return RedirectResponse(url="/login")
+
+    template = env.get_template("job_analysis.html")
+    return HTMLResponse(content=template.render(
+        user_name=user.name,
+        user_email=user.email,
+        active_page="jobs",
+        page_title="Job Analysis",
+        page_subtitle="Track roles and gather insights"
+    ))
+
+
+@router.get("/api/jobs")
+async def list_jobs(request: Request):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return await job_service.list_jobs(user_id)
+
+
+@router.post("/api/jobs")
+async def create_job(request: Request, data: JobPostCreate):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return await job_service.create_job(user_id, data)
+
+
+@router.delete("/api/jobs/{job_id}")
+async def delete_job(request: Request, job_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    success = await job_service.delete_job(job_id, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"success": True}
 
 
 @router.get("/profile")
