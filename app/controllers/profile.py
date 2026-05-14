@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import date, datetime
 from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from app.services.user import UserService
 from app.repositories.user import UserRepository
@@ -10,6 +10,9 @@ from app.services.profile import ProfileService
 from app.repositories.job import JobRepository
 from app.services.job import JobService
 from app.services.behavioral import BehavioralService
+from app.repositories.job_analysis import JobAnalysisRepository
+from app.services.job_analysis import JobAnalysisService
+from app.services.ai_service import AIService
 from app.models.profile import (
     ProfileBasic, WorkExperienceCreate, EducationCreate, CertificationCreate,
     CourseCreate, AchievementCreate, SkillCreate, ProjectCreate, UserProfile
@@ -34,6 +37,15 @@ profile_service = ProfileService(profile_repo)
 job_repo = JobRepository()
 job_service = JobService(job_repo)
 behavioral_service = BehavioralService()
+ai_service = AIService()
+job_analysis_repo = JobAnalysisRepository()
+job_analysis_service = JobAnalysisService(
+    job_analysis_repo,
+    job_repo,
+    profile_service,
+    behavioral_service,
+    ai_service
+)
 
 
 @router.get("/setup")
@@ -210,13 +222,50 @@ async def jobs_page(request: Request):
         return RedirectResponse(url="/login")
 
     template = env.get_template("job_analysis.html")
+    
+    # Check if AI is configured
+    ai_settings = await ai_service.get_user_settings(user_id)
+    ai_configured = bool(ai_settings and ai_settings.get("provider") and ai_settings.get("model"))
+    
     return HTMLResponse(content=template.render(
         user_name=user.name,
         user_email=user.email,
         active_page="jobs",
         page_title="Job Analysis",
-        page_subtitle="Track roles and gather insights"
+        page_subtitle="Track roles and gather insights",
+        ai_configured=ai_configured
     ))
+
+
+@router.get("/api/jobs/{job_id}/analysis")
+async def get_job_analysis(request: Request, job_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    analysis = await job_analysis_service.get_analysis(job_id, user_id)
+    if not analysis:
+        return JSONResponse(content={"analyzed": False})
+    
+    return analysis
+
+
+@router.post("/api/jobs/{job_id}/analyze")
+async def analyze_job(request: Request, job_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Check AI config
+    ai_settings = await ai_service.get_user_settings(user_id)
+    if not ai_settings or not ai_settings.get("provider") or not ai_settings.get("model"):
+        raise HTTPException(status_code=400, detail="AI not configured")
+        
+    try:
+        analysis = await job_analysis_service.generate_analysis(job_id, user_id)
+        return analysis
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/api/jobs")
@@ -233,6 +282,17 @@ async def create_job(request: Request, data: JobPostCreate):
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return await job_service.create_job(user_id, data)
+
+
+@router.put("/api/jobs/{job_id}")
+async def update_job(request: Request, job_id: int, data: JobPostCreate):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    success = await job_service.update_job(job_id, user_id, data)
+    if not success:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"success": True}
 
 
 @router.delete("/api/jobs/{job_id}")

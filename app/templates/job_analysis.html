@@ -3,13 +3,18 @@
 {% block content %}
 <div class="job-analysis">
     <div class="job-grid">
+        <!-- Left Panel: Job List -->
         <section class="job-panel">
             <div class="job-panel-header">
-                <h3>Job posts</h3>
-                <button class="job-ghost" id="toggleAddJob" type="button">Add job</button>
+                <h3>Target Roles</h3>
+                <button class="job-ghost" id="toggleAddJob" type="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Add job
+                </button>
             </div>
 
             <form class="job-form" id="jobForm">
+                <input type="hidden" id="job-id" name="id">
                 <div class="job-form-row">
                     <div>
                         <label for="job-title">Role title</label>
@@ -47,7 +52,7 @@
                 </div>
                 <div>
                     <label for="job-description">Job description</label>
-                    <textarea class="job-textarea" id="job-description" name="description" placeholder="Paste the key responsibilities and requirements"></textarea>
+                    <textarea class="job-textarea" id="job-description" name="description" placeholder="Paste the key responsibilities and requirements" required></textarea>
                 </div>
                 <div>
                     <label for="job-company-description">Company context (optional)</label>
@@ -61,18 +66,22 @@
 
             <div class="job-list" id="jobList"></div>
             <div class="job-empty" id="jobEmpty">
-                <div>No jobs yet. Add your first role to start building analysis placeholders.</div>
+                <div>No jobs tracked yet. Add your first role to start the analysis.</div>
                 <button class="job-primary" type="button" id="addSample">Add sample job</button>
             </div>
         </section>
 
+        <!-- Right Panel: Analysis Result -->
         <section class="job-panel">
             <div class="job-panel-header">
-                <h3>Analysis</h3>
-                <div class="job-status" id="analysisStatus">Not analyzed</div>
+                <h3>Fit Analysis</h3>
+                <div class="job-status" id="analysisStatus">No job selected</div>
             </div>
             <div class="job-analysis-body" id="analysisBody">
-                <div class="job-summary">Select a job to see a structured analysis placeholder.</div>
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <p>Select a job from the list to view or generate a deep AI fit analysis.</p>
+                </div>
             </div>
         </section>
     </div>
@@ -89,23 +98,20 @@
         const analysisBody = document.getElementById('analysisBody');
         const analysisStatus = document.getElementById('analysisStatus');
 
-        if (!jobForm || !jobList || !jobEmpty || !toggleAddJob || !cancelJob || !addSample || !analysisBody || !analysisStatus) {
-            return;
-        }
+        let aiConfigured = {{ 'true' if ai_configured else 'false' }};
 
         let jobs = [];
         let selectedId = null;
-        let analysisState = null;
 
         const sampleJob = {
-            title: 'Product Operations Lead',
+            title: 'Senior Product Operations Manager',
             company: 'Harborline Studio',
-            location: 'Remote, EU',
+            location: 'Remote, EU/UK',
             job_type: 'full-time',
-            salary: '$70k-$95k',
-            link: 'https://example.com/jobs/harborline',
-            description: 'Own process improvements, partner with design and engineering, and build reporting rhythms.',
-            company_description: 'Distributed studio focused on premium creator tools and calm operational cadence.'
+            salary: '$95k-$125k + Equity',
+            link: 'https://harborline.studio/careers/senior-prod-ops',
+            description: 'We are looking for a Senior Product Operations Manager to bridge the gap between our design and engineering squads. \n\nKey Responsibilities:\n- Design and implement scalable workflows for product discovery and delivery.\n- Manage the product tech stack (Productboard, Linear, Notion) and optimize for developer experience.\n- Analyze product health metrics using SQL and create automated reporting rhythms for stakeholders.\n- Partner with UX Research to operationalize feedback loops from our creator community.\n\nRequirements:\n- 5+ years in Product Ops, Program Management, or Product Management.\n- Expert proficiency in SQL and data visualization tools (Looker/Tableau).\n- Strong understanding of Agile methodologies and SDLC.\n- Experience working in high-growth startup environments.',
+            company_description: 'Harborline is a premium, distributed design studio building the next generation of tools for the creator economy. We prioritize a "calm operational cadence," deep work, and asynchronous collaboration. We are a team of 45 people across 12 countries, backed by top-tier VC funding.'
         };
 
         async function fetchJson(url, options = {}) {
@@ -124,141 +130,289 @@
             try {
                 jobs = await fetchJson('/api/jobs');
                 renderJobs();
-                renderAnalysis();
             } catch (error) {
                 console.error('Failed to load jobs', error);
             }
         }
 
         function renderJobs() {
-        jobList.innerHTML = '';
-        if (!jobs.length) {
-            jobEmpty.style.display = 'block';
-            return;
-        }
-        jobEmpty.style.display = 'none';
+            jobList.innerHTML = '';
+            if (!jobs.length) {
+                jobEmpty.style.display = 'block';
+                return;
+            }
+            jobEmpty.style.display = 'none';
 
-        jobs.forEach(job => {
-            const card = document.createElement('div');
-            card.className = 'job-card' + (job.id === selectedId ? ' active' : '');
-            card.innerHTML = `
-                <div class="job-card-title">${job.title}</div>
-                <div class="job-card-company">${job.company}</div>
-                <div class="job-card-meta">
-                    ${job.location ? `<span class="job-chip">${job.location}</span>` : ''}
-                    ${job.job_type ? `<span class="job-chip">${job.job_type.replace('-', ' ')}</span>` : ''}
-                    ${job.salary ? `<span class="job-chip">${job.salary}</span>` : ''}
-                </div>
-                <div class="job-card-actions">
-                    <button class="job-delete" data-id="${job.id}">Remove</button>
+            jobs.forEach(job => {
+                const card = document.createElement('div');
+                card.className = 'job-card' + (job.id === selectedId ? ' active' : '');
+                card.innerHTML = `
+                    <div class="job-card-content">
+                        <div class="job-card-title">${job.title}</div>
+                        <div class="job-card-company">${job.company}</div>
+                        <div class="job-card-meta">
+                            ${job.location ? `<span class="job-chip">${job.location}</span>` : ''}
+                            <span class="job-chip">${job.job_type.replace('-', ' ')}</span>
+                            ${job.salary ? `<span class="job-chip salary">${job.salary}</span>` : ''}
+                        </div>
+                        ${job.link ? `
+                            <div class="job-card-link">
+                                <a href="${job.link}" target="_blank" onclick="event.stopPropagation()">
+                                    View posting ↗
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <button class="job-delete-btn" title="Remove role">×</button>
+                `;
+                card.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'A' || e.target.classList.contains('job-delete-btn')) return;
+                    selectJob(job.id);
+                });
+                card.querySelector('.job-delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteJob(job.id);
+                });
+                jobList.appendChild(card);
+            });
+        }
+
+        async function selectJob(id) {
+            selectedId = id;
+            renderJobs();
+            analysisBody.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading analysis...</p></div>';
+            analysisStatus.textContent = 'Loading...';
+            
+            try {
+                const analysis = await fetchJson(`/api/jobs/${id}/analysis`);
+                renderAnalysis(analysis);
+            } catch (error) {
+                console.error('Failed to load analysis', error);
+                analysisBody.innerHTML = '<div class="error-state">Failed to load analysis results.</div>';
+            }
+        }
+
+        function renderAnalysis(analysis) {
+            const job = jobs.find(j => j.id === selectedId);
+            if (!job) return;
+
+            const jobContextHtml = `
+                <div class="job-context-info">
+                    <div class="context-header">
+                        <div class="header-left" onclick="this.parentElement.parentElement.classList.toggle('collapsed')">
+                            <h4>Job Context</h4>
+                            <span class="collapse-icon">▾</span>
+                        </div>
+                        <div class="header-actions">
+                            <button class="context-btn edit" id="editJobBtn" title="Edit role details">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                Edit
+                            </button>
+                            <button class="context-btn delete" id="deleteJobBtn" title="Remove role">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="context-content">
+                        <div class="context-group">
+                            <label>Description</label>
+                            <p>${job.description}</p>
+                        </div>
+                        ${job.company_description ? `
+                            <div class="context-group">
+                                <label>Company Context</label>
+                                <p>${job.company_description}</p>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `;
-            card.addEventListener('click', (event) => {
-                if (event.target.classList.contains('job-delete')) return;
-                selectedId = job.id;
-                analysisState = null;
-                renderJobs();
-                renderAnalysis();
-            });
-            card.querySelector('.job-delete').addEventListener('click', (event) => {
-                event.stopPropagation();
-                deleteJob(job.id);
-            });
-            jobList.appendChild(card);
-        });
-    }
+
+            if (analysis.analyzed === false) {
+                analysisStatus.textContent = 'Not analyzed';
+                analysisBody.innerHTML = `
+                    ${jobContextHtml}
+                    <div class="analysis-start">
+                        <div class="start-icon">✨</div>
+                        <h3>Deep AI Fit Analysis</h3>
+                        <p>Analyze how your profile matches this role across technical skills and cultural alignment.</p>
+                        
+                        ${aiConfigured ? `
+                            <button class="job-primary" id="runAnalysis">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                                Run Analysis
+                            </button>
+                        ` : `
+                            <div class="ai-warning">
+                                <p><strong>AI model not configured.</strong> Please set up your text chat model in Settings to enable job analysis.</p>
+                                <a href="/ai/settings" class="job-ghost">Go to Settings</a>
+                                <button class="job-primary" disabled>Run Analysis (Locked)</button>
+                            </div>
+                        `}
+                    </div>
+                `;
+                if (aiConfigured) {
+                    document.getElementById('runAnalysis').addEventListener('click', runAnalysis);
+                }
+                document.getElementById('editJobBtn').addEventListener('click', () => editJob(job));
+                document.getElementById('deleteJobBtn').addEventListener('click', () => deleteJob(job.id));
+                return;
+            }
+
+            analysisStatus.textContent = `Analyzed on ${new Date(analysis.analyzed_at).toLocaleDateString()}`;
+            
+            analysisBody.innerHTML = `
+                ${jobContextHtml}
+                <div class="analysis-report">
+                    <div class="score-summary">
+                        <div class="main-score">
+                            <div class="score-circle" style="--percent: ${analysis.overall_score}">
+                                <span>${analysis.overall_score}%</span>
+                            </div>
+                            <div class="score-label">Overall Fit</div>
+                        </div>
+                        <div class="split-scores">
+                            <div class="split-score">
+                                <div class="split-label">Technical</div>
+                                <div class="split-bar-container">
+                                    <div class="split-bar" style="width: ${analysis.technical_fit}%"></div>
+                                </div>
+                                <div class="split-value">${analysis.technical_fit}%</div>
+                            </div>
+                            <div class="split-score">
+                                <div class="split-label">Cultural</div>
+                                <div class="split-bar-container">
+                                    <div class="split-bar" style="width: ${analysis.cultural_fit}%"></div>
+                                </div>
+                                <div class="split-value">${analysis.cultural_fit}%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>Strengths</h4>
+                        <div class="insight-list">
+                            ${analysis.strengths.map(s => renderInsight(s, 'strength')).join('')}
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>Gaps & Risks</h4>
+                        <div class="insight-list">
+                            ${analysis.gaps.map(g => renderInsight(g, 'gap')).join('')}
+                            ${analysis.red_flags.map(rf => renderInsight(rf, 'red_flag')).join('')}
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>Positioning Strategy</h4>
+                        <div class="strategy-card">
+                            ${analysis.positioning_strategy}
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>Action Items</h4>
+                        <ul class="action-list">
+                            ${analysis.recommendations.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <button class="job-ghost redo-btn" id="runAnalysis">
+                        Redo Analysis
+                    </button>
+                </div>
+            `;
+            document.getElementById('runAnalysis').addEventListener('click', runAnalysis);
+            document.getElementById('editJobBtn').addEventListener('click', () => editJob(job));
+            document.getElementById('deleteJobBtn').addEventListener('click', () => deleteJob(job.id));
+        }
+
+        function editJob(job) {
+            document.getElementById('job-id').value = job.id;
+            document.getElementById('job-title').value = job.title;
+            document.getElementById('job-company').value = job.company;
+            document.getElementById('job-location').value = job.location || '';
+            document.getElementById('job-type').value = job.job_type;
+            document.getElementById('job-salary').value = job.salary || '';
+            document.getElementById('job-link').value = job.link || '';
+            document.getElementById('job-description').value = job.description;
+            document.getElementById('job-company-description').value = job.company_description || '';
+            
+            jobForm.querySelector('h3') ? jobForm.querySelector('h3').textContent = 'Edit Role' : '';
+            jobForm.classList.add('active');
+            jobForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderInsight(insight, type) {
+            const icon = type === 'strength' ? '✓' : (type === 'red_flag' ? '!' : '△');
+            return `
+                <div class="insight-item ${type} severity-${insight.severity}">
+                    <div class="insight-header">
+                        <span class="insight-icon">${icon}</span>
+                        <span class="insight-area">${insight.area}</span>
+                        <span class="insight-badge">${insight.severity}</span>
+                    </div>
+                    <div class="insight-desc">${insight.description}</div>
+                    ${insight.suggestion ? `<div class="insight-suggestion"><strong>Suggestion:</strong> ${insight.suggestion}</div>` : ''}
+                </div>
+            `;
+        }
+
+        async function runAnalysis() {
+            if (!selectedId) return;
+            
+            analysisStatus.textContent = 'Analyzing...';
+            analysisBody.innerHTML = `
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <h3>AI is analyzing the fit...</h3>
+                    <p>This may take 10-20 seconds depending on the model.</p>
+                </div>
+            `;
+            
+            try {
+                const analysis = await fetchJson(`/api/jobs/${selectedId}/analyze`, { method: 'POST' });
+                renderAnalysis(analysis);
+            } catch (error) {
+                console.error('Analysis failed', error);
+                alert('Analysis failed: ' + error.message);
+                selectJob(selectedId); // Reset view
+            }
+        }
 
         async function deleteJob(id) {
-        try {
-            await fetchJson(`/api/jobs/${id}`, { method: 'DELETE' });
-            jobs = jobs.filter(job => job.id !== id);
-            if (selectedId === id) {
-                selectedId = null;
-                analysisState = null;
-            }
-            renderJobs();
-            renderAnalysis();
-        } catch (error) {
-            console.error('Failed to delete job', error);
-        }
-    }
+            showDialog({
+                title: 'Remove Role',
+                message: 'Are you sure you want to permanently remove this role and its analysis?',
+                confirmText: 'Remove',
+                variant: 'danger',
+                onConfirm: async () => {
+                    try {
+                        await fetchJson(`/api/jobs/${id}`, { method: 'DELETE' });
+                        jobs = jobs.filter(j => j.id !== id);
+                        
+                        // Reset form if we were editing this job
+                        if (document.getElementById('job-id').value == id) {
+                            jobForm.reset();
+                            document.getElementById('job-id').value = '';
+                            jobForm.classList.remove('active');
+                        }
 
-        function renderAnalysis() {
-        const job = jobs.find(item => item.id === selectedId);
-        if (!job) {
-            analysisStatus.textContent = 'Not analyzed';
-            analysisBody.innerHTML = '<div class="job-summary">Select a job to see a structured analysis placeholder.</div>';
-            return;
-        }
-
-        if (!analysisState) {
-            analysisStatus.textContent = 'Ready for analysis';
-            analysisBody.innerHTML = `
-                <div class="job-summary">${job.title} at ${job.company}. Add a quick analysis placeholder so you can iterate later.</div>
-                <button class="job-primary" id="runAnalysis" type="button">Generate placeholder analysis</button>
-            `;
-            document.getElementById('runAnalysis').addEventListener('click', () => {
-                analysisState = {
-                    overallScore: 67,
-                    fit: {
-                        technical: 62,
-                        cultural: 71,
-                        readiness: 58,
-                        impact: 72,
-                        alignment: 64
-                    },
-                    signals: [
-                        'Strong product operations foundation from recent roles.',
-                        'Clear cross-functional experience with design and engineering.',
-                        'Consistent process improvement examples.'
-                    ],
-                    gaps: [
-                        'Need clearer evidence of analytics tooling depth.',
-                        'Missing leadership scope in team size or budget.'
-                    ],
-                    nextSteps: [
-                        'Tailor resume to highlight operational metrics.',
-                        'Prepare one story focused on scaling workflows.',
-                        'Draft a 90-day plan outline.'
-                    ]
-                };
-                renderAnalysis();
+                        if (selectedId === id) {
+                            selectedId = null;
+                            analysisBody.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Select a job from the list to view or generate a deep AI fit analysis.</p></div>';
+                            analysisStatus.textContent = 'No job selected';
+                        }
+                        renderJobs();
+                    } catch (error) {
+                        console.error('Delete failed', error);
+                        showAlert('Error', 'Failed to delete the job.');
+                    }
+                }
             });
-            return;
         }
-
-        analysisStatus.textContent = 'Placeholder analysis';
-        analysisBody.innerHTML = `
-            <div class="job-summary">Overall fit score: <strong>${analysisState.overallScore}%</strong>. Placeholder analysis for ${job.title}. This will be replaced once AI scoring is connected.</div>
-            <div class="job-bars">
-                ${renderBar('Overall fit', analysisState.overallScore)}
-                ${renderBar('Technical fit', analysisState.fit.technical)}
-                ${renderBar('Cultural fit', analysisState.fit.cultural)}
-                ${renderBar('Readiness', analysisState.fit.readiness)}
-                ${renderBar('Impact potential', analysisState.fit.impact)}
-                ${renderBar('Role alignment', analysisState.fit.alignment)}
-            </div>
-            <div class="job-insights">
-                ${analysisState.signals.map(item => `<div class="job-insight">Signal: ${item}</div>`).join('')}
-                ${analysisState.gaps.map(item => `<div class="job-insight">Gap: ${item}</div>`).join('')}
-                ${analysisState.nextSteps.map(item => `<div class="job-insight">Next step: ${item}</div>`).join('')}
-            </div>
-        `;
-    }
-
-        function renderBar(label, value) {
-        return `
-            <div class="job-bar">
-                <div class="job-bar-header">
-                    <span>${label}</span>
-                    <span>${value}%</span>
-                </div>
-                <div class="job-bar-track">
-                    <div class="job-bar-fill" style="width: ${value}%"></div>
-                </div>
-            </div>
-        `;
-    }
 
         toggleAddJob.addEventListener('click', () => {
             jobForm.classList.toggle('active');
@@ -275,11 +429,9 @@
                     method: 'POST',
                     body: JSON.stringify(sampleJob)
                 });
-                jobs = [created, ...jobs];
-                selectedId = created.id;
-                jobForm.classList.remove('active');
+                jobs.unshift(created);
                 renderJobs();
-                renderAnalysis();
+                selectJob(created.id);
             } catch (error) {
                 console.error('Failed to add sample job', error);
             }
@@ -288,6 +440,7 @@
         jobForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             const data = new FormData(jobForm);
+            const jobId = data.get('id');
             const job = {
                 title: data.get('title').trim(),
                 company: data.get('company').trim(),
@@ -299,22 +452,157 @@
                 company_description: data.get('company_description').trim()
             };
             try {
-                const created = await fetchJson('/api/jobs', {
-                    method: 'POST',
-                    body: JSON.stringify(job)
-                });
-                jobs.unshift(created);
-                selectedId = created.id;
+                if (jobId) {
+                    await fetchJson(`/api/jobs/${jobId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(job)
+                    });
+                    const idx = jobs.findIndex(j => j.id == jobId);
+                    if (idx !== -1) jobs[idx] = { ...jobs[idx], ...job };
+                } else {
+                    const created = await fetchJson('/api/jobs', {
+                        method: 'POST',
+                        body: JSON.stringify(job)
+                    });
+                    jobs.unshift(created);
+                    selectedId = created.id;
+                }
                 jobForm.reset();
+                document.getElementById('job-id').value = '';
                 jobForm.classList.remove('active');
                 renderJobs();
-                renderAnalysis();
+                selectJob(selectedId || jobId);
             } catch (error) {
                 console.error('Failed to save job', error);
             }
         });
 
+        async function checkTextModelConfigured() {
+            try {
+                const settings = await fetchJson('/ai/settings');
+                aiConfigured = !!(settings.provider && settings.model);
+                // If we have a selected job and it's not analyzed, re-render to unlock button
+                if (selectedId) {
+                    const analysis = await fetchJson(`/api/jobs/${selectedId}/analysis`);
+                    renderAnalysis(analysis);
+                }
+            } catch (error) {
+                console.error('Failed to check AI config', error);
+            }
+        }
+        window.checkTextModelConfigured = checkTextModelConfigured;
+
         loadJobs();
     });
 </script>
+
+<style>
+/* Simplified internal styles for job analysis - better to move to main.css later */
+.job-analysis { padding: 2rem; max-width: 100%; margin: 0; }
+.job-grid { display: grid; grid-template-columns: 420px 1fr; gap: 2rem; height: calc(100vh - 120px); }
+.job-panel { background: #fff; border-radius: 12px; border: 1px solid #eef0f2; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+.job-panel-header { padding: 1.25rem; border-bottom: 1px solid #eef0f2; display: flex; justify-content: space-between; align-items: center; background: #fcfdfe; }
+.job-panel-header h3 { font-size: 1.1rem; font-weight: 600; color: #1a1d21; margin: 0; }
+.job-status { font-size: 0.85rem; color: #667085; }
+
+.job-list { flex: 1; overflow-y: auto; padding: 1rem; }
+.job-card { padding: 1.25rem; border-radius: 8px; border: 1px solid #eef0f2; margin-bottom: 0.75rem; cursor: pointer; transition: all 0.2s; position: relative; }
+.job-card:hover { border-color: #d1d5db; background: #f9fafb; }
+.job-card.active { border-color: #2563eb; background: #eff6ff; }
+.job-card-title { font-weight: 600; font-size: 1rem; color: #111827; margin-bottom: 0.25rem; }
+.job-card-company { font-size: 0.85rem; color: #4b5563; margin-bottom: 0.75rem; }
+.job-card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.job-chip { font-size: 0.7rem; background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 4px; color: #374151; }
+.job-chip.salary { background: #ecfdf5; color: #065f46; font-weight: 600; }
+.job-card-link { margin-top: 0.75rem; font-size: 0.8rem; }
+.job-card-link a { color: #2563eb; text-decoration: none; font-weight: 500; }
+.job-card-link a:hover { text-decoration: underline; }
+.job-delete-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; font-size: 1.2rem; color: #9ca3af; cursor: pointer; display: none; }
+.job-card:hover .job-delete-btn { display: block; }
+
+.job-analysis-body { flex: 1; overflow-y: auto; padding: 2rem; position: relative; background: #fcfdfe; }
+.empty-state, .loading-state { text-align: center; padding: 4rem 2rem; color: #667085; }
+
+/* Job Context Section */
+.job-context-info { background: #fff; border: 1px solid #eef0f2; border-radius: 12px; margin-bottom: 2rem; overflow: hidden; transition: all 0.3s; position: relative; }
+.context-header { padding: 0.75rem 1.25rem; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eef0f2; }
+.header-left { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; flex: 1; }
+.header-left h4 { margin: 0; font-size: 0.9rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
+.header-actions { display: flex; gap: 0.5rem; }
+.context-btn { background: #fff; border: 1px solid #d1d5db; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; }
+.context-btn.edit { color: #4b5563; }
+.context-btn.edit:hover { background: #f9fafb; border-color: #9ca3af; color: #111827; }
+.context-btn.delete { color: #dc2626; border-color: #fecaca; }
+.context-btn.delete:hover { background: #fef2f2; border-color: #ef4444; }
+.collapse-icon { transition: transform 0.3s; color: #94a3b8; }
+.job-context-info.collapsed .context-content { display: none; }
+.job-context-info.collapsed .collapse-icon { transform: rotate(-90deg); }
+.context-content { padding: 1.5rem; }
+.context-group { margin-bottom: 1.5rem; }
+.context-group:last-child { margin-bottom: 0; }
+.context-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; }
+.context-group p { font-size: 0.95rem; line-height: 1.6; color: #334155; white-space: pre-wrap; margin: 0; }
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+.spinner { width: 40px; height: 40px; border: 3px solid #f3f4f6; border-top-color: #2563eb; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.score-summary { display: flex; gap: 3rem; align-items: center; background: #f8fafc; padding: 2rem; border-radius: 16px; margin-bottom: 2.5rem; }
+.score-circle { 
+    width: 100px; height: 100px; border-radius: 50%; 
+    background: conic-gradient(#2563eb calc(var(--percent) * 1%), #e2e8f0 0);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+}
+.score-circle::after { content: ''; position: absolute; width: 80px; height: 80px; background: #f8fafc; border-radius: 50%; }
+.score-circle span { position: relative; z-index: 1; font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+.score-label { margin-top: 0.75rem; font-weight: 600; text-align: center; font-size: 0.9rem; color: #475569; }
+
+.split-scores { flex: 1; }
+.split-score { margin-bottom: 1rem; }
+.split-label { font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 0.4rem; }
+.split-bar-container { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; position: relative; flex: 1; margin-right: 1rem; }
+.split-bar { height: 100%; background: #3b82f6; border-radius: 4px; transition: width 1s ease-out; }
+.split-score { display: flex; align-items: center; }
+.split-value { font-size: 0.9rem; font-weight: 700; color: #1e293b; width: 40px; text-align: right; }
+
+.analysis-section { margin-bottom: 2.5rem; }
+.analysis-section h4 { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 1.25rem; border-left: 4px solid #2563eb; padding-left: 0.75rem; }
+.insight-list { display: grid; gap: 1rem; }
+.insight-item { padding: 1rem 1.25rem; border-radius: 12px; border: 1px solid transparent; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.insight-item.strength { border-left: 4px solid #10b981; background: #f0fdf4; }
+.insight-item.gap { border-left: 4px solid #f59e0b; background: #fffbeb; }
+.insight-item.red_flag { border-left: 4px solid #ef4444; background: #fef2f2; }
+
+.insight-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.insight-icon { font-weight: 700; }
+.insight-area { font-weight: 700; font-size: 0.9rem; color: #111827; }
+.insight-badge { font-size: 0.65rem; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; }
+.severity-high .insight-badge { background: #ef4444; color: #fff; }
+.severity-medium .insight-badge { background: #f59e0b; color: #fff; }
+.severity-low .insight-badge { background: #3b82f6; color: #fff; }
+.insight-desc { font-size: 0.9rem; color: #4b5563; line-height: 1.5; }
+.insight-suggestion { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed rgba(0,0,0,0.1); font-size: 0.85rem; color: #1f2937; }
+
+.strategy-card { background: #1e293b; color: #f8fafc; padding: 1.5rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.6; }
+.action-list { padding-left: 1.25rem; }
+.action-list li { margin-bottom: 0.75rem; font-size: 0.9rem; color: #4b5563; line-height: 1.5; }
+
+.ai-warning { padding: 1.5rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; margin-top: 1rem; text-align: center; }
+.ai-warning p { margin-bottom: 1rem; color: #92400e; font-size: 0.9rem; }
+.redo-btn { margin-top: 1rem; width: 100%; border-style: dashed; }
+
+/* Form styles from previous version but refined */
+.job-form { display: none; padding: 1.5rem; border-bottom: 1px solid #eef0f2; background: #fff; }
+.job-form.active { display: block; }
+.job-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.job-input, .job-select, .job-textarea { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; margin-top: 0.35rem; }
+.job-textarea { height: 100px; resize: vertical; }
+.job-form-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+.job-primary { background: #2563eb; color: #fff; border: none; padding: 0.6rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.job-primary:hover { background: #1d4ed8; }
+.job-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.job-ghost { background: none; border: 1px solid #d1d5db; padding: 0.6rem 1rem; border-radius: 6px; font-weight: 600; color: #4b5563; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+.job-ghost:hover { background: #f9fafb; border-color: #9ca3af; }
+
+</style>
 {% endblock %}

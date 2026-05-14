@@ -35,6 +35,7 @@ async def init_db(path: str | Path | None = None):
     
     if _connection is None:
         _connection = await aiosqlite.connect(db)
+        await _connection.execute("PRAGMA foreign_keys = ON;")
         await _create_tables(_connection)
 
 async def _create_tables(conn: aiosqlite.Connection):
@@ -63,7 +64,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -74,7 +75,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             role TEXT NOT NULL CHECK(role IN ('user', 'assistant')),
             content TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
+            FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
         )
     """)
     
@@ -90,7 +91,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             stt_mode TEXT NOT NULL DEFAULT 'batch',
             tts_provider TEXT NOT NULL DEFAULT 'browser',
             tts_model TEXT NOT NULL DEFAULT 'Browser Built In',
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -107,7 +108,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             current INTEGER DEFAULT 0,
             description TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -122,7 +123,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             end_date TEXT NOT NULL,
             gpa REAL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -137,7 +138,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             credential_id TEXT,
             url TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -151,7 +152,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             certificate_url TEXT,
             description TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -165,7 +166,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             date TEXT NOT NULL,
             organization TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -178,7 +179,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             proficiency INTEGER DEFAULT 3,
             years_of_experience INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
@@ -194,7 +195,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             start_date TEXT NOT NULL,
             end_date TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
 
@@ -211,7 +212,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             description TEXT DEFAULT '',
             company_description TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
 
@@ -222,7 +223,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             question_id INTEGER NOT NULL,
             selected_option TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
 
@@ -235,10 +236,30 @@ async def _create_tables(conn: aiosqlite.Connection):
             strategic_insights TEXT NOT NULL, -- JSON
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
     
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS job_analysis (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            overall_score INTEGER NOT NULL,
+            technical_fit INTEGER NOT NULL,
+            cultural_fit INTEGER NOT NULL,
+            strengths TEXT NOT NULL,
+            gaps TEXT NOT NULL,
+            red_flags TEXT NOT NULL,
+            recommendations TEXT NOT NULL,
+            positioning_strategy TEXT NOT NULL,
+            analyzed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+            UNIQUE(job_id, user_id)
+        )
+    """)
+
     await conn.commit()
 
     await _ensure_columns(conn, "users", {

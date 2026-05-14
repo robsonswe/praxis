@@ -24,5 +24,19 @@ class JobService:
         )
         return JobPost(**result)
 
+    async def update_job(self, job_id: int, user_id: int, data: JobPostCreate) -> bool:
+        return await self.repository.update(
+            job_id,
+            user_id,
+            data.title,
+            data.company,
+            data.location,
+            data.job_type,
+            data.salary,
+            data.link,
+            data.description,
+            data.company_description
+        )
+
     async def delete_job(self, job_id: int, user_id: int) -> bool:
         return await self.repository.delete(job_id, user_id)

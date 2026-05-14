@@ -43,6 +43,18 @@ class JobRepository:
         ) as cursor:
             return await cursor.fetchone()
 
+    async def update(self, job_id: int, user_id: int, title: str, company: str, location: str, job_type: str,
+                     salary: str, link: str, description: str, company_description: str) -> bool:
+        conn = await get_connection()
+        cursor = await conn.execute(
+            """UPDATE jobs SET title = ?, company = ?, location = ?, job_type = ?, 
+               salary = ?, link = ?, description = ?, company_description = ?
+               WHERE id = ? AND user_id = ?""",
+            (title, company, location, job_type, salary, link, description, company_description, job_id, user_id)
+        )
+        await conn.commit()
+        return cursor.rowcount > 0
+
     async def delete(self, job_id: int, user_id: int) -> bool:
         conn = await get_connection()
         cursor = await conn.execute(
