@@ -1,179 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Praxis</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-               background: #f5f5f5; height: 100vh; display: flex; }
-        .sidebar { width: 280px; background: white; border-right: 1px solid #ddd; 
-                   display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid #eee; }
-        .sidebar-header h2 { font-size: 18px; color: #333; }
-        .new-chat { padding: 15px; border-bottom: 1px solid #eee; }
-        .new-chat button { width: 100%; padding: 10px; background: #2563eb; 
-                          color: white; border: none; border-radius: 6px; cursor: pointer; 
-                          font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .new-chat button:hover { background: #1d4ed8; }
-        .sessions { flex: 1; overflow-y: auto; }
-        .session { padding: 12px 15px; border-bottom: 1px solid #eee; cursor: pointer; 
-                   display: flex; justify-content: space-between; align-items: center; position: relative; }
-        .session:hover { background: #f8f9fa; }
-        .session.active { background: #e8f0fe; }
-        .session-title-container { flex: 1; min-width: 0; margin-right: 10px; }
-        .session-title { font-weight: 500; color: #333; font-size: 14px; 
-                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-        .session-actions { display: none; gap: 4px; }
-        .session:hover .session-actions { display: flex; }
-        .action-btn { color: #999; cursor: pointer; padding: 4px; font-size: 14px; }
-        .action-btn:hover { color: #333; }
-        .spinner {
-            display: inline-block;
-            width: 1em;
-            height: 1em;
-            border: 2px solid rgba(153,153,153,.3);
-            border-radius: 50%;
-            border-top-color: #333;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .edit-title-input { width: 100%; padding: 4px 8px; border: 1px solid #2563eb; border-radius: 4px; font-size: 14px; outline: none; }
+{% extends "base.html" %}
 
-        /* Profile Section */
-        .profile-section { padding: 15px 20px; border-top: 1px solid #eee; 
-                           background: #f8f9fa; cursor: pointer; position: relative; }
-        .profile-section:hover { background: #e9ecef; }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 32px; height: 32px; background: #2563eb; color: white; 
-                  border-radius: 50%; display: flex; align-items: center; 
-                  justify-content: center; font-weight: bold; font-size: 14px; }
-        .user-details { flex: 1; min-width: 0; }
-        .user-name { font-size: 14px; font-weight: 600; color: #333; 
-                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .user-email { font-size: 12px; color: #666; 
-                      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* Profile Menu */
-        .profile-menu { display: none; position: absolute; bottom: 100%; left: 10px; right: 10px;
-                        background: white; border: 1px solid #ddd; border-radius: 8px; 
-                        box-shadow: 0 -4px 12px rgba(0,0,0,0.1); margin-bottom: 5px; z-index: 100; }
-        .profile-menu.active { display: block; }
-        .menu-item { padding: 12px 15px; cursor: pointer; font-size: 14px; color: #333; 
-                     display: flex; align-items: center; gap: 10px; }
-        .menu-item:hover { background: #f8f9fa; }
-        .menu-item:last-child { border-top: 1px solid #eee; color: #dc2626; }
+{% block head %}
+<style>
+    .chat-layout { display: flex; height: calc(100vh - 40px); margin: -24px -32px; overflow: hidden; background: white; }
+    
+    /* Internal Sidebar */
+    .chat-sidebar { width: 280px; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; background: #f8fafc; }
+    .chat-sidebar-header { padding: 20px; border-bottom: 1px solid #e2e8f0; }
+    .new-chat-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
+    .new-chat-btn:hover { background: #1d4ed8; }
+    
+    .chat-sessions { flex: 1; overflow-y: auto; padding: 12px; }
+    .session-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: #475569; cursor: pointer; transition: all 0.15s; margin-bottom: 4px; position: relative; }
+    .session-item:hover { background: #f1f5f9; color: #1e293b; }
+    .session-item.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
+    .session-title { flex: 1; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .session-actions { display: none; gap: 4px; }
+    .session-item:hover .session-actions { display: flex; }
+    .action-icon { cursor: pointer; opacity: 0.6; padding: 4px; font-size: 14px; }
+    .action-icon:hover { opacity: 1; }
 
-        .chat-main { flex: 1; display: flex; flex-direction: column; position: relative; }
-        .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .message { max-width: 70%; padding: 12px 16px; border-radius: 12px; position: relative; display: flex; flex-direction: column; gap: 6px; }
-        .message.user { align-self: flex-end; background: #2563eb; color: white; }
-        .message.assistant { align-self: flex-start; background: white; border: 1px solid #e5e7eb; }
-        .message.error { align-self: center; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; font-size: 13px; max-width: 90%; }
-        .message-content { line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; }
-        .message-footer { display: flex; align-items: center; gap: 8px; justify-content: space-between; width: 100%; }
-        .message-actions { display: flex; gap: 4px; }
-        .message-time { font-size: 11px; opacity: 0.7; }
-        
-        .loading-dots { display: inline-flex; gap: 4px; align-items: center; height: 20px; }
-        .dot { width: 6px; height: 6px; background: #ccc; border-radius: 50%; animation: blink 1.4s infinite both; }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
+    /* Chat Content area */
+    .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #f5f5f5; }
+    .messages { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .message { max-width: 75%; padding: 14px 18px; border-radius: 12px; position: relative; line-height: 1.5; font-size: 14px; }
+    .message.user { align-self: flex-end; background: #2563eb; color: white; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1); }
+    .message.assistant { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .message.error { align-self: center; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; font-size: 13px; }
+    
+    .message-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 11px; opacity: 0.6; }
+    
+    .input-area { padding: 24px; background: white; border-top: 1px solid #e2e8f0; }
+    .input-wrapper { max-width: 800px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
+    .input-form { flex: 1; display: flex; gap: 8px; background: #f1f5f9; border-radius: 24px; padding: 4px 4px 4px 16px; border: 1px solid transparent; transition: all 0.2s; }
+    .input-form:focus-within { background: white; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .input-form input { flex: 1; background: transparent; border: none; outline: none; padding: 8px 0; font-size: 14px; }
+    .send-btn { background: #2563eb; color: white; border: none; border-radius: 20px; padding: 8px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .send-btn:hover { background: #1d4ed8; }
+    .send-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        .input-area { padding: 20px; background: white; border-top: 1px solid #ddd; }
-        .input-form { display: flex; gap: 10px; max-width: 800px; margin: 0 auto; }
-        .input-form input { flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb; 
-                           border-radius: 24px; outline: none; font-size: 14px; }
-        .input-form input:focus { border-color: #2563eb; }
-        .input-form button { padding: 12px 24px; background: #2563eb; color: white; 
-                             border: none; border-radius: 24px; cursor: pointer; font-weight: 500; }
-        .input-form button:hover { background: #1d4ed8; }
-        .input-form button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        .input-form .icon-btn { padding: 12px; background: #f3f4f6; border: none; border-radius: 50%; cursor: pointer; font-size: 18px; }
-        .input-form .icon-btn:hover { background: #e5e7eb; }
-        .input-form .icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .input-form .icon-btn.listening { background: #ef4444; animation: pulse 1s infinite; }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .stt-status { text-align: center; font-size: 12px; color: #666; padding: 4px; }
-        
-        .message { max-width: 70%; padding: 12px 16px; border-radius: 12px; position: relative; display: flex; flex-direction: column; gap: 8px; }
-        .message.assistant { align-items: flex-start; }
-        .message.user { align-items: flex-end; }
-        
-        .tts-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.5; padding: 2px 4px; }
-        .tts-btn:hover { opacity: 1; }
-        
-        .welcome-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #333; text-align: center; padding: 20px; }
-        .welcome-screen h1 { margin-bottom: 10px; font-size: 28px; }
-        .welcome-screen p { color: #666; max-width: 400px; line-height: 1.6; }
+    .mic-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #64748b; transition: all 0.2s; }
+    .mic-btn:hover { background: #e2e8f0; color: #1e293b; }
+    .mic-btn.listening { background: #ef4444; color: white; animation: pulse 1s infinite; }
 
-        /* Modal Base Styles */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                         background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 12px; padding: 24px; width: 400px; max-width: 90%; 
-                 box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .modal h3 { margin-bottom: 15px; font-size: 18px; color: #333; }
-        .modal h4 { margin: 20px 0 10px 0; font-size: 14px; color: #2563eb; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
-        .modal h4:first-of-type { margin-top: 0; }
-        .modal p { margin-bottom: 20px; color: #666; font-size: 14px; line-height: 1.5; }
-        .modal label { display: block; margin-bottom: 6px; color: #555; font-size: 14px; }
-        .modal select, .modal input { width: 100%; padding: 10px; margin-bottom: 15px; 
-                                      border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
-        .modal-buttons button { padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
-        .modal-buttons .btn-secondary { background: #f3f4f6; border: 1px solid #ddd; color: #666; }
-        .modal-buttons .btn-primary { background: #2563eb; border: none; color: white; }
-        .modal-buttons .btn-primary:hover { background: #1d4ed8; }
-        .modal-buttons .btn-danger { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
-        .modal-buttons .btn-danger:hover { background: #fecaca; }
-    </style>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>Praxis</h2>
+    .welcome-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
+    .welcome-screen h1 { font-size: 32px; font-weight: 800; color: #1e293b; margin-bottom: 12px; }
+    .welcome-screen p { font-size: 16px; color: #64748b; max-width: 480px; }
+    
+    .loading-dots { display: inline-flex; gap: 4px; }
+    .dot { width: 6px; height: 6px; background: #cbd5e1; border-radius: 50%; animation: blink 1.4s infinite both; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    
+    .edit-title-input { width: 100%; background: white; border: 1px solid #2563eb; color: #1e293b; border-radius: 4px; padding: 2px 8px; font-size: 14px; outline: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+    <!-- Secondary Sidebar (Session List) -->
+    <div class="chat-sidebar">
+        <div class="chat-sidebar-header">
+            <button class="new-chat-btn" onclick="startNewChat()">
+                <span>+</span> New Chat
+            </button>
         </div>
-        <div class="new-chat">
-            <button onclick="startNewChat()"><span>+</span> New Chat</button>
-        </div>
-        <div class="sessions" id="sessionsList">
+        <div class="chat-sessions" id="sessionsList">
             {% for session in sessions %}
-            <div class="session {% if session.id == active_session_id %}active{% endif %}" id="session-{{ session.id }}" onclick="selectChat({{ session.id }})">
-                <div class="session-title-container">
-                    <span class="session-title">{{ session.title }}</span>
-                </div>
+            <div class="session-item {% if session.id == active_session_id %}active{% endif %}" id="session-{{ session.id }}" onclick="selectChat({{ session.id }})">
+                <div class="session-title">{{ session.title }}</div>
                 <div class="session-actions">
-                    <span class="action-btn" title="Rename" onclick="event.stopPropagation(); editTitle({{ session.id }})">✏️</span>
-                    <span class="action-btn" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat({{ session.id }})">✕</span>
+                    <span class="action-icon" title="Rename" onclick="event.stopPropagation(); editTitle({{ session.id }})">✏️</span>
+                    <span class="action-icon" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat({{ session.id }})">✕</span>
                 </div>
             </div>
             {% endfor %}
         </div>
-        
-        <div class="profile-section" onclick="toggleProfileMenu(event)">
-            <div class="profile-menu" id="profileMenu">
-                <div class="menu-item" onclick="openSettings(); event.stopPropagation();">⚙️ AI Settings</div>
-                <div class="menu-item" onclick="logout(); event.stopPropagation();">🚪 Log Out</div>
-            </div>
-            <div class="user-info">
-                <div class="avatar">{{ user.name[0].upper() }}</div>
-                <div class="user-details">
-                    <div class="user-name">{{ user.name }}</div>
-                    <div class="user-email">{{ user.email }}</div>
-                </div>
-            </div>
-        </div>
     </div>
+
+    <!-- Main Chat Content -->
     <div class="chat-main">
         <div class="messages" id="messagesList">
             <div class="welcome-screen">
@@ -182,1028 +89,419 @@
             </div>
         </div>
         <div class="input-area">
-            <form class="input-form" id="chatForm" onsubmit="sendMessage(event)">
-                <button type="button" id="micBtn" class="icon-btn" onclick="toggleSTT()" title="Voice input">🎤</button>
-                <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" disabled>
-                <button type="submit" id="sendBtn" disabled>Send</button>
-            </form>
-            <div id="sttStatus" class="stt-status"></div>
+            <div class="input-wrapper">
+                <button type="button" id="micBtn" class="mic-btn" onclick="toggleSTT()" title="Voice input">🎤</button>
+                <form class="input-form" id="chatForm" onsubmit="sendMessage(event)">
+                    <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" disabled>
+                    <button type="submit" id="sendBtn" class="send-btn" disabled>Send</button>
+                </form>
+            </div>
+            <div id="sttStatus" style="text-align: center; font-size: 12px; color: #94a3b8; height: 20px; margin-top: 8px;"></div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- Generic Dialog Modal -->
-    <div class="modal-overlay" id="dialogModal">
-        <div class="modal">
-            <h3 id="dialogTitle">Dialog</h3>
-            <p id="dialogMessage">Message goes here.</p>
-            <div class="modal-buttons">
-                <button class="btn-secondary" id="dialogCancelBtn" onclick="closeDialog()">Cancel</button>
-                <button class="btn-primary" id="dialogConfirmBtn">Confirm</button>
-            </div>
-        </div>
-    </div>
+{% block scripts %}
+<script>
+    let currentSessionId = {{ active_session_id | tojson }};
+    let isStreaming = false;
 
-    <!-- AI Settings Modal -->
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal">
-            <h3>AI Settings</h3>
-            
-            <h4>Text Generation</h4>
-            <label for="providerSelect">Provider</label>
-            <select id="providerSelect" onchange="loadModels()">
-                <option value="">Select provider...</option>
-            </select>
-            
-            <label for="modelSelect">Model</label>
-            <select id="modelSelect" disabled onmousedown="maybeLoadModels()">
-                <option value="">Select provider first...</option>
-            </select>
-            
-            <h4>Speech-to-Text (STT)</h4>
-            <label for="sttProviderSelect">Provider</label>
-            <select id="sttProviderSelect" onchange="updateSTTUI()">
-                <option value="browser">Browser</option>
-            </select>
-            
-            <div id="sttModeContainer" style="display: none;">
-                <label for="sttModeSelect">Mode</label>
-                <select id="sttModeSelect">
-                    <option value="batch">Batch (Record-and-Upload)</option>
-                    <option value="live">Live (Streaming)</option>
-                </select>
-            </div>
-            
-            <label for="sttModelSelect">Model</label>
-            <select id="sttModelSelect" onmousedown="maybeLoadSTTModels()">
-                <option value="Browser Built In">Browser Built In</option>
-            </select>
-            
-            <h4>Text-to-Speech (TTS)</h4>
-            <label for="ttsProviderSelect">Provider</label>
-            <select id="ttsProviderSelect" onchange="loadTTSModels()">
-                <option value="browser">Browser</option>
-            </select>
-            
-            <label for="ttsModelSelect">Model</label>
-            <select id="ttsModelSelect" onmousedown="maybeLoadTTSModels()">
-                <option value="Browser Built In">Browser Built In</option>
-            </select>
-            
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
-                <button class="btn-primary" onclick="saveSettings()">Save</button>
-            </div>
-        </div>
-    </div>
+    // API Helpers
+    async function api(endpoint, options = {}) {
+        const response = await fetch(endpoint, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            ...options
+        });
+        return response.json();
+    }
 
-    <script>
-        // Global State
-        let currentSessionId = {{ active_session_id | tojson }};
-        let isStreaming = false;
-
-        // --- Dialog System ---
-        function showDialog({ title, message, confirmText = "Confirm", cancelText = "Cancel", onConfirm, variant = "primary" }) {
-            const modal = document.getElementById('dialogModal');
-            const titleEl = document.getElementById('dialogTitle');
-            const messageEl = document.getElementById('dialogMessage');
-            const confirmBtn = document.getElementById('dialogConfirmBtn');
-            const cancelBtn = document.getElementById('dialogCancelBtn');
-
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-            confirmBtn.textContent = confirmText;
-            
-            // Set variant style
-            confirmBtn.className = variant === 'danger' ? 'btn-danger' : 'btn-primary';
-
-            if (cancelText === null) {
-                cancelBtn.style.display = 'none';
-            } else {
-                cancelBtn.style.display = 'block';
-                cancelBtn.textContent = cancelText;
-            }
-
-            confirmBtn.onclick = () => {
-                if (onConfirm) onConfirm();
-                closeDialog();
-            };
-
-            modal.classList.add('active');
-        }
-
-        function closeDialog() {
-            document.getElementById('dialogModal').classList.remove('active');
-        }
-
-        function showAlert(title, message) {
-            showDialog({ title, message, confirmText: "OK", cancelText: null });
-        }
-
-        // API Helpers
-        async function api(endpoint, options = {}) {
-            const response = await fetch(endpoint, {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                ...options
-            });
-            return response.json();
-        }
-
-        // Sidebar Actions
-        async function loadSessions() {
-            const response = await fetch('/chat/0/sessions');
-            const sessions = await response.json();
-            const container = document.getElementById('sessionsList');
-            container.innerHTML = sessions.map(s => `
-                <div class="session ${s.id === currentSessionId ? 'active' : ''}" id="session-${s.id}" onclick="selectChat(${s.id})">
-                    <div class="session-title-container">
-                        <span class="session-title">${s.title}</span>
-                    </div>
-                    <div class="session-actions">
-                        <span class="action-btn" title="Rename" onclick="event.stopPropagation(); editTitle(${s.id})">✏️</span>
-                        <span class="action-btn" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat(${s.id})">✕</span>
-                    </div>
+    async function loadSessions() {
+        const response = await fetch('/chat/0/sessions');
+        const sessions = await response.json();
+        const container = document.getElementById('sessionsList');
+        if (!container) return;
+        
+        container.innerHTML = sessions.map(s => `
+            <div class="session-item ${s.id === currentSessionId ? 'active' : ''}" id="session-${s.id}" onclick="selectChat(${s.id})">
+                <div class="session-title">${s.title}</div>
+                <div class="session-actions">
+                    <span class="action-icon" title="Rename" onclick="event.stopPropagation(); editTitle(${s.id})">✏️</span>
+                    <span class="action-icon" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat(${s.id})">✕</span>
                 </div>
-            `).join('');
+            </div>
+        `).join('');
+    }
+
+    function startNewChat() {
+        if (isStreaming) return;
+        currentSessionId = null;
+        document.title = "Praxis - New Chat";
+        document.querySelectorAll('.session-item').forEach(s => s.classList.remove('active'));
+        document.getElementById('messagesList').innerHTML = `
+            <div class="welcome-screen">
+                <h1>How can I help you, {{ user.name }}?</h1>
+                <p>Start a new conversation or select an existing one from the sidebar.</p>
+            </div>
+        `;
+        window.history.pushState({}, '', '/chat');
+        document.getElementById('messageInput').focus();
+    }
+
+    async function selectChat(sessionId) {
+        if (isStreaming || currentSessionId === sessionId) return;
+        currentSessionId = sessionId;
+        
+        document.querySelectorAll('.session-item').forEach(s => s.classList.remove('active'));
+        const sessionEl = document.getElementById('session-' + sessionId);
+        if (sessionEl) {
+            sessionEl.classList.add('active');
+            const title = sessionEl.querySelector('.session-title').textContent;
+            document.title = "Praxis - " + title;
         }
+        
+        await loadMessages();
+        window.history.pushState({}, '', '/chat?session=' + currentSessionId);
+    }
 
-        function startNewChat() {
-            if (isStreaming) return;
-            currentSessionId = null;
-            document.title = "Praxis - New Chat";
-            document.querySelectorAll('.session').forEach(s => s.classList.remove('active'));
-            document.getElementById('messagesList').innerHTML = `
-                <div class="welcome-screen">
-<h1>How can I help you, {{ user.name }}?</h1>
-                    <p>Start a new conversation or select an existing one from the sidebar.</p>
-                </div>
-            `;
-            window.history.pushState({}, '', '/chat');
-            document.getElementById('messageInput').focus();
-        }
+    async function loadMessages() {
+        const container = document.getElementById('messagesList');
+        if (!currentSessionId) return;
+        
+        const response = await fetch('/chat/' + currentSessionId + '/messages');
+        const messages = await response.json();
 
-        async function selectChat(sessionId) {
-            if (isStreaming || currentSessionId === sessionId) return;
-            currentSessionId = sessionId;
-            
-            document.querySelectorAll('.session').forEach(s => s.classList.remove('active'));
-            const sessionEl = document.getElementById('session-' + sessionId);
-            if (sessionEl) {
-                sessionEl.classList.add('active');
-                const title = sessionEl.querySelector('.session-title').textContent;
-                document.title = "Praxis - " + title;
-            }
-            
-            await loadMessages();
-            window.history.pushState({}, '', '/chat?session=' + currentSessionId);
-        }
-
-        async function loadMessages() {
-            const container = document.getElementById('messagesList');
-            if (!currentSessionId) return;
-            
-            const response = await fetch('/chat/' + currentSessionId + '/messages');
-            const messages = await response.json();
-
-            // Also ensure title is correct on load
-            const sessionEl = document.getElementById('session-' + currentSessionId);
-            if (sessionEl) {
-                const title = sessionEl.querySelector('.session-title').textContent;
-                document.title = "Praxis - " + title;
-            }
-
-            container.innerHTML = messages.map((m, idx) => `
-                <div class="message ${m.role}">
-                    <div class="message-content">${m.content}</div>
-                    <div class="message-footer">
-                        ${m.role === 'assistant' ? `<div class="message-actions"><button class="tts-btn" onclick="speakText(\`${escapeQuotes(m.content)}\`, ${idx})" title="Speak">🔊</button></div>` : '<div></div>'}
-                        <div class="message-time">${m.created_at ? new Date(m.created_at).toLocaleTimeString() : new Date().toLocaleTimeString()}</div>
-                    </div>
-                </div>
-            `).join('');
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Chat Actions
-        async function sendMessage(e) {
-            if (e) e.preventDefault();
-            if (isStreaming) return;
-            
-            const input = document.getElementById('messageInput');
-            const content = input.value.trim();
-            if (!content) return;
-            
-            input.value = '';
-            isStreaming = true;
-            document.getElementById('sendBtn').disabled = true;
-            
-            const container = document.getElementById('messagesList');
-            
-            // If it's a new chat, initialize it
-            if (!currentSessionId) {
-                container.innerHTML = ''; // Clear welcome screen
-                const userDiv = document.createElement('div');
-                userDiv.className = 'message user';
-                userDiv.innerHTML = `<div class="message-content">${content}</div><div class="message-time">${new Date().toLocaleTimeString()}</div>`;
-                container.appendChild(userDiv);
-                
-                try {
-                    const sessionResult = await api('/chat/session/init', {
-                        method: 'POST',
-                        body: 'first_message=' + encodeURIComponent(content)
-                    });
-                    currentSessionId = sessionResult.id;
-                    document.title = "Praxis - " + sessionResult.title;
-                    window.history.pushState({}, '', '/chat?session=' + currentSessionId);
-                    await loadSessions();
-                } catch (err) {
-                    console.error("Failed to init session:", err);
-                    isStreaming = false;
-                    document.getElementById('sendBtn').disabled = false;
-                    return;
-                }
-            } else {
-                const userDiv = document.createElement('div');
-                userDiv.className = 'message user';
-                userDiv.innerHTML = `<div class="message-content">${content}</div><div class="message-time">${new Date().toLocaleTimeString()}</div>`;
-                container.appendChild(userDiv);
-            }
-            
-            // Start Assistant Stream
-            const assistantDiv = document.createElement('div');
-            assistantDiv.className = 'message assistant';
-            assistantDiv.innerHTML = `
-                <div class="message-content"><div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        container.innerHTML = messages.map((m, idx) => `
+            <div class="message ${m.role}">
+                <div class="message-content">${m.content}</div>
                 <div class="message-footer">
-                    <div class="message-actions"></div>
-                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    ${m.role === 'assistant' ? `<div class="message-actions"><button class="tts-btn" onclick="speakText(\`${escapeQuotes(m.content)}\`, ${idx})" title="Speak">🔊</button></div>` : '<div></div>'}
+                    <div class="message-time">${m.created_at ? new Date(m.created_at).toLocaleTimeString() : new Date().toLocaleTimeString()}</div>
                 </div>
-            `;
-            container.appendChild(assistantDiv);
-            container.scrollTop = container.scrollHeight;
-            
-            const contentDiv = assistantDiv.querySelector('.message-content');
-            let assistantText = "";
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    }
 
+    async function sendMessage(e) {
+        if (e) e.preventDefault();
+        if (isStreaming) return;
+        
+        const input = document.getElementById('messageInput');
+        const content = input.value.trim();
+        if (!content) return;
+        
+        input.value = '';
+        isStreaming = true;
+        document.getElementById('sendBtn').disabled = true;
+        
+        const container = document.getElementById('messagesList');
+        
+        if (!currentSessionId) {
+            container.innerHTML = '';
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user';
+            userDiv.innerHTML = `<div class="message-content">${content}</div><div class="message-footer"><div></div><div>${new Date().toLocaleTimeString()}</div></div>`;
+            container.appendChild(userDiv);
+            
             try {
-                const response = await fetch(`/chat/stream?session_id=${currentSessionId}&message=${encodeURIComponent(content)}`);
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let firstChunk = true;
+                const sessionResult = await api('/chat/session/init', {
+                    method: 'POST',
+                    body: 'first_message=' + encodeURIComponent(content)
+                });
+                currentSessionId = sessionResult.id;
+                document.title = "Praxis - " + sessionResult.title;
+                window.history.pushState({}, '', '/chat?session=' + currentSessionId);
+                await loadSessions();
+            } catch (err) {
+                console.error("Failed to init session:", err);
+                isStreaming = false;
+                document.getElementById('sendBtn').disabled = false;
+                return;
+            }
+        } else {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user';
+            userDiv.innerHTML = `<div class="message-content">${content}</div><div class="message-footer"><div></div><div>${new Date().toLocaleTimeString()}</div></div>`;
+            container.appendChild(userDiv);
+        }
+        
+        const assistantDiv = document.createElement('div');
+        assistantDiv.className = 'message assistant';
+        assistantDiv.innerHTML = `
+            <div class="message-content"><div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+            <div class="message-footer">
+                <div class="message-actions"></div>
+                <div>${new Date().toLocaleTimeString()}</div>
+            </div>
+        `;
+        container.appendChild(assistantDiv);
+        container.scrollTop = container.scrollHeight;
+        
+        const contentDiv = assistantDiv.querySelector('.message-content');
+        let assistantText = "";
+
+        try {
+            const response = await fetch(`/chat/stream?session_id=${currentSessionId}&message=${encodeURIComponent(content)}`);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let firstChunk = true;
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
                 
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    
-                    const chunk = decoder.decode(value);
-                    const lines = chunk.split('\n');
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = JSON.parse(line.substring(6));
-                            if (data.error) {
-                                assistantDiv.className = 'message error';
-                                contentDiv.innerHTML = `⚠️ ${data.error}`;
-                                isStreaming = false;
-                                document.getElementById('sendBtn').disabled = false;
-                                return;
-                            }
-                            if (data.chunk) {
-                                if (firstChunk) { contentDiv.innerHTML = ""; firstChunk = false; }
-                                assistantText += data.chunk;
-                                contentDiv.textContent = assistantText;
-                                container.scrollTop = container.scrollHeight;
-                            }
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = JSON.parse(line.substring(6));
+                        if (data.error) {
+                            assistantDiv.className = 'message error';
+                            contentDiv.innerHTML = `⚠️ ${data.error}`;
+                            isStreaming = false;
+                            document.getElementById('sendBtn').disabled = false;
+                            return;
+                        }
+                        if (data.chunk) {
+                            if (firstChunk) { contentDiv.innerHTML = ""; firstChunk = false; }
+                            assistantText += data.chunk;
+                            contentDiv.textContent = assistantText;
+                            container.scrollTop = container.scrollHeight;
                         }
                     }
                 }
-            } catch (err) {
-                assistantDiv.className = 'message error';
-                contentDiv.innerHTML = `⚠️ Connection error`;
-                assistantText = '';
-            } finally {
-                isStreaming = false;
-                document.getElementById('sendBtn').disabled = false;
-                
-                // Add TTS button if message was successful
-                if (assistantText && !assistantDiv.classList.contains('error')) {
-                    const footer = assistantDiv.querySelector('.message-footer');
-                    const actionsDiv = footer.querySelector('.message-actions');
-                    actionsDiv.innerHTML = `<button class="tts-btn" onclick="speakText(\`${escapeQuotes(assistantText)}\`, 'stream')" title="Speak">🔊</button>`;
-                }
+            }
+        } catch (err) {
+            assistantDiv.className = 'message error';
+            contentDiv.innerHTML = `⚠️ Connection error`;
+        } finally {
+            isStreaming = false;
+            document.getElementById('sendBtn').disabled = false;
+            if (assistantText && !assistantDiv.classList.contains('error')) {
+                const actionsDiv = assistantDiv.querySelector('.message-actions');
+                actionsDiv.innerHTML = `<button class="tts-btn" onclick="speakText(\`${escapeQuotes(assistantText)}\`, 'stream')" title="Speak">🔊</button>`;
             }
         }
+    }
 
-        // Utils
-        function escapeQuotes(str) {
-            return str.replace(/`/g, '\\`').replace(/"/g, '&quot;');
-        }
-        
-        function editTitle(sessionId) {
-            const sessionDiv = document.getElementById('session-' + sessionId);
-            const titleSpan = sessionDiv.querySelector('.session-title');
-            const currentTitle = titleSpan.textContent;
-            
-            const container = sessionDiv.querySelector('.session-title-container');
-            container.innerHTML = `<input type="text" class="edit-title-input" value="${currentTitle}">`;
-            
-            const input = container.querySelector('input');
-            input.focus();
-            input.select();
-            
-            const save = async () => {
-                const newTitle = input.value.trim();
-                if (newTitle && newTitle !== currentTitle) {
-                    await api(`/chat/session/${sessionId}/title`, {
-                        method: 'PATCH',
-                        body: 'title=' + encodeURIComponent(newTitle)
-                    });
-                    if (sessionId === currentSessionId) {
-                        document.title = "Praxis - " + newTitle;
-                    }
-                    loadSessions();
-                } else {
-                    container.innerHTML = `<span class="session-title">${currentTitle}</span>`;
-                }
-            };
-            
-            input.onblur = save;
-            input.onkeydown = (e) => {
-                if (e.key === 'Enter') save();
-                if (e.key === 'Escape') container.innerHTML = `<span class="session-title">${currentTitle}</span>`;
-            };
-        }
-
-        function confirmDeleteChat(sessionId) {
-            showDialog({
-                title: "Delete Chat",
-                message: "Are you sure you want to delete this conversation? This action cannot be undone.",
-                confirmText: "Delete",
-                variant: "danger",
-                onConfirm: () => deleteChat(sessionId)
-            });
-        }
-
-        async function deleteChat(sessionId) {
-            await fetch('/chat/session/' + sessionId, { method: 'DELETE' });
-            if (currentSessionId === sessionId) {
-                startNewChat();
-            }
-            loadSessions();
-        }
-
-        function toggleProfileMenu(e) {
-            const menu = document.getElementById('profileMenu');
-            menu.classList.toggle('active');
-            const closeMenu = (event) => {
-                if (!e.currentTarget || !e.currentTarget.contains(event.target)) {
-                    menu.classList.remove('active');
-                    document.removeEventListener('click', closeMenu);
-                }
-            };
-            document.addEventListener('click', closeMenu);
-        }
-
-        function logout() {
-            document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = "/login";
-        }
-
-        // Settings Modal
-        async function openSettings() {
-            document.getElementById('profileMenu').classList.remove('active');
-            const modal = document.getElementById('settingsModal');
-            modal.classList.add('active');
-            
-            const [providersRes, settingsRes] = await Promise.all([
-                fetch('/ai/providers'),
-                fetch('/ai/settings')
-            ]);
-            
-            const providers = await providersRes.json();
-            const settings = await settingsRes.json();
-            
-            const providerSelect = document.getElementById('providerSelect');
-            providerSelect.innerHTML = '<option value="">Select provider...</option>' + 
-                providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-            
-            const modelSelect = document.getElementById('modelSelect');
-            
-            if (settings.configured) {
-                providerSelect.value = settings.provider;
-                // Lazy load: show current model only, load others on click
-                modelSelect.innerHTML = `<option value="${settings.model}">${settings.model}</option>`;
-                modelSelect.value = settings.model;
-                modelSelect.disabled = false;
-                modelSelect.dataset.loaded = "false";
+    function escapeQuotes(str) {
+        return str.replace(/`/g, '\\`').replace(/"/g, '&quot;');
+    }
+    
+    function editTitle(sessionId) {
+        const sessionEl = document.getElementById('session-' + sessionId);
+        const titleDiv = sessionEl.querySelector('.session-title');
+        const currentTitle = titleDiv.textContent;
+        sessionEl.innerHTML = `<input type="text" class="edit-title-input" value="${currentTitle}">`;
+        const input = sessionEl.querySelector('input');
+        input.focus();
+        input.select();
+        const save = async () => {
+            const newTitle = input.value.trim();
+            if (newTitle && newTitle !== currentTitle) {
+                await api(`/chat/session/${sessionId}/title`, {
+                    method: 'PATCH',
+                    body: 'title=' + encodeURIComponent(newTitle)
+                });
+                if (sessionId === currentSessionId) document.title = "Praxis - " + newTitle;
+                loadSessions();
             } else {
-                providerSelect.value = "";
-                modelSelect.innerHTML = '<option value="">Select provider first...</option>';
-                modelSelect.disabled = true;
-                modelSelect.dataset.loaded = "false";
+                loadSessions();
             }
-            
-            // STT Settings
-            const sttProviderSelect = document.getElementById('sttProviderSelect');
-            const sttModeSelect = document.getElementById('sttModeSelect');
-            const sttModeContainer = document.getElementById('sttModeContainer');
-            const sttModelSelect = document.getElementById('sttModelSelect');
-            
-            sttProviderSelect.innerHTML = '<option value="browser">Browser</option>' + 
-                providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-            sttProviderSelect.value = settings.stt_provider || 'browser';
-            sttModeSelect.value = settings.stt_mode || 'batch';
-            
-            if (sttProviderSelect.value !== 'browser') {
-                sttModeContainer.style.display = 'block';
-                sttModelSelect.innerHTML = `<option value="${settings.stt_model}">${settings.stt_model}</option>`;
-                sttModelSelect.value = settings.stt_model;
-                sttModelSelect.disabled = false;
-                sttModelSelect.dataset.loaded = "false";
-            } else {
-                sttModeContainer.style.display = 'none';
-                sttModelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
-                sttModelSelect.value = "Browser Built In";
-                sttModelSelect.dataset.loaded = "true";
-            }
-            
-            // TTS Settings
-            const ttsProviderSelect = document.getElementById('ttsProviderSelect');
-            const ttsModelSelect = document.getElementById('ttsModelSelect');
-            ttsProviderSelect.innerHTML = '<option value="browser">Browser</option>' + 
-                providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-            ttsProviderSelect.value = settings.tts_provider || 'browser';
-            
-            if (ttsProviderSelect.value !== 'browser') {
-                ttsModelSelect.innerHTML = `<option value="${settings.tts_model}">${settings.tts_model}</option>`;
-                ttsModelSelect.value = settings.tts_model;
-                ttsModelSelect.disabled = false;
-                ttsModelSelect.dataset.loaded = "false";
-            } else {
-                ttsModelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
-                ttsModelSelect.value = settings.tts_model || 'Browser Built In';
-                ttsModelSelect.dataset.loaded = "true";
-            }
+        };
+        input.onblur = save;
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') save();
+            if (e.key === 'Escape') loadSessions();
+        };
+    }
+
+    function confirmDeleteChat(sessionId) {
+        showDialog({
+            title: "Delete Chat",
+            message: "Are you sure you want to delete this conversation?",
+            confirmText: "Delete",
+            variant: "danger",
+            onConfirm: () => deleteChat(sessionId)
+        });
+    }
+
+    async function deleteChat(sessionId) {
+        await fetch('/chat/session/' + sessionId, { method: 'DELETE' });
+        if (currentSessionId === sessionId) startNewChat();
+        loadSessions();
+    }
+
+    function isSTTSupported() {
+        return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    }
+    
+    function updateMicButtonState() {
+        const micBtn = document.getElementById('micBtn');
+        if (!micBtn || !aiSettings) return;
+        const sttProvider = aiSettings.stt_provider || 'browser';
+        const supported = isSTTSupported();
+        if (sttProvider === 'browser' && !supported) {
+            micBtn.disabled = true;
+            micBtn.title = 'Unsupported browser.';
+            micBtn.style.opacity = '0.3';
+        } else {
+            micBtn.disabled = false;
+            micBtn.title = 'Voice input';
+            micBtn.style.opacity = '';
         }
-        
-        async function loadSTTModels(selectedModel = null) {
-            const provider = document.getElementById('sttProviderSelect').value;
-            const modelSelect = document.getElementById('sttModelSelect');
-            
-            if (provider === 'browser') {
-                modelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
-                modelSelect.value = "Browser Built In";
-                modelSelect.dataset.loaded = "true";
-                return;
-            }
-            
-            modelSelect.disabled = true;
-            const currentVal = selectedModel || modelSelect.value;
-            modelSelect.innerHTML = '<option value="">Loading models...</option>';
-            
-            try {
-                const res = await fetch('/ai/' + provider + '/models/grouped?category=stt');
-                const data = await res.json();
-                
-                if (data.flat.length > 0) {
-                    modelSelect.innerHTML = '<option value="">Select model...</option>' + 
-                        data.flat.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-                    
-                    if (currentVal) {
-                        modelSelect.value = currentVal;
-                    }
-                } else {
-                    modelSelect.innerHTML = '<option value="">No STT models available</option>';
-                }
-                modelSelect.dataset.loaded = "true";
-                modelSelect.disabled = false;
-            } catch (e) {
-                modelSelect.innerHTML = '<option value="">Error loading models</option>';
-            }
-        }
-        
-        function updateMicButtonState() {
-            const micBtn = document.getElementById('micBtn');
-            const sttProvider = document.getElementById('sttProviderSelect').value;
-            const supported = ('SpeechRecognition' in window) || ('webkitSpeechRecognition' in window);
-            
-            if (sttProvider === 'browser' && !supported) {
-                micBtn.disabled = true;
-                micBtn.title = 'Unsupported browser. Please use Chrome/Edge or pick a provider.';
-                micBtn.style.opacity = '0.3';
-            } else {
-                micBtn.disabled = false;
-                micBtn.title = 'Voice input';
-                micBtn.style.opacity = '';
-            }
-        }
-        
-        async function updateSTTUI() {
-            const provider = document.getElementById('sttProviderSelect').value;
-            const modeContainer = document.getElementById('sttModeContainer');
-            
-            // Only show mode selector if not browser
-            if (provider !== 'browser') {
-                modeContainer.style.display = 'block';
-            } else {
-                modeContainer.style.display = 'none';
-            }
-            
-            await loadSTTModels();
+    }
+
+    async function checkTextModelConfigured() {
+        const input = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+        if (!input) return;
+
+        if (!aiSettings || !aiSettings.configured || !aiSettings.model) {
+            input.disabled = true;
+            input.placeholder = 'Configure AI Settings to start chatting';
+            sendBtn.disabled = true;
+            if (micBtn) micBtn.disabled = true;
+        } else {
+            input.disabled = false;
+            input.placeholder = 'Type a message...';
+            sendBtn.disabled = false;
             updateMicButtonState();
         }
+    }
+
+    // STT & TTS Logic (Same as before but integrated here)
+    let recognition = null;
+    let isListening = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let sttSocket = null;
+    let audioContext = null;
+    let scriptProcessor = null;
+    
+    function initSTT() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return null;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        recognition.onresult = (e) => {
+            const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+            document.getElementById('messageInput').value = transcript;
+        };
+        recognition.onerror = () => stopSTT();
+        recognition.onend = () => stopSTT();
+        return recognition;
+    }
+    
+    async function toggleSTT() { if (isListening) await stopSTT(); else await startSTT(); }
+    
+    async function startSTT() {
+        const sttProvider = aiSettings.stt_provider || 'browser';
+        const micBtn = document.getElementById('micBtn');
+        const status = document.getElementById('sttStatus');
         
-        async function maybeLoadSTTModels() {
-            const modelSelect = document.getElementById('sttModelSelect');
-            if (modelSelect.dataset.loaded === "false" && !modelSelect.disabled) {
-                await loadSTTModels(modelSelect.value);
-            }
-        }
-        
-        async function loadTTSModels(selectedModel = null) {
-            const provider = document.getElementById('ttsProviderSelect').value;
-            const modelSelect = document.getElementById('ttsModelSelect');
-            
-            if (provider === 'browser') {
-                modelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
-                modelSelect.value = "Browser Built In";
-                modelSelect.dataset.loaded = "true";
-                return;
-            }
-            
-            modelSelect.disabled = true;
-            const currentVal = selectedModel || modelSelect.value;
-            modelSelect.innerHTML = '<option value="">Loading models...</option>';
-            
-            try {
-                const res = await fetch('/ai/' + provider + '/models/grouped?category=tts');
-                const data = await res.json();
-                
-                if (data.flat.length > 0) {
-                    modelSelect.innerHTML = '<option value="">Select model...</option>' + 
-                        data.flat.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-                    
-                    if (currentVal) {
-                        modelSelect.value = currentVal;
-                    }
-                } else {
-                    modelSelect.innerHTML = '<option value="">No TTS models available</option>';
-                }
-                modelSelect.dataset.loaded = "true";
-                modelSelect.disabled = false;
-            } catch (e) {
-                modelSelect.innerHTML = '<option value="">Error loading models</option>';
-            }
-        }
-
-        async function maybeLoadTTSModels() {
-            const modelSelect = document.getElementById('ttsModelSelect');
-            if (modelSelect.dataset.loaded === "false" && !modelSelect.disabled) {
-                await loadTTSModels(modelSelect.value);
-            }
-        }
-
-        async function maybeLoadModels() {
-            const modelSelect = document.getElementById('modelSelect');
-            if (modelSelect.dataset.loaded === "false" && !modelSelect.disabled) {
-                await loadModels(modelSelect.value);
-            }
-        }
-
-        async function loadModels(selectedModel = null) {
-            const provider = document.getElementById('providerSelect').value;
-            const modelSelect = document.getElementById('modelSelect');
-            if (!provider) {
-                modelSelect.innerHTML = '<option value="">Select provider first...</option>';
-                modelSelect.disabled = true;
-                return;
-            }
-            
-            modelSelect.disabled = true;
-            const currentVal = selectedModel || modelSelect.value;
-            modelSelect.innerHTML = '<option value="">Loading models...</option>';
-            
-            try {
-                const res = await fetch('/ai/' + provider + '/models/grouped?category=text_chat');
-                const data = await res.json();
-                
-                modelSelect.innerHTML = '<option value="">Select model...</option>' + 
-                    data.flat.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-                
-                if (currentVal) {
-                    modelSelect.value = currentVal;
-                }
-                modelSelect.dataset.loaded = "true";
-                modelSelect.disabled = false;
-            } catch (e) {
-                modelSelect.innerHTML = '<option value="">Error loading models</option>';
-            }
-        }
-
-        async function saveSettings() {
-            const provider = document.getElementById('providerSelect').value;
-            const model = document.getElementById('modelSelect').value;
-            if (!provider || !model) { 
-                showAlert('Configuration Error', 'Please select both a provider and a model before saving.');
-                return; 
-            }
-            
-            const sttProvider = document.getElementById('sttProviderSelect').value;
-            const sttModel = document.getElementById('sttModelSelect').value;
-            const sttMode = document.getElementById('sttModeSelect').value;
-            const ttsProvider = document.getElementById('ttsProviderSelect').value;
-            const ttsModel = document.getElementById('ttsModelSelect').value;
-
-            const body = 'provider=' + provider + '&model=' + model +
-                      '&stt_provider=' + sttProvider + '&stt_model=' + sttModel + '&stt_mode=' + sttMode +
-                      '&tts_provider=' + ttsProvider + '&tts_model=' + ttsModel;
-            
-            console.log("Saving settings with body:", body);
-            
-            const response = await api('/ai/settings', {
-                method: 'POST',
-                body: body
-            });
-            
-            console.log("Save response:", response);
-            
-            closeSettings();
-            checkTextModelConfigured();
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.remove('active');
-        }
-
-        // Initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            if (currentSessionId) {
-                loadMessages();
-            } else {
-                document.title = "Praxis";
-            }
-            checkTextModelConfigured();
-        });
-        
-        // Hardening - Check if text model is configured
-        let aiSettings = null;
-        
-        function isSTTSupported() {
-            return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
-        }
-        
-        async function checkTextModelConfigured() {
-            const res = await fetch('/ai/settings');
-            aiSettings = await res.json();
-
-            // Sync form elements if they exist (in case the modal is open or needs default values)
-            const sttProviderSelect = document.getElementById('sttProviderSelect');
-            if (sttProviderSelect && aiSettings.stt_provider) {
-                sttProviderSelect.value = aiSettings.stt_provider;
-            }
-
-            const input = document.getElementById('messageInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const micBtn = document.getElementById('micBtn');
-            const chatContainer = document.getElementById('chatContainer');
-            const emptyState = document.querySelector('.empty-state');
-            const sttSupported = isSTTSupported();
-
-            if (!aiSettings.configured || !aiSettings.model) {
-                input.disabled = true;
-                input.placeholder = 'Configure AI Settings to start chatting';
-                sendBtn.disabled = true;
-                micBtn.disabled = true;
-
-                if (emptyState) {
-                    emptyState.innerHTML = '<p>Please configure your AI Settings to start chatting.</p><button class="btn-primary" onclick="openSettings()">Configure AI Settings</button>';
-                }
-            } else {
-                input.disabled = false;
-                input.placeholder = 'Type a message...';
-                sendBtn.disabled = false;
-
-                updateMicButtonState();
-
-                if (emptyState && !currentSessionId) {
-                    emptyState.innerHTML = '<p>Start a new conversation or select an existing one from the sidebar.</p>';
-                }
-            }
-        }        
-        // STT - Speech to Text
-        let recognition = null;
-        let isListening = false;
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let sttSocket = null;
-        let audioContext = null;
-        let scriptProcessor = null;
-        
-        function initSTT() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                return null;
-            }
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-            
-            recognition.onresult = (event) => {
-                const transcript = Array.from(event.results)
-                    .map(result => result[0].transcript)
-                    .join('');
-                document.getElementById('messageInput').value = transcript;
-            };
-            
-            recognition.onerror = (event) => {
-                console.error('STT Error:', event.error);
-                stopSTT();
-                
-                // If it's a network/not-allowed error in Browser mode, proactively disable it
-                const sttProvider = document.getElementById('sttProviderSelect').value;
-                if (sttProvider === 'browser') {
-                    showAlert('Speech Recognition Unavailable', 'Your browser does not reliably support native speech recognition or there was a network error (' + event.error + '). Please try using Chrome or Edge, or switch to an external STT provider in Settings.');
-                    
-                    const micBtn = document.getElementById('micBtn');
-                    micBtn.disabled = true;
-                    micBtn.style.opacity = '0.3';
-                    micBtn.title = 'Browser STT unavailable. Please select an external provider.';
-                }
-            };
-            
-            recognition.onend = () => {
-                stopSTT();
-            };
-            
-            return recognition;
-        }
-        
-        async function toggleSTT() {
-            if (isListening) {
-                await stopSTT();
-            } else {
-                await startSTT();
-            }
-        }
-        
-        async function startSTT() {
-            const sttProvider = document.getElementById('sttProviderSelect').value;
-            const useBrowser = sttProvider === 'browser';
-            
-            if (useBrowser) {
-                if (!isSTTSupported()) {
-                    showAlert('STT Not Supported', 'Your browser does not support speech recognition. Please switch to Chrome or Edge, or configure an external STT provider in Settings.');
-                    return;
-                }
-                
-                if (!recognition) {
-                    recognition = initSTT();
-                    if (!recognition) {
-                         showAlert('STT Error', 'Failed to initialize browser speech recognition.');
-                         return;
-                    }
-                }
+        if (sttProvider === 'browser') {
+            if (!isSTTSupported()) return;
+            if (!recognition) recognition = initSTT();
+            recognition.start();
+            isListening = true;
+            micBtn.classList.add('listening');
+            status.textContent = 'Listening (Browser)...';
+        } else {
+            if (aiSettings.stt_mode === 'live') {
                 try {
-                    recognition.start();
-                    isListening = true;
-                    document.getElementById('micBtn').classList.add('listening');
-                    document.getElementById('sttStatus').textContent = 'Listening (Browser)...';
-                } catch (e) { console.error('STT start error:', e); }
-            } else {
-                // External STT: Decide between Batch (MediaRecorder) or Live (WebSockets)
-                const isLive = aiSettings.stt_mode === 'live';
-                
-                if (isLive) {
-                    // Real-time External STT using WebSockets
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        
-                        // Setup WebSocket
-                        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                        sttSocket = new WebSocket(`${protocol}//${window.location.host}/ai/stt/ws`);
-                        
-                        sttSocket.onopen = () => {
-                            // Send authentication
-                            sttSocket.send(JSON.stringify({ user_id: {{ user.id }} }));
-                            document.getElementById('sttStatus').textContent = 'Live Transcribing...';
-                            lastFinalText = ""; // Reset baseline
-                        };
-                        
-                        // Define lastFinalText in outer scope for sttSocket closure
-                        let lastFinalText = "";
-                        
-                        sttSocket.onopen = () => {
-                            sttSocket.send(JSON.stringify({ user_id: {{ user.id }} }));
-                            document.getElementById('sttStatus').textContent = 'Live Transcribing...';
-                            lastFinalText = document.getElementById('messageInput').value; // Start from current input
-                        };
-
-						sttSocket.onmessage = (event) => {
-							const data = JSON.parse(event.data);
-							if (data.type === 'transcript') {
-								const input = document.getElementById('messageInput');
-								if (data.is_final) {
-									// Commit: if provider sent the full text, append it; if text is empty
-									// (e.g. Gemini turn_complete), commit whatever is currently displayed.
-									if (data.text) {
-										lastFinalText = [lastFinalText, data.text].filter(Boolean).join(" ").trim();
-									} else {
-										lastFinalText = input.value.trim(); // commit current display as-is
-									}
-									input.value = lastFinalText;
-								} else {
-									// Interim: backend sends cumulative text for current utterance.
-									// Append it to whatever was already confirmed.
-									input.value = [lastFinalText, data.text].filter(Boolean).join(" ").trim();
-								}
-							} else if (data.type === 'error') {
-								showAlert('STT Error', data.message);
-								stopSTT();
-							}
-						};
-
-                        
-                        sttSocket.onclose = () => {
-                            stopSTT();
-                        };
-
-                        // Setup Web Audio for PCM 16kHz conversion
-                        audioContext = new AudioContext({ sampleRate: 16000 });
-                        const source = audioContext.createMediaStreamSource(stream);
-                        scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
-                        
-                        scriptProcessor.onaudioprocess = (e) => {
-                            if (!isListening || sttSocket.readyState !== WebSocket.OPEN) return;
-                            
-                            const inputData = e.inputBuffer.getChannelData(0);
-                            // Convert Float32 to Int16
-                            const pcmData = new Int16Array(inputData.length);
-                            for (let i = 0; i < inputData.length; i++) {
-                                pcmData[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7FFF;
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    sttSocket = new WebSocket(`${protocol}//${window.location.host}/ai/stt/ws`);
+                    let lastConfirm = document.getElementById('messageInput').value;
+                    sttSocket.onopen = () => {
+                        sttSocket.send(JSON.stringify({ user_id: {{ user.id }} }));
+                        status.textContent = 'Live Transcribing...';
+                    };
+                    sttSocket.onmessage = (e) => {
+                        const data = JSON.parse(e.data);
+                        if (data.type === 'transcript') {
+                            const input = document.getElementById('messageInput');
+                            if (data.is_final) {
+                                lastConfirm = data.text ? [lastConfirm, data.text].filter(Boolean).join(" ").trim() : input.value.trim();
+                                input.value = lastConfirm;
+                            } else {
+                                input.value = [lastConfirm, data.text].filter(Boolean).join(" ").trim();
                             }
-                            sttSocket.send(pcmData.buffer);
-                        };
-                        
-                        source.connect(scriptProcessor);
-                        scriptProcessor.connect(audioContext.destination);
-                        
-                        isListening = true;
-                        document.getElementById('micBtn').classList.add('listening');
-                        document.getElementById('sttStatus').textContent = 'Connecting...';
-                    } catch (e) {
-                        console.error('Live STT error:', e);
-                        showAlert('Microphone Error', 'Could not access microphone or start live session.');
-                    }
-                } else {
-                    // Batch Mode: Record-and-Upload
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        mediaRecorder = new MediaRecorder(stream);
-                        audioChunks = [];
-                        
-                        console.log("MediaRecorder initialized, state:", mediaRecorder.state);
-                        
-                        mediaRecorder.ondataavailable = (event) => {
-                            console.log("Data available:", event.data.size);
-                            audioChunks.push(event.data);
-                        };
-                        
-                        mediaRecorder.onstop = async () => {
-                            console.log("Recorder stopped, chunks:", audioChunks.length);
-                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                            const formData = new FormData();
-                            formData.append('file', audioBlob, 'recording.wav');
-                            
-                            const micBtn = document.getElementById('micBtn');
-                            const originalContent = micBtn.innerHTML;
-                            micBtn.innerHTML = '<span class="spinner"></span>';
-                            micBtn.disabled = true;
-                            
-                            document.getElementById('sttStatus').textContent = 'Transcribing...';
-                            try {
-                                const res = await fetch('/ai/stt', {
-                                    method: 'POST',
-                                    body: formData
-                                });
-                                const data = await res.json();
-                                if (data.text) {
-                                    document.getElementById('messageInput').value += (document.getElementById('messageInput').value ? ' ' : '') + data.text;
-                                } else if (data.error) {
-                                    try {
-                                        const errObj = JSON.parse(data.error);
-                                        showAlert('STT Error', errObj.error?.message || data.error);
-                                    } catch {
-                                        showAlert('STT Error', data.error);
-                                    }
-                                }                            } catch (e) {
-                                console.error('External STT error:', e);
-                            } finally {
-                                document.getElementById('sttStatus').textContent = '';
-                                micBtn.innerHTML = originalContent;
-                                micBtn.disabled = false;
-                            }
-                        };
-                        
-                        mediaRecorder.start();
-                        console.log("MediaRecorder started, state:", mediaRecorder.state);
-                        
-                        isListening = true;
-                        document.getElementById('micBtn').classList.add('listening');
-                        document.getElementById('sttStatus').textContent = 'Recording (Batch)...';
-                    } catch (e) {
-                        console.error('MediaRecorder error:', e);
-                        showAlert('Microphone Error', 'Could not access microphone.');
-                    }
-                }
-            }
-        }
-        
-        async function stopSTT() {
-            const useBrowser = !aiSettings || aiSettings.stt_provider === 'browser';
-            
-            if (useBrowser) {
-                if (recognition) recognition.stop();
+                        }
+                    };
+                    sttSocket.onclose = () => stopSTT();
+                    audioContext = new AudioContext({ sampleRate: 16000 });
+                    const source = audioContext.createMediaStreamSource(stream);
+                    scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                    scriptProcessor.onaudioprocess = (e) => {
+                        if (!isListening || sttSocket.readyState !== WebSocket.OPEN) return;
+                        const input = e.inputBuffer.getChannelData(0);
+                        const pcm = new Int16Array(input.length);
+                        for (let i = 0; i < input.length; i++) pcm[i] = Math.max(-1, Math.min(1, input[i])) * 0x7FFF;
+                        sttSocket.send(pcm.buffer);
+                    };
+                    source.connect(scriptProcessor);
+                    scriptProcessor.connect(audioContext.destination);
+                    isListening = true; micBtn.classList.add('listening');
+                } catch (e) { showAlert('Error', 'Mic access denied'); }
             } else {
-                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                    console.log("Stopping MediaRecorder...");
-                    mediaRecorder.stop();
-                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
-                }
-                if (sttSocket) {
-                    sttSocket.close();
-                    sttSocket = null;
-                }
-                if (scriptProcessor) {
-                    scriptProcessor.disconnect();
-                    scriptProcessor = null;
-                }
-                if (audioContext) {
-                    audioContext.close();
-                    audioContext = null;
-                }
-            }
-            
-            isListening = false;
-            document.getElementById('micBtn').classList.remove('listening');
-            document.getElementById('sttStatus').textContent = '';
-        }
-        
-        // TTS - Text to Speech
-        async function speakText(text, messageId) {
-            const useBrowser = !aiSettings || aiSettings.tts_provider === 'browser';
-            
-            if (useBrowser) {
-                if (!('speechSynthesis' in window)) {
-                    showAlert('TTS Not Available', 'Your browser does not support text-to-speech.');
-                    return;
-                }
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US';
-                const voices = window.speechSynthesis.getVoices();
-                const preferredVoice = voices.find(v => v.default) || voices[0];
-                if (preferredVoice) utterance.voice = preferredVoice;
-                window.speechSynthesis.speak(utterance);
-            } else {
-                // External TTS
                 try {
-                    const btn = event ? event.currentTarget : null;
-                    let originalContent = "";
-                    if (btn) {
-                        originalContent = btn.innerHTML;
-                        btn.innerHTML = '<span class="spinner"></span>';
-                        btn.disabled = true;
-                    }
-                    
-                    const res = await fetch(`/ai/tts?text=${encodeURIComponent(text)}`);
-                    if (!res.ok) {
-                        const err = await res.json();
-                        throw new Error(err.error || 'TTS failed');
-                    }
-                    
-                    const blob = await res.blob();
-                    const url = URL.createObjectURL(blob);
-                    const audio = new Audio(url);
-                    await audio.play();
-                    
-                    if (btn) {
-                        btn.innerHTML = originalContent;
-                        btn.disabled = false;
-                    }
-                } catch (e) {
-                    console.error('External TTS error:', e);
-                    let message = e.message;
-                    try {
-                        const errObj = JSON.parse(e.message);
-                        message = errObj.error?.message || e.message;
-                    } catch {}
-                    showAlert('TTS Error', message);
-                    if (btn) {
-                        btn.innerHTML = originalContent || '🔊';
-                        btn.disabled = false;
-                    }
-                }
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const blob = new Blob(audioChunks, { type: 'audio/wav' });
+                        const fd = new FormData(); fd.append('file', blob);
+                        const orig = micBtn.innerHTML; micBtn.innerHTML = '...'; micBtn.disabled = true;
+                        status.textContent = 'Transcribing...';
+                        try {
+                            const res = await fetch('/ai/stt', { method: 'POST', body: fd });
+                            const d = await res.json();
+                            if (d.text) document.getElementById('messageInput').value += (document.getElementById('messageInput').value ? ' ' : '') + d.text;
+                        } finally { status.textContent = ''; micBtn.innerHTML = orig; micBtn.disabled = false; }
+                    };
+                    mediaRecorder.start(); isListening = true; micBtn.classList.add('listening');
+                    status.textContent = 'Recording...';
+                } catch (e) { showAlert('Error', 'Mic access denied'); }
             }
         }
-    </script>
-</body>
-</html>
+    }
+    
+    async function stopSTT() {
+        if (recognition) recognition.stop();
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') { mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(t => t.stop()); }
+        if (sttSocket) sttSocket.close();
+        if (scriptProcessor) scriptProcessor.disconnect();
+        if (audioContext) audioContext.close();
+        isListening = false;
+        document.getElementById('micBtn').classList.remove('listening');
+        document.getElementById('sttStatus').textContent = '';
+    }
+    
+    async function speakText(text) {
+        const ttsProvider = aiSettings ? aiSettings.tts_provider : 'browser';
+        if (ttsProvider === 'browser') {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US';
+            window.speechSynthesis.speak(u);
+        } else {
+            try {
+                const res = await fetch(`/ai/tts?text=${encodeURIComponent(text)}`);
+                const audio = new Audio(URL.createObjectURL(await res.blob()));
+                await audio.play();
+            } catch (e) { showAlert('Error', 'TTS Failed'); }
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if (currentSessionId) loadMessages();
+        checkTextModelConfigured();
+    });
+</script>
+{% endblock %}

@@ -104,15 +104,28 @@
             const response = await fetch('/api/profile');
             if (response.ok) {
                 profileData = await response.json();
+                console.log('Loaded profileData:', profileData);
                 
-                if (profileData.basic) {
-                    document.getElementById('profile-name').textContent = profileData.basic.name || 'Your Name';
-                    document.getElementById('profile-title').textContent = profileData.basic.title || 'Add your title';
-                    document.getElementById('profile-avatar').textContent = (profileData.basic.name || 'U')[0].toUpperCase();
-                    
-                    if (profileData.basic.location) {
-                        document.getElementById('profile-location').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ' + profileData.basic.location;
-                    }
+                // Update global sidebar
+                const nameEl = document.getElementById('user-name');
+                const avatarEl = document.getElementById('user-avatar');
+                if (nameEl && profileData.name) {
+                    nameEl.textContent = profileData.name;
+                    if (avatarEl) avatarEl.textContent = profileData.name.charAt(0).toUpperCase();
+                }
+                
+                // Update internal profile card
+                const profileNameEl = document.getElementById('profile-name');
+                const profileTitleEl = document.getElementById('profile-title');
+                const profileAvatarEl = document.getElementById('profile-avatar');
+                const profileLocEl = document.getElementById('profile-location');
+                
+                if (profileNameEl) profileNameEl.textContent = profileData.name || 'Your Name';
+                if (profileTitleEl) profileTitleEl.textContent = profileData.title || 'Add your title';
+                if (profileAvatarEl) profileAvatarEl.textContent = (profileData.name || 'U').charAt(0).toUpperCase();
+                
+                if (profileLocEl && profileData.location) {
+                    profileLocEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ' + profileData.location;
                 }
                 
                 const completeness = profileData.completeness || 0;

@@ -54,9 +54,12 @@ async def chat_page(request: Request, session: int | None = None):
     
     template = env.get_template("chat.html")
     html = template.render(
+        user_name=user.name,
+        user_email=user.email,
         user=user.to_dict(),
         sessions=[s.to_dict() for s in sessions],
-        active_session_id=session
+        active_session_id=session,
+        active_page="chat"
     )
     return HTMLResponse(content=html)
 

@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title|default('Praxis') }}</title>
     <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        /* Shared Modal Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                         background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 12px; padding: 24px; width: 400px; max-width: 90%; 
+                 box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .modal h3 { margin-bottom: 15px; font-size: 18px; color: #333; }
+        .modal h4 { margin: 20px 0 10px 0; font-size: 14px; color: #2563eb; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+        .modal h4:first-of-type { margin-top: 0; }
+        .modal p { margin-bottom: 20px; color: #666; font-size: 14px; line-height: 1.5; }
+        .modal label { display: block; margin-bottom: 6px; color: #555; font-size: 14px; }
+        .modal select, .modal input { width: 100%; padding: 10px; margin-bottom: 15px; 
+                                      border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-buttons button { padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .modal-buttons .btn-secondary { background: #f3f4f6; border: 1px solid #ddd; color: #666; }
+        .modal-buttons .btn-primary { background: #2563eb; border: none; color: white; }
+        .modal-buttons .btn-primary:hover { background: #1d4ed8; }
+        .modal-buttons .btn-danger { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+        .modal-buttons .btn-danger:hover { background: #fecaca; }
+
+        .spinner {
+            display: inline-block; width: 1em; height: 1em; border: 2px solid rgba(153,153,153,.3);
+            border-radius: 50%; border-top-color: #333; animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -24,8 +52,76 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+
+    <!-- Generic Dialog Modal -->
+    <div class="modal-overlay" id="dialogModal">
+        <div class="modal">
+            <h3 id="dialogTitle">Dialog</h3>
+            <p id="dialogMessage">Message goes here.</p>
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="dialogCancelBtn" onclick="closeDialog()">Cancel</button>
+                <button class="btn-primary" id="dialogConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <h3>AI Settings</h3>
+            
+            <h4>Text Generation</h4>
+            <label for="providerSelect">Provider</label>
+            <select id="providerSelect" onchange="loadModels()">
+                <option value="">Select provider...</option>
+            </select>
+            
+            <label for="modelSelect">Model</label>
+            <select id="modelSelect" disabled onmousedown="maybeLoadModels()">
+                <option value="">Select provider first...</option>
+            </select>
+            
+            <h4>Speech-to-Text (STT)</h4>
+            <label for="sttProviderSelect">Provider</label>
+            <select id="sttProviderSelect" onchange="updateSTTUI()">
+                <option value="browser">Browser</option>
+            </select>
+            
+            <div id="sttModeContainer" style="display: none;">
+                <label for="sttModeSelect">Mode</label>
+                <select id="sttModeSelect">
+                    <option value="batch">Batch (Record-and-Upload)</option>
+                    <option value="live">Live (Streaming)</option>
+                </select>
+            </div>
+            
+            <label for="sttModelSelect">Model</label>
+            <select id="sttModelSelect" onmousedown="maybeLoadSTTModels()">
+                <option value="Browser Built In">Browser Built In</option>
+            </select>
+            
+            <h4>Text-to-Speech (TTS)</h4>
+            <label for="ttsProviderSelect">Provider</label>
+            <select id="ttsProviderSelect" onchange="loadTTSModels()">
+                <option value="browser">Browser</option>
+            </select>
+            
+            <label for="ttsModelSelect">Model</label>
+            <select id="ttsModelSelect" onmousedown="maybeLoadTTSModels()">
+                <option value="Browser Built In">Browser Built In</option>
+            </select>
+            
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+                <button class="btn-primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
     
     <script>
+        // Global variables for AI settings
+        let aiSettings = null;
+
         function toggleProfileMenu() {
             document.getElementById('profile-menu').classList.toggle('active');
         }
@@ -37,8 +133,268 @@
         
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.profile-section')) {
-                document.getElementById('profile-menu').classList.remove('active');
+                const menu = document.getElementById('profile-menu');
+                if (menu) menu.classList.remove('active');
             }
+        });
+
+        // --- Dialog System ---
+        function showDialog({ title, message, confirmText = "Confirm", cancelText = "Cancel", onConfirm, variant = "primary" }) {
+            const modal = document.getElementById('dialogModal');
+            const titleEl = document.getElementById('dialogTitle');
+            const messageEl = document.getElementById('dialogMessage');
+            const confirmBtn = document.getElementById('dialogConfirmBtn');
+            const cancelBtn = document.getElementById('dialogCancelBtn');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            confirmBtn.textContent = confirmText;
+            
+            confirmBtn.className = variant === 'danger' ? 'btn-danger' : 'btn-primary';
+
+            if (cancelText === null) {
+                cancelBtn.style.display = 'none';
+            } else {
+                cancelBtn.style.display = 'block';
+                cancelBtn.textContent = cancelText;
+            }
+
+            confirmBtn.onclick = () => {
+                if (onConfirm) onConfirm();
+                closeDialog();
+            };
+
+            modal.classList.add('active');
+        }
+
+        function closeDialog() {
+            document.getElementById('dialogModal').classList.remove('active');
+        }
+
+        function showAlert(title, message) {
+            showDialog({ title, message, confirmText: "OK", cancelText: null });
+        }
+
+        // --- AI Settings Logic ---
+        async function openSettings() {
+            const menu = document.getElementById('profile-menu');
+            if (menu) menu.classList.remove('active');
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('active');
+            
+            const [providersRes, settingsRes] = await Promise.all([
+                fetch('/ai/providers'),
+                fetch('/ai/settings')
+            ]);
+            
+            const providers = await providersRes.json();
+            aiSettings = await settingsRes.json();
+            
+            const providerSelect = document.getElementById('providerSelect');
+            providerSelect.innerHTML = '<option value="">Select provider...</option>' + 
+                providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            
+            const modelSelect = document.getElementById('modelSelect');
+            
+            if (aiSettings.configured) {
+                providerSelect.value = aiSettings.provider;
+                modelSelect.innerHTML = `<option value="${aiSettings.model}">${aiSettings.model}</option>`;
+                modelSelect.value = aiSettings.model;
+                modelSelect.disabled = false;
+                modelSelect.dataset.loaded = "false";
+            } else {
+                providerSelect.value = "";
+                modelSelect.innerHTML = '<option value="">Select provider first...</option>';
+                modelSelect.disabled = true;
+                modelSelect.dataset.loaded = "false";
+            }
+            
+            const sttProviderSelect = document.getElementById('sttProviderSelect');
+            const sttModeSelect = document.getElementById('sttModeSelect');
+            const sttModeContainer = document.getElementById('sttModeContainer');
+            const sttModelSelect = document.getElementById('sttModelSelect');
+            
+            sttProviderSelect.innerHTML = '<option value="browser">Browser</option>' + 
+                providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            sttProviderSelect.value = aiSettings.stt_provider || 'browser';
+            sttModeSelect.value = aiSettings.stt_mode || 'batch';
+            
+            if (sttProviderSelect.value !== 'browser') {
+                sttModeContainer.style.display = 'block';
+                sttModelSelect.innerHTML = `<option value="${aiSettings.stt_model}">${aiSettings.stt_model}</option>`;
+                sttModelSelect.value = aiSettings.stt_model;
+                sttModelSelect.disabled = false;
+                sttModelSelect.dataset.loaded = "false";
+            } else {
+                sttModeContainer.style.display = 'none';
+                sttModelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
+                sttModelSelect.value = "Browser Built In";
+                sttModelSelect.dataset.loaded = "true";
+            }
+            
+            const ttsProviderSelect = document.getElementById('ttsProviderSelect');
+            const ttsModelSelect = document.getElementById('ttsModelSelect');
+            ttsProviderSelect.innerHTML = '<option value="browser">Browser</option>' + 
+                providers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            ttsProviderSelect.value = aiSettings.tts_provider || 'browser';
+            
+            if (ttsProviderSelect.value !== 'browser') {
+                ttsModelSelect.innerHTML = `<option value="${aiSettings.tts_model}">${aiSettings.tts_model}</option>`;
+                ttsModelSelect.value = aiSettings.tts_model;
+                ttsModelSelect.disabled = false;
+                ttsModelSelect.dataset.loaded = "false";
+            } else {
+                ttsModelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
+                ttsModelSelect.value = aiSettings.tts_model || 'Browser Built In';
+                ttsModelSelect.dataset.loaded = "true";
+            }
+        }
+
+        async function loadModels(selectedModel = null) {
+            const provider = document.getElementById('providerSelect').value;
+            const modelSelect = document.getElementById('modelSelect');
+            if (!provider) {
+                modelSelect.innerHTML = '<option value="">Select provider first...</option>';
+                modelSelect.disabled = true;
+                return;
+            }
+            modelSelect.disabled = true;
+            const currentVal = selectedModel || modelSelect.value;
+            modelSelect.innerHTML = '<option value="">Loading models...</option>';
+            try {
+                const res = await fetch('/ai/' + provider + '/models/grouped?category=text_chat');
+                const data = await res.json();
+                modelSelect.innerHTML = '<option value="">Select model...</option>' + 
+                    data.flat.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+                if (currentVal) modelSelect.value = currentVal;
+                modelSelect.dataset.loaded = "true";
+                modelSelect.disabled = false;
+            } catch (e) {
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
+
+        async function maybeLoadModels() {
+            const modelSelect = document.getElementById('modelSelect');
+            if (modelSelect.dataset.loaded === "false" && !modelSelect.disabled) {
+                await loadModels(modelSelect.value);
+            }
+        }
+
+        async function loadSTTModels(selectedModel = null) {
+            const provider = document.getElementById('sttProviderSelect').value;
+            const modelSelect = document.getElementById('sttModelSelect');
+            if (provider === 'browser') {
+                modelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
+                modelSelect.value = "Browser Built In";
+                modelSelect.dataset.loaded = "true";
+                return;
+            }
+            modelSelect.disabled = true;
+            const currentVal = selectedModel || modelSelect.value;
+            modelSelect.innerHTML = '<option value="">Loading models...</option>';
+            try {
+                const res = await fetch('/ai/' + provider + '/models/grouped?category=stt');
+                const data = await res.json();
+                if (data.flat.length > 0) {
+                    modelSelect.innerHTML = '<option value="">Select model...</option>' + 
+                        data.flat.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+                    if (currentVal) modelSelect.value = currentVal;
+                } else {
+                    modelSelect.innerHTML = '<option value="">No STT models available</option>';
+                }
+                modelSelect.dataset.loaded = "true";
+                modelSelect.disabled = false;
+            } catch (e) {
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
+
+        async function maybeLoadSTTModels() {
+            const modelSelect = document.getElementById('sttModelSelect');
+            if (modelSelect.dataset.loaded === "false" && !modelSelect.disabled) {
+                await loadSTTModels(modelSelect.value);
+            }
+        }
+
+        async function loadTTSModels(selectedModel = null) {
+            const provider = document.getElementById('ttsProviderSelect').value;
+            const modelSelect = document.getElementById('ttsModelSelect');
+            if (provider === 'browser') {
+                modelSelect.innerHTML = '<option value="Browser Built In">Browser Built In</option>';
+                modelSelect.value = "Browser Built In";
+                modelSelect.dataset.loaded = "true";
+                return;
+            }
+            modelSelect.disabled = true;
+            const currentVal = selectedModel || modelSelect.value;
+            modelSelect.innerHTML = '<option value="">Loading models...</option>';
+            try {
+                const res = await fetch('/ai/' + provider + '/models/grouped?category=tts');
+                const data = await res.json();
+                if (data.flat.length > 0) {
+                    modelSelect.innerHTML = '<option value="">Select model...</option>' + 
+                        data.flat.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+                    if (currentVal) modelSelect.value = currentVal;
+                } else {
+                    modelSelect.innerHTML = '<option value="">No TTS models available</option>';
+                }
+                modelSelect.dataset.loaded = "true";
+                modelSelect.disabled = false;
+            } catch (e) {
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
+
+        async function maybeLoadTTSModels() {
+            const modelSelect = document.getElementById('ttsModelSelect');
+            if (modelSelect.dataset.loaded === "false" && !modelSelect.disabled) {
+                await loadTTSModels(modelSelect.value);
+            }
+        }
+
+        async function updateSTTUI() {
+            const provider = document.getElementById('sttProviderSelect').value;
+            const modeContainer = document.getElementById('sttModeContainer');
+            modeContainer.style.display = provider !== 'browser' ? 'block' : 'none';
+            await loadSTTModels();
+            if (typeof updateMicButtonState === 'function') updateMicButtonState();
+        }
+
+        async function saveSettings() {
+            const provider = document.getElementById('providerSelect').value;
+            const model = document.getElementById('modelSelect').value;
+            if (!provider || !model) { 
+                showAlert('Configuration Error', 'Please select both a provider and a model before saving.');
+                return; 
+            }
+            const sttProvider = document.getElementById('sttProviderSelect').value;
+            const sttModel = document.getElementById('sttModelSelect').value;
+            const sttMode = document.getElementById('sttModeSelect').value;
+            const ttsProvider = document.getElementById('ttsProviderSelect').value;
+            const ttsModel = document.getElementById('ttsModelSelect').value;
+
+            const body = `provider=${provider}&model=${model}&stt_provider=${sttProvider}&stt_model=${sttModel}&stt_mode=${sttMode}&tts_provider=${ttsProvider}&tts_model=${ttsModel}`;
+            
+            const response = await fetch('/ai/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body
+            });
+            
+            aiSettings = await response.json();
+            closeSettings();
+            if (typeof checkTextModelConfigured === 'function') checkTextModelConfigured();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const res = await fetch('/ai/settings');
+            aiSettings = await res.json();
+            if (typeof checkTextModelConfigured === 'function') checkTextModelConfigured();
         });
     </script>
     
