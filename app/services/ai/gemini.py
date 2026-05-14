@@ -38,8 +38,8 @@ class GeminiProvider(AIProvider):
         api_version = "v1"
         if model:
             m_lower = model.lower()
-            # Most live/multimodal features currently require v1alpha
-            if any(x in m_lower for x in ["preview", "alpha", "exp", "live", "audio", "2025"]):
+            # Most live/multimodal features and system_instruction require v1alpha
+            if any(x in m_lower for x in ["preview", "alpha", "exp", "live", "audio", "2025", "2.0", "2.5"]):
                 api_version = "v1alpha"
             
         return genai.Client(
@@ -241,7 +241,7 @@ class GeminiProvider(AIProvider):
                     system_instruction = msg["content"]
                     break
             
-            contents = self._convert_messages_to_contents(messages)
+            contents = self._convert_messages_to_contents([m for m in messages if m["role"] != "system"])
             
             response = await client.aio.models.generate_content(
                 model=model,
@@ -270,8 +270,8 @@ class GeminiProvider(AIProvider):
                 if msg["role"] == "system":
                     system_instruction = msg["content"]
                     break
-                    
-            contents = self._convert_messages_to_contents(messages)
+            
+            contents = self._convert_messages_to_contents([m for m in messages if m["role"] != "system"])
             
             async for chunk in await client.aio.models.generate_content_stream(
                 model=model,

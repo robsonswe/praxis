@@ -392,7 +392,30 @@
             const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
             document.getElementById('messageInput').value = transcript;
         };
-        recognition.onerror = () => stopSTT();
+            recognition.onerror = (event) => {
+                console.error('STT Error:', event.error);
+                stopSTT();
+                
+                // Block the mic button upon significant error
+                if (event.error === 'network' || event.error === 'not-allowed') {
+                    const micBtn = document.getElementById('micBtn');
+                    if (micBtn) {
+                        micBtn.disabled = true;
+                        micBtn.title = 'STT unavailable due to error';
+                        micBtn.style.opacity = '0.5';
+                    }
+                }
+
+                let message = 'An error occurred during speech recognition: ' + event.error + '. Please try using a supported browser (Chrome, Edge, or Safari) or configure an external STT provider in AI Settings.';
+                if (event.error === 'network') {
+                    message = 'Network error. Please check your internet connection, try a supported browser (Chrome/Edge/Safari), or configure an external STT provider.';
+                } else if (event.error === 'not-allowed') {
+                    message = 'Microphone access denied. Please allow microphone permissions in your browser settings.';
+                } else if (event.error === 'no-speech') {
+                    message = 'No speech detected. Please try speaking again.';
+                }                
+                showAlert('Speech Recognition Error', message);
+            };
         recognition.onend = () => stopSTT();
         return recognition;
     }

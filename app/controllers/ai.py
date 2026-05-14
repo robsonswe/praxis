@@ -159,6 +159,7 @@ async def save_settings(request: Request,
     await ai_service.save_user_settings(user_id, provider, model, stt_provider, stt_model, stt_mode, tts_provider, tts_model)
     return JSONResponse(content={
         "status": "ok", 
+        "configured": True,
         "provider": provider, 
         "model": model,
         "stt_provider": stt_provider,
