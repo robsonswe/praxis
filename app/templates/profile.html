@@ -66,6 +66,71 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if behavioral_profile %}
+        <div class="behavioral-sidebar-card">
+            <div class="sidebar-card-header">
+                <span class="sidebar-card-title">Behavioral Profile</span>
+                {% if can_retake_behavioral %}
+                <a href="/behavioral" class="retake-link" title="Retake Assessment">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="traits-summary">
+                {% for trait in behavioral_profile.core_traits %}
+                <div class="trait-mini">
+                    <div class="trait-mini-header">
+                        <span>{{ trait.name }}</span>
+                        <span>{{ trait.score|int }}%</span>
+                    </div>
+                    <div class="trait-mini-bar">
+                        <div class="trait-mini-fill" style="width: {{ trait.score }}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="styles-summary">
+                {% for style in behavioral_profile.operating_styles %}
+                <div class="style-mini">
+                    <span class="style-mini-category">{{ style.category }}</span>
+                    <span class="style-mini-label">{{ style.label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="insights-summary">
+                {% if behavioral_profile.strategic_insights %}
+                    {% for insight in behavioral_profile.strategic_insights %}
+                    <div class="insight-mini {{ insight.type }}">
+                        <div class="insight-mini-title">{{ insight.title }}</div>
+                        <p>{{ insight.text }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="insight-mini neutral">
+                        <div class="insight-mini-title">Developing Pattern</div>
+                        <p>Specific strategic patterns will emerge as your profile evolves.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% elif can_retake_behavioral %}
+        <div class="behavioral-promo-card">
+            <div class="promo-content">
+                <div class="promo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                </div>
+                <div class="promo-text">
+                    <div class="promo-title">Behavioral Analysis</div>
+                    <p>Discover your work style and strategic insights.</p>
+                </div>
+            </div>
+            <a href="/behavioral" class="take-assessment-btn-sidebar">Take Assessment</a>
+        </div>
+        {% endif %}
     </aside>
     
     <main class="profile-main">
@@ -205,15 +270,25 @@
                 {% if profile.achievements %}
                     {% for ach in profile.achievements %}
                     <div class="achievement-item">
-                        <div class="achievement-icon {{ ach.category if ach.category else 'other' }}">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                            </svg>
+                        <div class="achievement-icon {{ ach.category }}">
+                            {% if ach.category == 'promotion' %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 11 12 6 7 11"></polyline><polyline points="17 18 12 13 7 18"></polyline></svg>
+                            {% elif ach.category == 'hackathon' %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            {% elif ach.category == 'scholarship' %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                            {% elif ach.category == 'competition' %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                            {% elif ach.category == 'award' %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path></svg>
+                            {% else %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            {% endif %}
                         </div>
                         <div class="achievement-content">
                             <div class="achievement-title">{{ ach.title }}</div>
-                            {% if ach.description %}<div class="achievement-desc">{{ ach.description }}</div>{% endif %}
-                            {% if ach.date %}<div class="achievement-date">{{ ach.date }}</div>{% endif %}
+                            <div class="achievement-desc">{{ ach.description }}</div>
+                            <div class="achievement-date">{{ ach.date }} {% if ach.organization %}• {{ ach.organization }}{% endif %}</div>
                         </div>
                     </div>
                     {% endfor %}
@@ -224,7 +299,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <div class="section-card">
             <div class="section-header">
                 <span class="section-title">Courses</span>
@@ -233,9 +308,10 @@
                 {% if profile.courses %}
                     {% for course in profile.courses %}
                     <div class="course-item">
-                        <div class="course-name">{{ course.name }}</div>
-                        <div class="course-provider">{{ course.provider }}</div>
-                        <div class="course-date">{{ course.completion_date }}</div>
+                        <div>
+                            <div class="course-name">{{ course.name }}</div>
+                            <div class="course-provider">{{ course.provider }} • {{ course.completion_date }}</div>
+                        </div>
                     </div>
                     {% endfor %}
                 {% else %}
@@ -247,4 +323,192 @@
         </div>
     </main>
 </div>
+
+<style>
+    /* Behavioral Sidebar Styles */
+    .behavioral-sidebar-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-top: 1.5rem;
+        border-top: 3px solid #6366f1;
+    }
+
+    .sidebar-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .sidebar-card-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .retake-link {
+        color: #94a3b8;
+        transition: color 0.2s;
+    }
+
+    .retake-link:hover {
+        color: #6366f1;
+    }
+
+    .traits-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .trait-mini-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.25rem;
+    }
+
+    .trait-mini-bar {
+        height: 4px;
+        background: #f1f5f9;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .trait-mini-fill {
+        height: 100%;
+        background: #6366f1;
+    }
+
+    .insights-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .styles-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .style-mini {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .style-mini-category {
+        font-size: 0.625rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.025em;
+    }
+
+    .style-mini-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #4f46e5;
+    }
+
+    .insight-mini {
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+    }
+
+    .insight-mini.positive {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #dcfce7;
+    }
+
+    .insight-mini.warning {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fef3c7;
+    }
+
+    .insight-mini.neutral {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .insight-mini-title {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .insight-mini p {
+        margin: 0;
+        line-height: 1.4;
+        opacity: 0.9;
+    }
+
+    .behavioral-promo-card {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border-radius: 12px;
+        padding: 1.25rem;
+        color: white;
+        margin-top: 1.5rem;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .promo-content {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .promo-icon {
+        background: rgba(255,255,255,0.2);
+        padding: 8px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .promo-title {
+        font-weight: 700;
+        font-size: 0.9375rem;
+        margin-bottom: 0.125rem;
+    }
+
+    .promo-text p {
+        font-size: 0.75rem;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .take-assessment-btn-sidebar {
+        display: block;
+        width: 100%;
+        padding: 0.625rem;
+        background: white;
+        color: #6366f1;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: transform 0.2s;
+    }
+
+    .take-assessment-btn-sidebar:hover {
+        transform: translateY(-2px);
+    }
+</style>
 {% endblock %}

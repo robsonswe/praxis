@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from app.controllers.profile import router as profile_router
 from app.controllers.chat import router as chat_router
 from app.controllers.ai import router as ai_router
+from app.controllers.behavioral import router as behavioral_router
 from app.database import init_db, close_connection
 
 
@@ -30,3 +31,4 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(profile_router)
 app.include_router(chat_router)
 app.include_router(ai_router)
+app.include_router(behavioral_router)

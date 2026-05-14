@@ -9,6 +9,7 @@ from app.repositories.profile import ProfileRepository
 from app.services.profile import ProfileService
 from app.repositories.job import JobRepository
 from app.services.job import JobService
+from app.services.behavioral import BehavioralService
 from app.models.profile import (
     ProfileBasic, WorkExperienceCreate, EducationCreate, CertificationCreate,
     CourseCreate, AchievementCreate, SkillCreate, ProjectCreate, UserProfile
@@ -32,6 +33,7 @@ profile_service = ProfileService(profile_repo)
 
 job_repo = JobRepository()
 job_service = JobService(job_repo)
+behavioral_service = BehavioralService()
 
 
 @router.get("/setup")
@@ -280,6 +282,12 @@ async def profile_page(request: Request):
         )
     profile_age = calculate_age(profile.date_of_birth)
     profile_completeness = calculate_profile_completeness(profile)
+    behavioral_profile = await behavioral_service.get_profile(user_id)
+    can_retake_behavioral = True
+    if behavioral_profile:
+        # Check if updated_at is more than 6 months ago
+        months_diff = (datetime.now() - behavioral_profile.updated_at).days / 30
+        can_retake_behavioral = months_diff >= 6
     
     template = env.get_template("profile.html")
     return HTMLResponse(content=template.render(
@@ -291,7 +299,9 @@ async def profile_page(request: Request):
         page_subtitle="Your unified career narrative",
         profile=profile,
         profile_age=profile_age,
-        profile_completeness=profile_completeness
+        profile_completeness=profile_completeness,
+        behavioral_profile=behavioral_profile,
+        can_retake_behavioral=can_retake_behavioral
     ))
 
 

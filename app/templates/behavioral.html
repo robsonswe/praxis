@@ -1,0 +1,443 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="behavioral-container">
+    <header class="behavioral-header">
+        <div class="header-content">
+            <h1>Behavioral Analysis</h1>
+            <p>Answer the 25 situational questions below to reveal your work style, core traits, and strategic insights.</p>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="survey-progress" class="progress-fill" style="width: 0%;"></div>
+            </div>
+            <span id="progress-text">0/25 questions answered</span>
+        </div>
+    </header>
+
+    <form action="/behavioral/submit" method="POST" id="behavioral-form" class="behavioral-form">
+        <div class="questions-stepper">
+            {% for question in questions %}
+            {% set q_idx = loop.index0 %}
+            <div class="question-card {% if loop.first %}active{% endif %}" id="q-card-{{ q_idx }}" data-step="{{ q_idx }}">
+                <div class="card-header">
+                    <div class="question-module">{{ question.module }}</div>
+                    <div class="step-indicator">Question {{ loop.index }} of 25</div>
+                </div>
+                
+                <h3 class="question-text">
+                    {{ question.text }}
+                </h3>
+                
+                <div class="options-grid">
+                    {% for option in question.options %}
+                    <label class="option-item">
+                        <input type="radio" name="q_{{ question.id }}" value="{{ option.id }}" 
+                               {% if responses.get(question.id) == option.id %}checked{% endif %}
+                               required onchange="onOptionSelect({{ q_idx }})">
+                        <span class="option-box">
+                            <span class="option-letter">{{ option.id }}</span>
+                            <span class="option-text">{{ option.text }}</span>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="nav-btn prev-btn" onclick="prevStep()" {% if loop.first %}disabled{% endif %}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        Previous
+                    </button>
+                    
+                    {% if not loop.last %}
+                    <button type="button" class="nav-btn next-btn" onclick="nextStep()" id="next-btn-{{ loop.index0 }}">
+                        Next
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                    {% else %}
+                    <button type="submit" id="submit-btn" class="submit-btn" disabled>
+                        Complete Assessment
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<style>
+    .behavioral-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .behavioral-header {
+        margin-bottom: 2rem;
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .header-content p {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .progress-container {
+        margin-top: 1rem;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1, #a855f7);
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #progress-text {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .questions-stepper {
+        position: relative;
+        flex-grow: 1;
+    }
+
+    .question-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f5f9;
+        display: none;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .question-card.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .question-module {
+        padding: 6px 14px;
+        background: #eef2ff;
+        color: #4f46e5;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .step-indicator {
+        font-size: 0.875rem;
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .question-text {
+        font-size: 1.5rem;
+        color: #1e293b;
+        line-height: 1.4;
+        margin-bottom: 2.5rem;
+        font-weight: 700;
+    }
+
+    .options-grid {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .option-item {
+        cursor: pointer;
+    }
+
+    .option-item input {
+        display: none;
+    }
+
+    .option-box {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem 1.75rem;
+        background: #f8fafc;
+        border: 2px solid #f1f5f9;
+        border-radius: 16px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .option-item:hover .option-box {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .option-item input:checked + .option-box {
+        background: #eef2ff;
+        border-color: #6366f1;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        transform: scale(1.02);
+    }
+
+    .option-letter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-weight: 800;
+        color: #64748b;
+        margin-right: 1.25rem;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .option-item input:checked + .option-box .option-letter {
+        background: #6366f1;
+        color: white;
+        border-color: #6366f1;
+    }
+
+    .option-text {
+        color: #334155;
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    .step-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-top: 2rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .nav-btn, .submit-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .prev-btn {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .prev-btn:hover:not(:disabled) {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+
+    .prev-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .next-btn {
+        background: #1e293b;
+        color: white;
+        margin-left: auto;
+    }
+
+    .next-btn:hover {
+        background: #0f172a;
+        transform: translateX(4px);
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: white;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        margin-left: auto;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3);
+    }
+
+    .submit-btn:disabled {
+        background: #e2e8f0;
+        color: #94a3b8;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 640px) {
+        .behavioral-container {
+            padding: 1rem;
+        }
+        .question-card {
+            padding: 1.5rem;
+        }
+        .question-text {
+            font-size: 1.25rem;
+        }
+        .option-box {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<script>
+    let currentStep = 0;
+    const totalSteps = 25;
+
+    function showStep(stepIndex) {
+        const cards = document.querySelectorAll('.question-card');
+        cards.forEach(card => card.classList.remove('active'));
+        
+        const currentCard = document.getElementById(`q-card-${stepIndex}`);
+        if (currentCard) {
+            currentCard.classList.add('active');
+            currentStep = stepIndex;
+            updateNextButtonState();
+        }
+        
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateNextButtonState() {
+        const nextBtn = document.getElementById(`next-btn-${currentStep}`);
+        if (!nextBtn) return;
+        
+        const currentRadios = document.querySelectorAll(`input[name="q_${currentStep + 1}"]`);
+        let isAnswered = false;
+        currentRadios.forEach(r => { if(r.checked) isAnswered = true; });
+        
+        nextBtn.disabled = !isAnswered;
+        
+        // Visual feedback for disabled state
+        if (nextBtn.disabled) {
+            nextBtn.style.opacity = '0.5';
+            nextBtn.style.cursor = 'not-allowed';
+        } else {
+            nextBtn.style.opacity = '1';
+            nextBtn.style.cursor = 'pointer';
+        }
+    }
+
+    function nextStep() {
+        if (currentStep < totalSteps - 1) {
+            const currentRadios = document.querySelectorAll(`input[name="q_${currentStep + 1}"]`);
+            let isAnswered = false;
+            currentRadios.forEach(r => { if(r.checked) isAnswered = true; });
+            
+            if (isAnswered) {
+                showStep(currentStep + 1);
+            }
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 0) {
+            showStep(currentStep - 1);
+        }
+    }
+
+    function onOptionSelect(stepIndex) {
+        updateNextButtonState();
+        updateProgress();
+        
+        // Auto-advance after selection for smoother UX
+        setTimeout(() => {
+            if (stepIndex === currentStep && currentStep < totalSteps - 1) {
+                nextStep();
+            }
+        }, 300);
+    }
+
+    function updateProgress() {
+        const form = document.getElementById('behavioral-form');
+        const radios = form.querySelectorAll('input[type="radio"]');
+        const checkedSet = new Set();
+        
+        radios.forEach(radio => {
+            if (radio.checked) {
+                checkedSet.add(radio.name);
+            }
+        });
+        
+        const answeredCount = checkedSet.size;
+        const percentage = (answeredCount / totalSteps) * 100;
+        
+        const progressFill = document.getElementById('survey-progress');
+        if (progressFill) progressFill.style.width = percentage + '%';
+        
+        const progressText = document.getElementById('progress-text');
+        if (progressText) progressText.innerText = `${answeredCount}/${totalSteps} questions answered`;
+        
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) {
+            submitBtn.disabled = (answeredCount < totalSteps);
+        }
+    }
+
+    // Initialize on load
+    window.addEventListener('load', () => {
+        const form = document.getElementById('behavioral-form');
+        let firstUnanswered = 0;
+        
+        for (let i = 0; i < totalSteps; i++) {
+            const stepRadios = form.querySelectorAll(`input[name="q_${i+1}"]`);
+            let answered = false;
+            stepRadios.forEach(r => { if(r.checked) answered = true; });
+            if (!answered) {
+                firstUnanswered = i;
+                break;
+            }
+            if (i === totalSteps - 1) firstUnanswered = totalSteps - 1;
+        }
+        
+        showStep(firstUnanswered);
+    });
+</script>
+{% endblock %}

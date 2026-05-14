@@ -1,0 +1,327 @@
+[
+  {
+    "id": 1,
+    "module": "Execução e Autonomia",
+    "topic": "Curva de Aprendizado",
+    "text": "Você precisa entregar uma tarefa utilizando uma ferramenta que nunca usou. Como você inicia?",
+    "options": [
+      {"id": "A", "text": "Leio a documentação técnica oficial e faço um planejamento de como aplicá-la.", "vector": "A"},
+      {"id": "B", "text": "Procuro um colega que já domine a ferramenta para um bate-papo rápido de alinhamento.", "vector": "B"},
+      {"id": "C", "text": "Abro a ferramenta e começo a testar na prática, aprendendo por tentativa e erro durante o processo.", "vector": "C"},
+      {"id": "D", "text": "Isolo-me para focar profundamente em tutoriais e só volto a comunicar quando dominar o básico.", "vector": "D"}
+    ],
+    "traits": ["Execution & Autonomy"]
+  },
+  {
+    "id": 2,
+    "module": "Execução e Autonomia",
+    "topic": "Organização de Escopo",
+    "text": "Você foi designado como responsável por um projeto grande e complexo. Qual sua primeira ação?",
+    "options": [
+      {"id": "A", "text": "Mapeio todos os requisitos, crio um cronograma e identifico as dependências técnicas antes de começar.", "vector": "A"},
+      {"id": "B", "text": "Marco uma reunião de brainstorming com os envolvidos para alinhar a visão de todos sobre o projeto.", "vector": "B"},
+      {"id": "C", "text": "Identifico qual é a parte mais crítica e já começo a construir um protótipo rápido (MVP) para validar a ideia.", "vector": "C"},
+      {"id": "D", "text": "Quebro o projeto em metas individuais para mim mesmo e defino um ritmo de trabalho focado.", "vector": "D"}
+    ],
+    "traits": ["Execution & Autonomy"]
+  },
+  {
+    "id": 3,
+    "module": "Execução e Autonomia",
+    "topic": "Limite de Autonomia",
+    "text": "Você está travado em um problema complexo há algumas horas. O que você faz?",
+    "options": [
+      {"id": "A", "text": "Continuo pesquisando a causa raiz e lendo logs/documentos para entender exatamente o porquê do erro.", "vector": "A"},
+      {"id": "B", "text": "Levanto a questão no grupo da equipe para ver se alguém já passou por isso e pode me dar uma luz.", "vector": "B"},
+      {"id": "C", "text": "Busco uma solução alternativa ou um \"workaround\" que permita que o projeto continue andando, mesmo que não seja a solução ideal agora.", "vector": "C"},
+      {"id": "D", "text": "Continuo tentando resolver sozinho, pois prefiro esgotar todas as minhas possibilidades antes de interromper alguém.", "vector": "D"}
+    ],
+    "traits": ["Execution & Autonomy"]
+  },
+  {
+    "id": 4,
+    "module": "Execução e Autonomia",
+    "topic": "Disciplina Operacional",
+    "text": "Sua semana será focada apenas em tarefas rotineiras, como atualizar documentos antigos e organizar bases de dados.",
+    "options": [
+      {"id": "A", "text": "Aproveito a oportunidade para revisar os padrões e garantir que toda a documentação esteja tecnicamente impecável.", "vector": "A"},
+      {"id": "B", "text": "Sugiro fazer algumas dessas tarefas em dupla (pair work) para tornar o processo mais dinâmico e colaborativo.", "vector": "B"},
+      {"id": "C", "text": "Tento descobrir uma forma de automatizar essas tarefas o mais rápido possível para voltar a focar em projetos novos.", "vector": "C"},
+      {"id": "D", "text": "Coloco meus fones de ouvido, mantenho o foco e executo o trabalho de forma eficiente e silenciosa.", "vector": "D"}
+    ],
+    "traits": ["Execution & Autonomy"]
+  },
+  {
+    "id": 5,
+    "module": "Decisão, Pressão e Ambiguidade",
+    "topic": "Priorização sob Pressão",
+    "text": "Faltam poucas horas para o fim do dia. Surge um problema crítico com um cliente, mas você já estava finalizando uma entrega prometida para o seu gestor.",
+    "options": [
+      {"id": "A", "text": "Analiso os dados de impacto: avalio qual das duas tarefas gera mais risco financeiro ou operacional e atuo nela.", "vector": "A"},
+      {"id": "B", "text": "Envolvo o gestor e o time imediatamente para decidirmos juntos como dividir essas duas urgências.", "vector": "B"},
+      {"id": "C", "text": "Faço uma correção rápida (\"hotfix\") no problema do cliente para estancar o dano e volto correndo para a entrega do gestor.", "vector": "C"},
+      {"id": "D", "text": "Tomo a decisão por conta própria baseado na minha leitura técnica da situação e assumo a responsabilidade pela escolha.", "vector": "D"}
+    ],
+    "traits": ["Resilience & Pressure Handling"]
+  },
+  {
+    "id": 6,
+    "module": "Decisão, Pressão e Ambiguidade",
+    "topic": "Gestão de Ambiguidade",
+    "text": "Uma tarefa foi designada a você, mas a descrição está muito confusa. O prazo está correndo e o solicitante não responde.",
+    "options": [
+      {"id": "A", "text": "Assumo as premissas mais lógicas, documento detalhadamente as decisões que tomei e avanço com o trabalho.", "vector": "A"},
+      {"id": "B", "text": "Chamo outros membros do time que já trabalharam com esse solicitante para tentarmos decifrar a demanda juntos.", "vector": "B"},
+      {"id": "C", "text": "Crio um rascunho rápido da entrega baseado na minha intuição e envio para forçar um feedback do solicitante.", "vector": "C"},
+      {"id": "D", "text": "Confio no meu julgamento individual, executo a tarefa da maneira que acredito ser a mais correta e entrego.", "vector": "D"}
+    ],
+    "traits": ["Analytical Rigor & Quality"]
+  },
+  {
+    "id": 7,
+    "module": "Decisão, Pressão e Ambiguidade",
+    "topic": "Managing Up / Limites",
+    "text": "Seu gestor pede que você entregue uma demanda extra amanhã. O prazo é tão curto que a qualidade certamente será comprometida.",
+    "options": [
+      {"id": "A", "text": "Apresento uma estimativa de tempo realista e mostro os riscos técnicos de pular as etapas de validação.", "vector": "A"},
+      {"id": "B", "text": "Aceito a demanda, mas aviso a equipe para ver se podemos fazer um esforço conjunto para entregar a tempo.", "vector": "B"},
+      {"id": "C", "text": "Negocio entregar apenas a funcionalidade principal amanhã, deixando os refinamentos e validações secundárias para depois.", "vector": "C"},
+      {"id": "D", "text": "Falo diretamente com o gestor que a entrega não atingirá meu padrão de qualidade nesse prazo, e sugiro uma nova data.", "vector": "D"}
+    ],
+    "traits": ["Resilience & Pressure Handling"]
+  },
+  {
+    "id": 8,
+    "module": "Decisão, Pressão e Ambiguidade",
+    "topic": "Adaptação a Mudanças",
+    "text": "Você trabalhou semanas em uma solução, mas a diretoria muda totalmente a direção do projeto. Seu trabalho será descartado.",
+    "options": [
+      {"id": "A", "text": "Faço um balanço do que foi construído, arquivo o conhecimento técnico gerado e me preparo para o novo escopo.", "vector": "A"},
+      {"id": "B", "text": "Faço um alinhamento rápido com a equipe para garantir que todos estão na mesma página e motivados com o novo objetivo.", "vector": "B"},
+      {"id": "C", "text": "Desapego rapidamente do código antigo e já começo a desenhar a arquitetura da nova solução no mesmo dia.", "vector": "C"},
+      {"id": "D", "text": "Aceito a mudança de forma pragmática, limpo meu ambiente de trabalho e inicio as novas tarefas individuais.", "vector": "D"}
+    ],
+    "traits": ["Resilience & Pressure Handling"]
+  },
+  {
+    "id": 9,
+    "module": "Inteligência Interpessoal",
+    "topic": "Conflito Técnico",
+    "text": "Um colega sugere uma abordagem para um projeto. Você avalia e acredita que a ideia dele tem falhas.",
+    "options": [
+      {"id": "A", "text": "Apresento cenários de risco ou dados técnicos que demonstram onde a abordagem pode falhar a longo prazo.", "vector": "A"},
+      {"id": "B", "text": "Foco em encontrar um meio-termo, aproveitando os pontos fortes da ideia dele e somando com a minha.", "vector": "B"},
+      {"id": "C", "text": "Sugiro fazermos um Teste A/B rápido na prática para ver qual das duas soluções performa melhor.", "vector": "C"},
+      {"id": "D", "text": "Exponho meu ponto de vista de forma direta e objetiva, defendendo por que a minha abordagem é mais eficiente.", "vector": "D"}
+    ],
+    "traits": ["Collaboration & Synergy"]
+  },
+  {
+    "id": 10,
+    "module": "Inteligência Interpessoal",
+    "topic": "Desafiar Hierarquia",
+    "text": "Alguém mais sênior (ou seu chefe) impõe uma solução que você considera inadequada para o problema.",
+    "options": [
+      {"id": "A", "text": "Escrevo uma documentação rápida (memo) listando os prós, contras e riscos da solução proposta para avaliação formal.", "vector": "A"},
+      {"id": "B", "text": "Chamo a pessoa para uma conversa privada e exponho minhas preocupações de forma amigável e construtiva.", "vector": "B"},
+      {"id": "C", "text": "Proponho fazermos um projeto piloto bem pequeno da ideia para validarmos se ela realmente para em pé.", "vector": "C"},
+      {"id": "D", "text": "Expresso minha discordância técnica claramente na reunião, mas me comprometo a executar se a decisão for mantida.", "vector": "D"}
+    ],
+    "traits": ["Accountability & Ownership"]
+  },
+  {
+    "id": 11,
+    "module": "Inteligência Interpessoal",
+    "topic": "Erros de Terceiros",
+    "text": "Você não pode avançar no seu trabalho porque a entrega de um colega atrasou e está bloqueando a sua parte.",
+    "options": [
+      {"id": "A", "text": "Reviso o processo com ele para entender tecnicamente onde ocorreu o gargalo e como podemos evitar isso no futuro.", "vector": "A"},
+      {"id": "B", "text": "Ofereço-me para sentar com ele e ajudar ativamente a terminar a parte dele para que o projeto todo avance.", "vector": "B"},
+      {"id": "C", "text": "Utilizo dados simulados (mocks) para continuar adiantando a minha parte enquanto ele não termina.", "vector": "C"},
+      {"id": "D", "text": "Reajusto meu próprio cronograma, foco em outras tarefas minhas e cobro dele um prazo de forma direta.", "vector": "D"}
+    ],
+    "traits": ["Collaboration & Synergy"]
+  },
+  {
+    "id": 12,
+    "module": "Inteligência Interpessoal",
+    "topic": "Liderança Indireta",
+    "text": "Você nota que colegas novos cometem os mesmos erros técnicos em um processo interno repetidas vezes.",
+    "options": [
+      {"id": "A", "text": "Crio um manual ou documentação detalhada padronizando o processo correto e disponibilizo para todos.", "vector": "A"},
+      {"id": "B", "text": "Organizo uma reunião rápida e informal com eles para bater um papo e explicar como o processo funciona.", "vector": "B"},
+      {"id": "C", "text": "Tento alterar o sistema ou o fluxo de trabalho para que o erro se torne impossível de ser cometido na prática.", "vector": "C"},
+      {"id": "D", "text": "Envio mensagens diretas pontuais para cada um deles quando vejo o erro, corrigindo-os individualmente.", "vector": "D"}
+    ],
+    "traits": ["Collaboration & Synergy"]
+  },
+  {
+    "id": 13,
+    "module": "Inteligência Interpessoal",
+    "topic": "Diversidade de Estilos",
+    "text": "Um novo colega entra na equipe. Ele entrega resultados, mas tem um estilo de organização muito mais caótico que o seu.",
+    "options": [
+      {"id": "A", "text": "Defino acordos formais de trabalho (SLAs internos) para garantir que o estilo dele não quebre os processos da área.", "vector": "A"},
+      {"id": "B", "text": "Dedico tempo para entender como ele pensa e busco formas de integrar o estilo dele à dinâmica do grupo.", "vector": "B"},
+      {"id": "C", "text": "Adapto-me ao ritmo dele quando estamos trabalhando juntos, focando apenas na velocidade da entrega.", "vector": "C"},
+      {"id": "D", "text": "Mantenho uma separação clara entre as minhas responsabilidades e as dele, focando apenas no meu próprio trabalho.", "vector": "D"}
+    ],
+    "traits": ["Collaboration & Synergy"]
+  },
+  {
+    "id": 14,
+    "module": "Comunicação e Alinhamento",
+    "topic": "Prevenção de Retrabalho",
+    "text": "Você acaba de receber uma demanda importante e complexa de um cliente interno.",
+    "options": [
+      {"id": "A", "text": "Crio um checklist detalhado dos requisitos e critérios de aceite antes de escrever qualquer código.", "vector": "A"},
+      {"id": "B", "text": "Faço uma reunião de kickoff (alinhamento inicial) para garantir que todos os envolvidos compartilham da mesma visão.", "vector": "B"},
+      {"id": "C", "text": "Crio um rascunho ou protótipo visual rápido para o cliente aprovar a direção antes de eu desenvolver tudo.", "vector": "C"},
+      {"id": "D", "text": "Escrevo um resumo do que entendi, envio de volta para o cliente confirmar e inicio meu trabalho focado.", "vector": "D"}
+    ],
+    "traits": ["Analytical Rigor & Quality"]
+  },
+  {
+    "id": 15,
+    "module": "Comunicação e Alinhamento",
+    "topic": "Comunicação Não-Técnica",
+    "text": "Você precisa explicar a um diretor (que não entende de TI) por que o sistema principal vai ficar fora do ar por 2 horas.",
+    "options": [
+      {"id": "A", "text": "Apresento um relatório rápido focando na causa raiz, no impacto da indisponibilidade e nas medidas mitigadoras.", "vector": "A"},
+      {"id": "B", "text": "Faço uma ligação para explicar a situação com empatia, entendendo a frustração dele e garantindo suporte.", "vector": "B"},
+      {"id": "C", "text": "Foco apenas na solução de contorno (plano B) que ele pode usar durante essas 2 horas, sendo extremamente breve.", "vector": "C"},
+      {"id": "D", "text": "Vou direto ao ponto, informando o fato, o horário de retorno e as ações tomadas, sem margem para debates.", "vector": "D"}
+    ],
+    "traits": ["Analytical Rigor & Quality"]
+  },
+  {
+    "id": 16,
+    "module": "Comunicação e Alinhamento",
+    "topic": "Transparência",
+    "text": "Durante o andamento de um projeto, você percebe que a sua parte vai atrasar cerca de três dias.",
+    "options": [
+      {"id": "A", "text": "Atualizo a ferramenta de gestão (ex: Jira, Trello) com a nova estimativa e os motivos técnicos detalhados do atraso.", "vector": "A"},
+      {"id": "B", "text": "Aviso a equipe imediatamente na reunião diária (Daily) para que ninguém seja pego de surpresa e possamos nos ajudar.", "vector": "B"},
+      {"id": "C", "text": "Reduzo temporariamente o escopo do que vou entregar hoje para tentar recuperar o tempo perdido até o fim da semana.", "vector": "C"},
+      {"id": "D", "text": "Comunico o gestor diretamente com a nova data e sigo trabalhando de forma autônoma para resolver o atraso.", "vector": "D"}
+    ],
+    "traits": ["Collaboration & Synergy"]
+  },
+  {
+    "id": 17,
+    "module": "Resiliência, Erro e Autoavaliação",
+    "topic": "Receptividade a Feedback",
+    "text": "Um colega faz uma revisão dura do seu trabalho, apontando diversas melhorias e dizendo que seu padrão está abaixo do esperado.",
+    "options": [
+      {"id": "A", "text": "Comparo os apontamentos dele com as boas práticas documentadas do projeto para ver se fazem sentido técnico.", "vector": "A"},
+      {"id": "B", "text": "Chamo ele para uma conversa para entender melhor o ponto de vista dele e aprender como podemos alinhar o trabalho.", "vector": "B"},
+      {"id": "C", "text": "Implemento as mudanças sugeridas o mais rápido possível para fechar a tarefa e seguir em frente.", "vector": "C"},
+      {"id": "D", "text": "Analiso as críticas sozinho; acato as que julgo corretas, mas defendo firmemente as escolhas que sei que estão certas.", "vector": "D"}
+    ],
+    "traits": ["Resilience & Pressure Handling"]
+  },
+  {
+    "id": 18,
+    "module": "Resiliência, Erro e Autoavaliação",
+    "topic": "Gestão do Próprio Erro",
+    "text": "Você comete um erro de configuração que derruba temporariamente um serviço usado por outras áreas.",
+    "options": [
+      {"id": "A", "text": "Inicio imediatamente uma investigação estruturada para encontrar o log do erro e aplicar a correção definitiva.", "vector": "A"},
+      {"id": "B", "text": "Aviso o time todo e as áreas afetadas no mesmo instante, pedindo desculpas e abrindo um canal para resolvermos juntos.", "vector": "B"},
+      {"id": "C", "text": "Aplico uma reversão rápida (rollback) para fazer o serviço voltar imediatamente, mesmo sem saber a causa raiz ainda.", "vector": "C"},
+      {"id": "D", "text": "Assumo a responsabilidade diretamente com meu gestor, corrijo o problema sozinho e depois reporto o que foi feito.", "vector": "D"}
+    ],
+    "traits": ["Accountability & Ownership"]
+  },
+  {
+    "id": 19,
+    "module": "Resiliência, Erro e Autoavaliação",
+    "topic": "Autoavaliação",
+    "text": "Quando você quer identificar seus próprios pontos fracos profissionais, qual é o seu método?",
+    "options": [
+      {"id": "A", "text": "Analiso as métricas das minhas entregas (ex: quantidade de bugs, prazos estourados) para ver onde estou falhando.", "vector": "A"},
+      {"id": "B", "text": "Peço feedback constante para meus colegas e líderes sobre como é trabalhar comigo.", "vector": "B"},
+      {"id": "C", "text": "Observo em quais tarefas eu demoro mais ou perco o ritmo produtivo no dia a dia.", "vector": "C"},
+      {"id": "D", "text": "Faço uma reflexão individual honesta sobre quais tipos de projetos eu costumo evitar pegar.", "vector": "D"}
+    ],
+    "traits": ["Accountability & Ownership"]
+  },
+  {
+    "id": 20,
+    "module": "Resiliência, Erro e Autoavaliação",
+    "topic": "Reação ao Fracasso",
+    "text": "Você assumiu o compromisso de entregar uma solução inovadora, mas a ideia falhou completamente na execução.",
+    "options": [
+      {"id": "A", "text": "Realizo uma análise \"post-mortem\" (documentação da falha) para entender as variáveis técnicas que causaram o fracasso.", "vector": "A"},
+      {"id": "B", "text": "Compartilho os aprendizados do erro com a equipe para que todos cresçam juntos com essa experiência.", "vector": "B"},
+      {"id": "C", "text": "Descarto a ideia frustrada e já foco minha energia na próxima entrega do backlog para compensar.", "vector": "C"},
+      {"id": "D", "text": "Assumo a responsabilidade pelo fracasso individualmente, reflito sobre o que errei e volto ao foco.", "vector": "D"}
+    ],
+    "traits": ["Resilience & Pressure Handling"]
+  },
+  {
+    "id": 21,
+    "module": "Propósito, Ética e Valores",
+    "topic": "Motivação Sustentável",
+    "text": "O que te faz sentir que teve um \"bom dia de trabalho\"?",
+    "options": [
+      {"id": "A", "text": "Resolver um problema complexo construindo uma solução limpa, estável e bem arquitetada.", "vector": "A"},
+      {"id": "B", "text": "Ter tido interações positivas com o time, sentindo que colaborei e fui útil para as pessoas.", "vector": "B"},
+      {"id": "C", "text": "Ter finalizado diversas tarefas e ver o produto ou projeto avançar visivelmente na prática.", "vector": "C"},
+      {"id": "D", "text": "Ter tido tempo de foco ininterrupto para executar meu trabalho e aprofundar minha especialidade.", "vector": "D"}
+    ],
+    "traits": ["Execution & Autonomy"]
+  },
+  {
+    "id": 22,
+    "module": "Propósito, Ética e Valores",
+    "topic": "Valores Inegociáveis",
+    "text": "Qual destas situações mais te faria considerar sair de uma empresa?",
+    "options": [
+      {"id": "A", "text": "Processos caóticos, falta de qualidade técnica e decisões tomadas sem dados.", "vector": "A"},
+      {"id": "B", "text": "Um ambiente tóxico, onde as pessoas competem entre si em vez de colaborar.", "vector": "B"},
+      {"id": "C", "text": "Burocracia excessiva que me impede de lançar novidades e testar coisas rápidas.", "vector": "C"},
+      {"id": "D", "text": "Microgerenciamento constante que me tira a autonomia para trabalhar do meu jeito.", "vector": "D"}
+    ],
+    "traits": ["Accountability & Ownership"]
+  },
+  {
+    "id": 23,
+    "module": "Propósito, Ética e Valores",
+    "topic": "Dilema Ético",
+    "text": "Você percebe que um colega está pulando testes de segurança obrigatórios para conseguir entregar as tarefas mais rápido.",
+    "options": [
+      {"id": "A", "text": "Documento o risco técnico que isso gera para o sistema e levo o dado de forma neutra para a gestão avaliar.", "vector": "A"},
+      {"id": "B", "text": "Converso com ele em particular para entender se ele está sobrecarregado e tento orientá-lo sobre o processo.", "vector": "B"},
+      {"id": "C", "text": "Foco nas minhas próprias entregas, mas fico atento para que o código dele não quebre o meu trabalho.", "vector": "C"},
+      {"id": "D", "text": "Confronto o colega diretamente, lembrando-o de que aquele comportamento é inaceitável para o padrão do time.", "vector": "D"}
+    ],
+    "traits": ["Accountability & Ownership"]
+  },
+  {
+    "id": 24,
+    "module": "Propósito, Ética e Valores",
+    "topic": "Inovação vs. Estabilidade",
+    "text": "Ao iniciar um projeto novo, como você escolhe as tecnologias e ferramentas?",
+    "options": [
+      {"id": "A", "text": "Prefiro frameworks consolidados e comprovados pelo mercado que garantam segurança e previsibilidade.", "vector": "A"},
+      {"id": "B", "text": "Escolho tecnologias com as quais a maioria do time já está familiarizada para facilitar o trabalho em grupo.", "vector": "B"},
+      {"id": "C", "text": "Gosto de testar as linguagens ou ferramentas mais novas do mercado que prometam maior velocidade.", "vector": "C"},
+      {"id": "D", "text": "Escolho a ferramenta na qual sou mais especialista, garantindo que eu tenha total controle sobre o projeto.", "vector": "D"}
+    ],
+    "traits": ["Analytical Rigor & Quality"]
+  },
+  {
+    "id": 25,
+    "module": "Propósito, Ética e Valores",
+    "topic": "Evolução Profissional",
+    "text": "Onde você deseja concentrar o seu desenvolvimento nos próximos anos?",
+    "options": [
+      {"id": "A", "text": "Em me tornar um especialista em arquitetura, processos e garantia de qualidade de sistemas.", "vector": "A"},
+      {"id": "B", "text": "Em desenvolver habilidades de liderança e gestão, mentorando pessoas e unindo equipes.", "vector": "B"},
+      {"id": "C", "text": "Em empreender internamente, criar novos produtos, inovar e validar ideias de forma rápida.", "vector": "C"},
+      {"id": "D", "text": "Em me tornar um Contribuidor Individual de altíssimo nível, resolvendo os problemas mais difíceis sozinho.", "vector": "D"}
+    ],
+    "traits": ["Analytical Rigor & Quality"]
+  }
+]

@@ -214,6 +214,30 @@ async def _create_tables(conn: aiosqlite.Connection):
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
+
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS behavioral_responses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            question_id INTEGER NOT NULL,
+            selected_option TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS behavioral_profile (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            core_traits TEXT NOT NULL, -- JSON
+            operating_styles TEXT NOT NULL, -- JSON
+            strategic_insights TEXT NOT NULL, -- JSON
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
     
     await conn.commit()
 
