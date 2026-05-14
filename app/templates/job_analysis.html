@@ -102,32 +102,7 @@
         const analysisStatus = document.getElementById('analysisStatus');
         const aiConfigured = {{ 'true' if ai_configured else 'false' }};
         let selectedId = null;
-        let mockSessions = [
-            {
-                id: 's1',
-                job_id: null,
-                date: '2026-05-12',
-                score: 82,
-                duration: '18m',
-                type: 'Behavioral'
-            },
-            {
-                id: 's2',
-                job_id: null,
-                date: '2026-05-10',
-                score: 75,
-                duration: '25m',
-                type: 'Technical'
-            },
-            {
-                id: 's3',
-                job_id: null,
-                date: '2026-05-08',
-                score: 88,
-                duration: '20m',
-                type: 'Mixed'
-            }
-        ];
+        let mockSessions = [];
 
         async function fetchJson(url, options = {}) {
             const response = await fetch(url, {
@@ -200,7 +175,11 @@
             analysisStatus.textContent = 'Loading...';
             
             try {
-                const analysis = await fetchJson(`/api/jobs/${id}/analysis`);
+                const [analysis, sessions] = await Promise.all([
+                    fetchJson(`/api/jobs/${id}/analysis`),
+                    fetchJson(`/api/jobs/${id}/mock_sessions`)
+                ]);
+                mockSessions = sessions;
                 renderAnalysis(analysis);
             } catch (error) {
                 console.error('Failed to load analysis', error);
@@ -379,12 +358,12 @@
                                 ${mockSessions.map(s => `
                                     <div class="history-item" onclick="window.location.href='/jobs/interview/${s.id}'">
                                         <div class="history-meta">
-                                            <span class="history-date">${new Date(s.date).toLocaleDateString()}</span>
-                                            <span class="history-type">${s.type}</span>
+                                            <span class="history-date">${new Date(s.started_at).toLocaleDateString()}</span>
+                                            <span class="history-type" style="text-transform: capitalize;">${s.interview_type}</span>
                                         </div>
                                         <div class="history-main">
-                                            <span class="history-score">${s.score}%</span>
-                                            <span class="history-duration">${s.duration}</span>
+                                            <span class="history-score">${s.overall_score || 0}%</span>
+                                            <span class="history-duration">${s.questions.length} Qs</span>
                                         </div>
                                         <div class="history-arrow">›</div>
                                     </div>
@@ -429,6 +408,13 @@
             const runAnalysisBtn = document.getElementById('runAnalysis');
             if (runAnalysisBtn) {
                 runAnalysisBtn.addEventListener('click', runAnalysis);
+            }
+
+            const startMockBtn = analysisContent.querySelector('.start-mock-btn');
+            if (startMockBtn) {
+                startMockBtn.addEventListener('click', () => {
+                    window.location.href = `/jobs/${selectedId}/mock-setup`;
+                });
             }
         }
 

@@ -1,3 +1,4 @@
+import json as json_module
 from pathlib import Path
 from datetime import date, datetime
 from fastapi import APIRouter, Request, Form, HTTPException
@@ -12,6 +13,8 @@ from app.services.job import JobService
 from app.services.behavioral import BehavioralService
 from app.repositories.job_analysis import JobAnalysisRepository
 from app.services.job_analysis import JobAnalysisService
+from app.repositories.mock_interview import MockInterviewRepository
+from app.services.mock_interview import MockInterviewService
 from app.services.ai_service import AIService
 from app.models.profile import (
     ProfileBasic, WorkExperienceCreate, EducationCreate, CertificationCreate,
@@ -27,6 +30,14 @@ env = Environment(
     loader=FileSystemLoader(BASE_DIR / "templates"),
     autoescape=select_autoescape(['html', 'xml'])
 )
+
+# Load languages resource
+LANGUAGES_PATH = BASE_DIR / "resources" / "languages.json"
+LANGUAGES = []
+try:
+    LANGUAGES = json_module.loads(LANGUAGES_PATH.read_text(encoding="utf-8"))
+except Exception:
+    LANGUAGES = [{"code": "en", "name": "English"}]
 
 user_repo = UserRepository()
 user_service = UserService(user_repo)
@@ -46,6 +57,8 @@ job_analysis_service = JobAnalysisService(
     behavioral_service,
     ai_service
 )
+mock_repo = MockInterviewRepository()
+mock_service = MockInterviewService(mock_repo, job_repo, profile_service, ai_service)
 
 
 @router.get("/setup")
@@ -266,6 +279,15 @@ async def analyze_job(request: Request, job_id: int):
         return analysis
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/jobs/{job_id}/mock_sessions")
+async def get_job_mock_sessions(request: Request, job_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    sessions = await mock_service.list_sessions(user_id, job_id)
+    return sessions
 
 
 @router.get("/api/jobs")
@@ -673,16 +695,159 @@ async def delete_project(request: Request, proj_id: int):
     return {"success": True}
 
 
-@router.get("/jobs/interview/{session_id}")
-async def interview_report_page(request: Request, session_id: str):
+@router.get("/jobs/{job_id}/mock-setup")
+async def mock_setup_page(request: Request, job_id: int):
     user_id = get_current_user(request)
     if not user_id:
         return RedirectResponse(url="/login")
     
     user = await user_service.get_user(user_id)
+    job = await job_service.get_job(job_id, user_id)
+    if not job or job.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Job not found")
+        
+    ai_settings = await ai_service.get_user_settings(user_id)
+    ai_configured = bool(ai_settings and ai_settings.get("provider") and ai_settings.get("model"))
+    # STT is always "available" because we support browser STT as a fallback
+    stt_available = True 
+    
+    template = env.get_template("mock_interview_setup.html")
+    return HTMLResponse(content=template.render(
+        user_id=user_id,
+        user_name=user.name,
+        job=job,
+        ai_configured=ai_configured,
+        stt_available=stt_available,
+        ai_settings_json=JSONResponse(ai_settings).body.decode() if ai_settings else 'null',
+        languages=LANGUAGES,
+        active_page="jobs"
+    ))
+
+
+@router.get("/jobs/interview/{session_id}")
+async def interview_report_page(request: Request, session_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        return RedirectResponse(url="/login")
+    
+    user = await user_service.get_user(user_id)
+    session = await mock_service.get_session(session_id, user_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    answers = await mock_service.get_answers(session_id)
+    job = await job_service.get_job(session["job_id"], user_id)
+    
     template = env.get_template("mock_interview_report.html")
     return HTMLResponse(content=template.render(
         user_name=user.name,
-        session_id=session_id,
+        session=session,
+        answers=answers,
+        job=job,
         active_page="jobs"
     ))
+
+
+@router.get("/jobs/mock/{session_id}")
+async def mock_session_page(request: Request, session_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        return RedirectResponse(url="/login")
+    
+    user = await user_service.get_user(user_id)
+    session = await mock_service.get_session(session_id, user_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    job = await job_service.get_job(session["job_id"], user_id)
+    
+    template = env.get_template("mock_interview_session.html")
+    return HTMLResponse(content=template.render(
+        user_id=user_id,
+        user_name=user.name,
+        session=session,
+        job=job,
+        active_page="jobs"
+    ))
+
+
+# --- Mock Interview API Routes ---
+
+@router.post("/api/mock/start")
+async def start_mock_session(request: Request):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    body = await request.json()
+    try:
+        session = await mock_service.start_session(user_id, body)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/mock/{session_id}/answer")
+async def submit_mock_answer(request: Request, session_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    body = await request.json()
+    try:
+        evaluation = await mock_service.evaluate_answer(
+            user_id=user_id,
+            session_id=session_id,
+            question_index=body["question_index"],
+            user_answer=body["user_answer"],
+            time_taken=body.get("time_taken")
+        )
+        return evaluation
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/mock/{session_id}/follow-up")
+async def submit_follow_up(request: Request, session_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    body = await request.json()
+    try:
+        evaluation = await mock_service.evaluate_follow_up(
+            user_id=user_id,
+            session_id=session_id,
+            question_index=body["question_index"],
+            follow_up_answer=body["follow_up_answer"]
+        )
+        return evaluation
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/mock/{session_id}/finish")
+async def finish_mock_session(request: Request, session_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        result = await mock_service.finish_session(user_id, session_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/mock/{session_id}")
+async def get_mock_session(request: Request, session_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await mock_service.get_session(session_id, user_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    answers = await mock_service.get_answers(session_id)
+    return {"session": session, "answers": answers}

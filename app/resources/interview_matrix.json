@@ -1,0 +1,171 @@
+{
+  "dimensions": [
+    {
+      "id": 1,
+      "name": "Execução e Autonomia (O Motor de Trabalho)",
+      "description": "Avalia como o candidato lida com a rotina, o aprendizado e as tarefas diárias.",
+      "metrics": [
+        {
+          "id": 1,
+          "name": "Curva de Aprendizado e Resourcefulness",
+          "description": "Como adquire novos conhecimentos ou lida com ferramentas desconhecidas (Just-in-Time learning, ler documentação oficial vs. dependência de terceiros)."
+        },
+        {
+          "id": 2,
+          "name": "Organização e Quebra de Escopo",
+          "description": "Como estrutura o trabalho diante de um problema grande (Visão macro dividida em entregas pequenas e testáveis vs. execução caótica)."
+        },
+        {
+          "id": 3,
+          "name": "Limite de Autonomia (Custo do Tempo)",
+          "description": "Saber a hora exata de parar de tentar sozinho e pedir ajuda para não estourar o prazo da empresa."
+        },
+        {
+          "id": 4,
+          "name": "Disciplina Operacional",
+          "description": "Como lida com tarefas repetitivas, suporte ou manutenção de sistemas legados (Compromisso e foco na estabilidade vs. Desmotivação rápida)."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Decisão, Pressão e Ambiguidade (O Gerenciamento de Crise)",
+      "description": "Avalia o comportamento sob estresse, recursos limitados e informações imperfeitas.",
+      "metrics": [
+        {
+          "id": 5,
+          "name": "Priorização sob Pressão (Trade-offs)",
+          "description": "Critério de decisão quando o prazo é curto e há múltiplas urgências (Ex: Foco no impacto imediato ao cliente/bug crítico vs. Nova feature)."
+        },
+        {
+          "id": 6,
+          "name": "Gestão de Ambiguidade (O Vácuo)",
+          "description": "O que faz quando a tarefa está mal definida e não há ninguém para responder (Toma decisão lógica, assume premissas e documenta vs. Fica parado esperando)."
+        },
+        {
+          "id": 7,
+          "name": "Negociação e Limites (Managing Up)",
+          "description": "Como lida com demandas arbitrárias ou prazos irrealistas impostos por superiores (Negocia escopo mostrando os impactos vs. Diz \"sim\", trabalha 15h seguidas e entrega com falhas)."
+        },
+        {
+          "id": 8,
+          "name": "Adaptação a Mudanças",
+          "description": "Como reage quando o escopo ou a prioridade do projeto mudam abruptamente (Ajuste rápido de mentalidade vs. Resistência e frustração excessiva)."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Inteligência Interpessoal e Colaboração (O Trabalho em Equipe)",
+      "description": "Avalia como o candidato convive, ajuda e discorda dentro do ecossistema do time.",
+      "metrics": [
+        {
+          "id": 9,
+          "name": "Conflito Técnico e Discordância",
+          "description": "Como discorda de um colega (Foco no risco técnico, dados e manutenibilidade vs. Argumentação baseada em preferências e ego)."
+        },
+        {
+          "id": 10,
+          "name": "Desafiar com Respeito (Hierarquia)",
+          "description": "Como alerta sobre riscos ou erros em propostas de pessoas mais sêniores ou chefes (Postura construtiva via perguntas/testes vs. Confronto agressivo ou omissão por medo)."
+        },
+        {
+          "id": 11,
+          "name": "Lidar com Erros de Terceiros (Dependência)",
+          "description": "O que faz quando o atraso/erro de um colega prejudica o próprio prazo (Foco imediato em resolver o bloqueio e ajudar vs. Apontar culpados e se isolar)."
+        },
+        {
+          "id": 12,
+          "name": "Liderança Indireta (Mentoria Oculta)",
+          "description": "Como melhora o ambiente sem ter cargo formal (Criação de documentação, pair programming, compartilhamento proativo de soluções)."
+        },
+        {
+          "id": 13,
+          "name": "Inclusão e Diversidade de Pensamento (Novo)",
+          "description": "Como lida com perfis diferentes do seu na equipe (Ex: O dev metódico lidando com o dev caótico/rápido) e como valoriza diferentes perspectivas na solução de problemas."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Comunicação e Alinhamento (A Ponte de Informação)",
+      "description": "Avalia a capacidade de se fazer entender, garantir o alinhamento e gerenciar expectativas.",
+      "metrics": [
+        {
+          "id": 14,
+          "name": "Prevenção de Retrabalho (Alinhamento de Demanda)",
+          "description": "O hábito de garantir que entendeu a expectativa exata (critérios de aceite/sucesso) antes de iniciar qualquer execução."
+        },
+        {
+          "id": 15,
+          "name": "Comunicação Não-Técnica (A \"Tradução\")",
+          "description": "Capacidade de explicar problemas técnicos, atrasos ou bugs para stakeholders de Negócios (Foco no impacto financeiro/prazo vs. Explicação excessivamente técnica do código)."
+        },
+        {
+          "id": 16,
+          "name": "Transparência e Visibilidade Ativa",
+          "description": "A proatividade em manter o gestor e o time informados sobre bloqueios e riscos de atraso *antes* que o prazo estoure, evitando surpresas."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Resiliência, Erro e Autoavaliação (O Ego)",
+      "description": "Avalia a maturidade mental, a capacidade de suportar críticas e a responsabilidade pelos próprios atos.",
+      "metrics": [
+        {
+          "id": 17,
+          "name": "Receptividade a Feedback Corretivo",
+          "description": "Como reage a críticas duras sobre o próprio trabalho, como em um Code Review (Escuta ativa focada no objetivo final vs. Justificativas e postura defensiva)."
+        },
+        {
+          "id": 18,
+          "name": "Gestão do Próprio Erro (Impacto Real)",
+          "description": "Como reage quando comete uma falha grave em produção (Aviso imediato, contenção de danos e investigação da causa raiz vs. Tentativa de esconder o problema)."
+        },
+        {
+          "id": 19,
+          "name": "Autoavaliação (Self-Awareness)",
+          "description": "Capacidade de diagnosticar os próprios pontos fracos de forma honesta e ter um plano de ação para melhorá-los (Ex: \"Tenho dificuldade de comunicação, então estou treinando falar em público\")."
+        },
+        {
+          "id": 20,
+          "name": "Reação ao Fracasso (Resiliência)",
+          "description": "Como lida com expectativas frustradas, como não conseguir entregar algo que prometeu (Foca na adaptação do processo para o futuro vs. Culpa fatores externos)."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Propósito, Ética e Valores (O Fit com a Empresa)",
+      "description": "Avalia o caráter profissional, as motivações profundas e a aderência à cultura da empresa.",
+      "metrics": [
+        {
+          "id": 21,
+          "name": "Motivação Sustentável",
+          "description": "O que move o profissional no longo prazo além do salário (Resolução de problemas, impacto no cliente final, busca pela maestria técnica)."
+        },
+        {
+          "id": 22,
+          "name": "Valores Inegociáveis (Limites Profissionais)",
+          "description": "O que o candidato considera tóxico e que o faria querer sair da empresa (Ex: Falta de transparência, microgerenciamento extremo, desorganização técnica crônica)."
+        },
+        {
+          "id": 23,
+          "name": "Dilemas Éticos e Accountability (Whistleblowing)",
+          "description": "Como age diante de ações antiéticas, negligências graves ou ocultação de erros por parte de colegas (Escalada gradual e proteção da empresa/cliente vs. Cumplicidade ou omissão)."
+        },
+        {
+          "id": 24,
+          "name": "Inovação vs. Estabilidade",
+          "description": "O perfil de risco do candidato na criação de soluções (Gosta de testar o novo e \"quebrar regras\" vs. Prefere tecnologias consolidadas, TDD e segurança)."
+        },
+        {
+          "id": 25,
+          "name": "Visão de Evolução (Plano de Carreira)",
+          "description": "Qual o objetivo de longo prazo na estrutura da empresa (Especialista Técnico / Staff Engineer vs. Rota de Gestão / Tech Lead / Liderança de Pessoas)."
+        }
+      ]
+    }
+  ]
+}

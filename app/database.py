@@ -260,6 +260,54 @@ async def _create_tables(conn: aiosqlite.Connection):
         )
     """)
 
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS mock_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            job_id INTEGER NOT NULL,
+            interview_type TEXT NOT NULL,
+            response_mode TEXT NOT NULL,
+            time_per_question INTEGER NOT NULL,
+            language TEXT NOT NULL DEFAULT 'en',
+            introduction_message TEXT,
+            status TEXT NOT NULL DEFAULT 'in_progress',
+            questions TEXT NOT NULL,
+            inferred_level TEXT NOT NULL DEFAULT 'mid',
+            overall_score INTEGER,
+            overall_feedback TEXT,
+            started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+        )
+    """)
+    # Attempt to add the column if the table already exists
+    try:
+        await conn.execute("ALTER TABLE mock_sessions ADD COLUMN introduction_message TEXT")
+    except Exception:
+        pass
+
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS mock_answers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            question_index INTEGER NOT NULL,
+            question_text TEXT NOT NULL,
+            question_type TEXT NOT NULL,
+            dimension TEXT NOT NULL,
+            metric TEXT NOT NULL,
+            user_answer TEXT NOT NULL,
+            ai_evaluation TEXT NOT NULL,
+            score INTEGER NOT NULL DEFAULT 0,
+            time_taken INTEGER,
+            has_follow_up INTEGER DEFAULT 0,
+            follow_up_question TEXT,
+            follow_up_answer TEXT,
+            follow_up_evaluation TEXT,
+            FOREIGN KEY (session_id) REFERENCES mock_sessions(id) ON DELETE CASCADE
+        )
+    """)
+
     await conn.commit()
 
     await _ensure_columns(conn, "users", {

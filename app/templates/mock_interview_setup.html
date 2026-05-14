@@ -1,0 +1,462 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="setup-page">
+    <div class="setup-container">
+        <header class="setup-view-header">
+            <a href="/jobs" class="back-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back to Dashboard
+            </a>
+            <div class="setup-title-group">
+                <div class="setup-icon">🎙️</div>
+                <div>
+                    <h1>Configure Your Interview</h1>
+                    <p>Preparing for <strong>{{ job.title }}</strong> at <strong>{{ job.company }}</strong></p>
+                </div>
+            </div>
+        </header>
+
+        <div class="setup-card">
+            <div class="setup-form">
+                <!-- Response Mode -->
+                <div class="setup-section">
+                    <label class="setup-label">Response Mode</label>
+                    <div class="mode-grid">
+                        <div class="mode-card active" data-mode="text" onclick="selectMode(this)">
+                            <div class="mode-icon-box">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            </div>
+                            <div class="mode-info">
+                                <span class="mode-name">Text Based</span>
+                                <span class="mode-desc">Type your answers manually. Best for focused environments.</span>
+                            </div>
+                        </div>
+                        <div class="mode-card" data-mode="voice" onclick="selectMode(this)">
+                            <div class="mode-icon-box">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                            </div>
+                            <div class="mode-info">
+                                <span class="mode-name">Speech Based</span>
+                                <span class="mode-desc">Speak naturally with AI. Use Browser STT or External provider.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mic Test Section (Hidden by default) -->
+                <div class="setup-section" id="micTestSection" style="display: none;">
+                    <label class="setup-label">Verify Your Microphone</label>
+                    <div class="mic-test-box">
+                        <div class="test-input-wrapper">
+                            <input type="text" id="testTranscript" placeholder="Click the mic and say something..." readonly>
+                            <button type="button" id="micTestBtn" class="mic-circle-btn" onclick="toggleMicTest()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                            </button>
+                        </div>
+                        <div id="testStatus" class="test-status">Speech recognition not tested yet.</div>
+                        <div class="test-instruction">To ensure the best experience, please verify that your voice is being correctly transcribed.</div>
+                    </div>
+                </div>
+
+                <!-- Interview Focus -->
+                <div class="setup-section">
+                    <label class="setup-label">Interview Focus</label>
+                    <div class="type-grid">
+                        <div class="type-card active" data-type="behavioral" onclick="selectType(this)">
+                            <div class="type-icon-box">🧠</div>
+                            <div class="type-text">
+                                <span>Behavioral</span>
+                                <small>Soft skills & culture</small>
+                            </div>
+                        </div>
+                        <div class="type-card" data-type="technical" onclick="selectType(this)">
+                            <div class="type-icon-box">💻</div>
+                            <div class="type-text">
+                                <span>Technical</span>
+                                <small>Hard skills & logic</small>
+                            </div>
+                        </div>
+                        <div class="type-card" data-type="mixed" onclick="selectType(this)">
+                            <div class="type-icon-box">🔀</div>
+                            <div class="type-text">
+                                <span>Mixed</span>
+                                <small>Full simulation</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time limit -->
+                <div class="setup-section">
+                    <label class="setup-label">Time Per Question</label>
+                    <div class="time-selector">
+                        <select class="setup-select" id="timeLimit">
+                            <option value="120">2 Minutes (Fast-paced)</option>
+                            <option value="180" selected>3 Minutes (Standard)</option>
+                            <option value="300">5 Minutes (Deep-dive)</option>
+                        </select>
+                        <p class="helper-text">The AI will cut you off when time is up to simulate high-pressure interviews.</p>
+                    </div>
+                </div>
+
+                <!-- Language -->
+                <div class="setup-section">
+                    <label class="setup-label">Interview Language</label>
+                    <div class="time-selector">
+                        <select class="setup-select" id="language">
+                            {% for lang in languages %}
+                            <option value="{{ lang.code }}" {% if lang.code == 'en' %}selected{% endif %}>{{ lang.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="helper-text">Questions and evaluations will be generated in this language.</p>
+                    </div>
+                </div>
+
+                <div class="setup-footer">
+                    <button class="start-btn" id="startBtn" onclick="startInterview()">
+                        Start Interview Session
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .setup-page { min-height: 100vh; background: #f8fafc; padding: 3rem 2rem; }
+    .setup-container { max-width: 800px; margin: 0 auto; }
+
+    .setup-view-header { margin-bottom: 2.5rem; }
+    .back-link { display: flex; align-items: center; gap: 0.5rem; color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin-bottom: 2rem; transition: color 0.2s; }
+    .back-link:hover { color: #2563eb; }
+    
+    .setup-title-group { display: flex; align-items: center; gap: 1.5rem; }
+    .setup-icon { font-size: 3rem; background: #fff; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .setup-title-group h1 { font-size: 1.75rem; font-weight: 800; color: #1e293b; margin: 0; }
+    .setup-title-group p { font-size: 1.05rem; color: #64748b; margin: 0.25rem 0 0 0; }
+
+    .setup-card { background: #fff; border-radius: 24px; padding: 3rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+    .setup-form { display: flex; flex-direction: column; gap: 2.5rem; }
+    
+    .setup-label { font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: block; }
+
+    /* Mode Grid */
+    .mode-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 1.25rem; }
+    .mode-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; display: flex; gap: 1.25rem; cursor: pointer; transition: all 0.2s; position: relative; }
+    .mode-card:hover:not(.disabled) { border-color: #2563eb; background: #f8fafc; transform: translateY(-2px); }
+    .mode-card.active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    
+    .mode-icon-box { color: #64748b; }
+    .mode-card.active .mode-icon-box { color: #2563eb; }
+    
+    .mode-info { display: flex; flex-direction: column; gap: 0.25rem; }
+    .mode-name { font-size: 1.05rem; font-weight: 700; color: #1e293b; }
+    .mode-desc { font-size: 0.85rem; color: #64748b; line-height: 1.4; }
+
+    /* Mic Test Box */
+    .mic-test-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; animation: slideDown 0.3s ease-out; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .test-input-wrapper { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+    .test-input-wrapper input { flex: 1; padding: 0.8rem 1.25rem; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.95rem; color: #475569; outline: none; }
+    
+    .mic-circle-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: #2563eb; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .mic-circle-btn:hover { background: #1d4ed8; transform: scale(1.05); }
+    .mic-circle-btn.listening { background: #ef4444; animation: pulse-red 1s infinite; }
+    @keyframes pulse-red { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } }
+
+    .test-status { font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; }
+    .test-status.passed { color: #10b981; }
+    .test-status.failed { color: #ef4444; }
+    .test-instruction { font-size: 0.8rem; color: #94a3b8; line-height: 1.4; }
+
+    /* Type Grid */
+    .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .type-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.25rem; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 1rem; }
+    .type-card:hover { border-color: #2563eb; background: #f8fafc; transform: translateY(-2px); }
+    .type-card.active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    .type-icon-box { font-size: 1.5rem; background: #f1f5f9; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0; }
+    .type-card.active .type-icon-box { background: #dbeafe; }
+    .type-text { display: flex; flex-direction: column; }
+    .type-text span { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+    .type-text small { font-size: 0.75rem; color: #64748b; margin-top: 0.1rem; }
+    .type-card.active span { color: #2563eb; }
+
+    /* Select */
+    .setup-select { width: 100%; padding: 0.8rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 1rem center; }
+    .setup-select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    .helper-text { font-size: 0.85rem; color: #94a3b8; margin-top: 0.75rem; }
+
+    /* Footer */
+    .setup-footer { margin-top: 1rem; }
+    .start-btn { width: 100%; background: #2563eb; color: #fff; border: none; padding: 1.25rem; border-radius: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.2s; }
+    .start-btn:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+    .start-btn:disabled { background: #cbd5e1; opacity: 0.7; cursor: not-allowed; }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const userId = {{ user_id | tojson }};
+    
+    let testPassed = false;
+    let isListening = false;
+    let selectedMode = 'text';
+
+    // STT State
+    let recognition = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let sttSocket = null;
+    let audioContext = null;
+    let scriptProcessor = null;
+
+    // This hook is called by base.html whenever settings are saved
+    function checkTextModelConfigured() {
+        // When settings change, we should reset the mic test if we're in voice mode
+        // because the provider or mode might have changed.
+        if (selectedMode === 'voice') {
+            stopMicTest();
+            testPassed = false;
+            const status = document.getElementById('testStatus');
+            status.textContent = 'Settings updated. Please re-verify your microphone.';
+            status.className = 'test-status';
+            document.getElementById('testTranscript').value = '';
+            updateStartButtonState();
+        }
+    }
+
+    function selectMode(el) {
+        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        selectedMode = el.dataset.mode;
+        
+        const micSection = document.getElementById('micTestSection');
+        if (selectedMode === 'voice') {
+            micSection.style.display = 'block';
+            updateStartButtonState();
+        } else {
+            micSection.style.display = 'none';
+            if (isListening) stopMicTest();
+            testPassed = false;
+            updateStartButtonState();
+        }
+    }
+    
+    function selectType(el) {
+        document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function updateStartButtonState() {
+        const btn = document.getElementById('startBtn');
+        if (selectedMode === 'voice') {
+            btn.disabled = !testPassed;
+            btn.innerHTML = testPassed ? `Start Interview Session <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>` : 'Complete Mic Test to Start';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = `Start Interview Session <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+        }
+    }
+
+    function initSTT() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return null;
+        
+        const rec = new SpeechRecognition();
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = 'en-US';
+        
+        rec.onresult = (e) => {
+            const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+            handleTranscript(transcript);
+        };
+        
+        rec.onerror = (e) => {
+            console.error('STT Error:', e.error);
+            stopMicTest();
+            handleSTTError(e.error);
+        };
+        
+        rec.onend = () => {
+            if (isListening) stopMicTest();
+        };
+        
+        return rec;
+    }
+
+    function handleTranscript(text) {
+        document.getElementById('testTranscript').value = text;
+        if (text.trim().length > 3) {
+            testPassed = true;
+            const status = document.getElementById('testStatus');
+            status.textContent = '✓ Mic test passed!';
+            status.className = 'test-status passed';
+            updateStartButtonState();
+        }
+    }
+
+    function handleSTTError(error) {
+        let message = 'An error occurred during speech recognition: ' + error + '. Please try using a supported browser (Chrome, Edge, or Safari) or configure an external STT provider in settings.';
+        if (error === 'network') {
+            message = 'Network error. Please check your internet connection, try a supported browser (Chrome/Edge/Safari), or configure an external STT provider.';
+        } else if (error === 'not-allowed') {
+            message = 'Microphone access denied. Please allow microphone permissions in your browser settings.';
+        } else if (error === 'no-speech') {
+            message = 'No speech detected. Please try speaking again.';
+        }
+        showErrorModal('Speech Recognition Error', message);
+    }
+
+    function toggleMicTest() {
+        if (isListening) stopMicTest();
+        else startMicTest();
+    }
+
+    async function startMicTest() {
+        const sttProvider = aiSettings ? (aiSettings.stt_provider || 'browser') : 'browser';
+        const status = document.getElementById('testStatus');
+        const micBtn = document.getElementById('micTestBtn');
+        
+        if (sttProvider === 'browser') {
+            if (!recognition) recognition = initSTT();
+            if (!recognition) return;
+            try {
+                recognition.start();
+                isListening = true;
+                micBtn.classList.add('listening');
+                status.textContent = 'Listening (Browser)...';
+            } catch (err) { console.error(err); }
+        } else {
+            if (aiSettings.stt_mode === 'live') {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    sttSocket = new WebSocket(`${protocol}//${window.location.host}/ai/stt/ws`);
+                    let lastConfirm = "";
+                    
+                    sttSocket.onopen = () => {
+                        sttSocket.send(JSON.stringify({ user_id: userId }));
+                        status.textContent = 'Live Transcribing...';
+                    };
+                    sttSocket.onmessage = (e) => {
+                        const data = JSON.parse(e.data);
+                        if (data.type === 'transcript') {
+                            if (data.is_final) {
+                                lastConfirm = data.text ? [lastConfirm, data.text].filter(Boolean).join(" ").trim() : lastConfirm;
+                                handleTranscript(lastConfirm);
+                            } else {
+                                handleTranscript([lastConfirm, data.text].filter(Boolean).join(" ").trim());
+                            }
+                        }
+                    };
+                    sttSocket.onclose = () => stopMicTest();
+                    
+                    audioContext = new AudioContext({ sampleRate: 16000 });
+                    const source = audioContext.createMediaStreamSource(stream);
+                    scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                    scriptProcessor.onaudioprocess = (e) => {
+                        if (!isListening || sttSocket.readyState !== WebSocket.OPEN) return;
+                        const input = e.inputBuffer.getChannelData(0);
+                        const pcm = new Int16Array(input.length);
+                        for (let i = 0; i < input.length; i++) pcm[i] = Math.max(-1, Math.min(1, input[i])) * 0x7FFF;
+                        sttSocket.send(pcm.buffer);
+                    };
+                    source.connect(scriptProcessor);
+                    scriptProcessor.connect(audioContext.destination);
+                    isListening = true;
+                    micBtn.classList.add('listening');
+                } catch (e) { handleSTTError('not-allowed'); }
+            } else {
+                // Batch Mode
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const blob = new Blob(audioChunks, { type: 'audio/wav' });
+                        const fd = new FormData();
+                        fd.append('file', blob);
+                        status.textContent = 'Transcribing...';
+                        try {
+                            const res = await fetch('/ai/stt', { method: 'POST', body: fd });
+                            const d = await res.json();
+                            if (d.text) handleTranscript(d.text);
+                        } finally { status.textContent = 'Recording stopped.'; }
+                    };
+                    mediaRecorder.start();
+                    isListening = true;
+                    micBtn.classList.add('listening');
+                    status.textContent = 'Recording...';
+                } catch (e) { handleSTTError('not-allowed'); }
+            }
+        }
+    }
+
+    async function stopMicTest() {
+        if (recognition) recognition.stop();
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        }
+        if (sttSocket) sttSocket.close();
+        if (scriptProcessor) scriptProcessor.disconnect();
+        if (audioContext) audioContext.close();
+        
+        isListening = false;
+        document.getElementById('micTestBtn').classList.remove('listening');
+        if (!testPassed) {
+            document.getElementById('testStatus').textContent = 'Test stopped.';
+        }
+    }
+
+    function showErrorModal(title, message) {
+        if (window.showAlert) {
+            window.showAlert(title, message);
+        } else {
+            alert(title + ': ' + message);
+        }
+    }
+
+    async function startInterview() {
+        if (selectedMode === 'voice' && !testPassed) return;
+        
+        const btn = document.getElementById('startBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Generating questions...';
+        
+        const config = {
+            job_id: {{ job.id }},
+            interview_type: document.querySelector('.type-card.active')?.dataset.type || 'behavioral',
+            response_mode: selectedMode,
+            time_per_question: parseInt(document.getElementById('timeLimit').value),
+            language: document.getElementById('language').value
+        };
+        
+        try {
+            const res = await fetch('/api/mock/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || 'Failed to start session');
+            }
+            
+            const session = await res.json();
+            window.location.href = `/jobs/mock/${session.id}`;
+        } catch (e) {
+            showErrorModal('Failed to Start Interview', e.message);
+            btn.disabled = false;
+            btn.innerHTML = `Start Interview Session <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+        }
+    }
+</script>
+{% endblock %}
