@@ -34,7 +34,7 @@ async def test_multiple_repositories_use_same_connection():
     await msg_repo.initialize()
     msg = await msg_repo.add(session["id"], "user", "Hello")
     
-    assert user["username"] == "alice"
+    assert user["name"] == "alice"
     assert session["title"] == "Test Chat"
     assert msg["content"] == "Hello"
 

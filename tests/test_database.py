@@ -15,7 +15,7 @@ async def test_user_repository_create():
     await repo.initialize()
     
     user = await repo.create("alice", "alice@example.com")
-    assert user["username"] == "alice"
+    assert user["name"] == "alice"
     assert user["email"] == "alice@example.com"
 
 
@@ -26,17 +26,17 @@ async def test_user_service_create():
     service = UserService(repo)
     
     user = await service.create_user("bob", "bob@example.com")
-    assert user.username == "bob"
+    assert user.name == "bob"
     assert user.email == "bob@example.com"
 
 
 @pytest.mark.asyncio
 async def test_user_model_to_dict():
-    user = User(id=1, username="test", email="test@test.com")
+    user = User(id=1, name="test", email="test@test.com")
     d = user.to_dict()
     
     assert d["id"] == 1
-    assert d["username"] == "test"
+    assert d["name"] == "test"
     assert d["email"] == "test@test.com"
 
 

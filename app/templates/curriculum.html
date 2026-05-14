@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praxis - Edit Profile</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+               background: #f8fafc; height: 100vh; display: flex; }
+        
+        .sidebar { width: 280px; background: white; border-right: 1px solid #e2e8f0; 
+                   display: flex; flex-direction: column; flex-shrink: 0; }
+        
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #e2e8f0; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-icon { width: 36px; height: 36px; background: #2563eb; border-radius: 8px; 
+                     display: flex; align-items: center; justify-content: center; }
+        .logo-icon svg { width: 20px; height: 20px; color: white; }
+        .logo-text { font-size: 20px; font-weight: 700; color: #1e293b; }
+        
+        .nav-menu { padding: 16px 12px; flex: 1; overflow-y: auto; }
+        .nav-section { margin-bottom: 20px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: #94a3b8; 
+                            text-transform: uppercase; letter-spacing: 0.05em; padding: 0 12px; margin-bottom: 8px; }
+        
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; 
+                    border-radius: 8px; color: #475569; text-decoration: none; 
+                    font-size: 14px; font-weight: 500; transition: all 0.15s; cursor: pointer; }
+        .nav-item:hover { background: #f1f5f9; color: #1e293b; }
+        .nav-item.active { background: #eff6ff; color: #2563eb; }
+        .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+        
+        .nav-item-children { margin-left: 30px; margin-top: 4px; }
+        .nav-child { padding: 8px 12px; font-size: 13px; color: #64748b; 
+                     border-radius: 6px; cursor: pointer; display: block; text-decoration: none; }
+        .nav-child:hover { background: #f1f5f9; color: #1e293b; }
+        .nav-child.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
+        
+        .profile-section { padding: 16px 20px; border-top: 1px solid #e2e8f0; 
+                           background: #f8fafc; cursor: pointer; position: relative; }
+        .profile-section:hover { background: #f1f5f9; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #2563eb, #1d4ed8); 
+                  color: white; border-radius: 50%; display: flex; align-items: center; 
+                  justify-content: center; font-weight: 600; font-size: 14px; }
+        .user-details { flex: 1; min-width: 0; }
+        .user-name { font-size: 14px; font-weight: 600; color: #1e293b; 
+                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-email { font-size: 12px; color: #64748b; 
+                      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .profile-menu { display: none; position: absolute; bottom: 100%; left: 12px; right: 12px;
+                        background: white; border: 1px solid #e2e8f0; border-radius: 10px; 
+                        box-shadow: 0 -4px 20px rgba(0,0,0,0.08); margin-bottom: 8px; z-index: 100; }
+        .profile-menu.active { display: block; }
+        .menu-item { padding: 12px 16px; cursor: pointer; font-size: 14px; color: #475569; 
+                     display: flex; align-items: center; gap: 10px; }
+        .menu-item:hover { background: #f8fafc; }
+        .menu-item svg { width: 16px; height: 16px; }
+        .menu-item:last-child { border-top: 1px solid #e2e8f0; color: #dc2626; }
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .header { padding: 20px 32px; background: white; border-bottom: 1px solid #e2e8f0; }
+        .header-left h1 { font-size: 24px; font-weight: 700; color: #1e293b; }
+        .header-left p { font-size: 14px; color: #64748b; margin-top: 4px; }
+        
+        .content { flex: 1; padding: 24px 32px; overflow-y: auto; }
+        
+        .section-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .section-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; 
+                          justify-content: space-between; align-items: center; }
+        .section-title { font-size: 16px; font-weight: 600; color: #1e293b; }
+        .section-action { font-size: 14px; color: #2563eb; cursor: pointer; font-weight: 500; }
+        
+        .section-body { padding: 20px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 6px; }
+        .form-input, .form-textarea, .form-select { width: 100%; padding: 10px 12px; 
+               border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; 
+               color: #1e293b; background: white; }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { 
+               outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .form-textarea { min-height: 100px; resize: vertical; }
+        
+        .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        
+        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; 
+               border: none; transition: all 0.15s; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        
+        .item-list { display: flex; flex-direction: column; gap: 12px; }
+        .list-item { display: flex; justify-content: space-between; align-items: flex-start; 
+                     padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .item-content { flex: 1; }
+        .item-title { font-size: 15px; font-weight: 600; color: #1e293b; }
+        .item-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
+        .item-meta { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .item-actions { display: flex; gap: 8px; }
+        .item-action { padding: 6px 10px; font-size: 12px; color: #64748b; background: #f1f5f9; 
+                      border: none; border-radius: 6px; cursor: pointer; }
+        .item-action:hover { background: #e2e8f0; }
+        .item-action.delete { color: #dc2626; background: #fef2f2; }
+        .item-action.delete:hover { background: #fee2e2; }
+        
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+        
+        .tag { display: inline-block; padding: 4px 10px; font-size: 12px; border-radius: 12px; 
+               background: #f1f5f9; color: #475569; margin-right: 6px; margin-bottom: 6px; }
+        .tag.technical { background: #eff6ff; color: #2563eb; }
+        .tag.domain { background: #f0fdf4; color: #16a34a; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                 background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 500px; 
+                         max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; 
+                        justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 18px; font-weight: 600; color: #1e293b; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid #e2e8f0; 
+                        display: flex; justify-content: flex-end; gap: 12px; }
+        
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; 
+                 background: #1e293b; color: white; border-radius: 8px; font-size: 14px; 
+                 display: none; z-index: 2000; }
+        .toast.show { display: block; }
+        .toast.success { background: #16a34a; }
+        .toast.error { background: #dc2626; }
+        
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidebar.html' %}
+    
+    <main class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <h1>Edit Profile</h1>
+                <p>Update your career information</p>
+            </div>
+        </header>
+        
+        <div class="content">
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Basic Information</span>
+                    <span class="section-action" onclick="openBasicModal()">Edit</span>
+                </div>
+                <div class="section-body" id="basic-info">
+                    <div class="empty-state">
+                        <p>No basic info added yet. Click Edit to add your details.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Work Experience</span>
+                    <span class="section-action" onclick="openExperienceModal()">+ Add</span>
+                </div>
+                <div class="section-body">
+                    <div class="item-list" id="experience-list">
+                        <div class="empty-state">
+                            <p>No work experience added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Skills</span>
+                    <span class="section-action" onclick="openSkillModal()">+ Add</span>
+                </div>
+                <div class="section-body">
+                    <div class="item-list" id="skills-list">
+                        <div class="empty-state">
+                            <p>No skills added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Education</span>
+                    <span class="section-action" onclick="openEducationModal()">+ Add</span>
+                </div>
+                <div class="section-body">
+                    <div class="item-list" id="education-list">
+                        <div class="empty-state">
+                            <p>No education added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Certifications</span>
+                    <span class="section-action" onclick="openCertModal()">+ Add</span>
+                </div>
+                <div class="section-body">
+                    <div class="item-list" id="certifications-list">
+                        <div class="empty-state">
+                            <p>No certifications added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Projects</span>
+                    <span class="section-action" onclick="openProjectModal()">+ Add</span>
+                </div>
+                <div class="section-body">
+                    <div class="item-list" id="projects-list">
+                        <div class="empty-state">
+                            <p>No projects added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Achievements</span>
+                    <span class="section-action" onclick="openAchievementModal()">+ Add</span>
+                </div>
+                <div class="section-body">
+                    <div class="item-list" id="achievements-list">
+                        <div class="empty-state">
+                            <p>No achievements added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-title">Courses</span>
+                    <span class="section-action" onclick="openCourseModal()">+ Add</span>
+                </div>
+                <div class="section-body">
+                    <div class="item-list" id="courses-list">
+                        <div class="empty-state">
+                            <p>No courses added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Basic Info Modal -->
+    <div class="modal" id="basic-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Basic Information</span>
+                <button class="modal-close" onclick="closeModal('basic-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" class="form-input" id="basic-name" placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Professional Title</label>
+                    <input type="text" class="form-input" id="basic-title" placeholder="e.g., Senior Software Engineer">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Summary</label>
+                    <textarea class="form-textarea" id="basic-summary" placeholder="Brief professional summary..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="basic-location" placeholder="e.g., San Francisco, CA">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Years of Experience</label>
+                        <input type="number" class="form-input" id="basic-years" placeholder="e.g., 5" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('basic-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBasic()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Experience Modal -->
+    <div class="modal" id="experience-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="exp-modal-title">Add Work Experience</span>
+                <button class="modal-close" onclick="closeModal('experience-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="exp-id">
+                <div class="form-group">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-input" id="exp-company" placeholder="Company name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Job Title</label>
+                    <input type="text" class="form-input" id="exp-title" placeholder="Your role">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-input" id="exp-location" placeholder="City, Country">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="month" class="form-input" id="exp-start">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="month" class="form-input" id="exp-end">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="exp-current"> Currently working here
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="exp-description" placeholder="Describe your responsibilities..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('experience-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveExperience()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Skill Modal -->
+    <div class="modal" id="skill-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="skill-modal-title">Add Skill</span>
+                <button class="modal-close" onclick="closeModal('skill-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="skill-id">
+                <div class="form-group">
+                    <label class="form-label">Skill Name</label>
+                    <input type="text" class="form-input" id="skill-name" placeholder="e.g., Python">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="skill-category">
+                        <option value="technical">Technical</option>
+                        <option value="domain">Domain</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proficiency (1-5)</label>
+                    <select class="form-select" id="skill-proficiency">
+                        <option value="1">1 - Beginner</option>
+                        <option value="2">2 - Elementary</option>
+                        <option value="3" selected>3 - Intermediate</option>
+                        <option value="4">4 - Advanced</option>
+                        <option value="5">5 - Expert</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Years of Experience</label>
+                    <input type="number" class="form-input" id="skill-years" placeholder="Optional" min="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('skill-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSkill()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Education Modal -->
+    <div class="modal" id="education-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="edu-modal-title">Add Education</span>
+                <button class="modal-close" onclick="closeModal('education-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edu-id">
+                <div class="form-group">
+                    <label class="form-label">Institution</label>
+                    <input type="text" class="form-input" id="edu-institution" placeholder="University or School">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Degree</label>
+                        <input type="text" class="form-input" id="edu-degree" placeholder="e.g., Bachelor of Science">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Field of Study</label>
+                        <input type="text" class="form-input" id="edu-field" placeholder="e.g., Computer Science">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="month" class="form-input" id="edu-start">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="month" class="form-input" id="edu-end">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">GPA (optional)</label>
+                    <input type="number" step="0.1" class="form-input" id="edu-gpa" placeholder="e.g., 3.8" min="0" max="4">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('education-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEducation()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Certification Modal -->
+    <div class="modal" id="cert-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="cert-modal-title">Add Certification</span>
+                <button class="modal-close" onclick="closeModal('cert-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="cert-id">
+                <div class="form-group">
+                    <label class="form-label">Certification Name</label>
+                    <input type="text" class="form-input" id="cert-name" placeholder="e.g., AWS Solutions Architect">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Issuer</label>
+                    <input type="text" class="form-input" id="cert-issuer" placeholder="e.g., Amazon Web Services">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Issue Date</label>
+                        <input type="month" class="form-input" id="cert-issue">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Expiry Date (optional)</label>
+                        <input type="month" class="form-input" id="cert-expiry">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Credential ID (optional)</label>
+                    <input type="text" class="form-input" id="cert-credential" placeholder="Credential ID">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('cert-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCertification()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Project Modal -->
+    <div class="modal" id="project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="proj-modal-title">Add Project</span>
+                <button class="modal-close" onclick="closeModal('project-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="proj-id">
+                <div class="form-group">
+                    <label class="form-label">Project Name</label>
+                    <input type="text" class="form-input" id="proj-name" placeholder="Project name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <input type="text" class="form-input" id="proj-role" placeholder="e.g., Lead Developer">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="proj-description" placeholder="What was the project about?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Technologies (comma-separated)</label>
+                    <input type="text" class="form-input" id="proj-tech" placeholder="e.g., React, Node.js, PostgreSQL">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Outcomes (comma-separated)</label>
+                    <input type="text" class="form-input" id="proj-outcomes" placeholder="e.g., Improved performance by 40%">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="month" class="form-input" id="proj-start">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="month" class="form-input" id="proj-end">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('project-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProject()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievement Modal -->
+    <div class="modal" id="achievement-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="ach-modal-title">Add Achievement</span>
+                <button class="modal-close" onclick="closeModal('achievement-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ach-id">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-input" id="ach-title" placeholder="Achievement title">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="ach-category">
+                        <option value="promotion">Promotion</option>
+                        <option value="hackathon">Hackathon</option>
+                        <option value="scholarship">Scholarship</option>
+                        <option value="competition">Competition</option>
+                        <option value="award">Award</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="ach-description" placeholder="Describe the achievement..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="month" class="form-input" id="ach-date">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Organization (optional)</label>
+                        <input type="text" class="form-input" id="ach-org" placeholder="Company or organization">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('achievement-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAchievement()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Course Modal -->
+    <div class="modal" id="course-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="course-modal-title">Add Course</span>
+                <button class="modal-close" onclick="closeModal('course-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="course-id">
+                <div class="form-group">
+                    <label class="form-label">Course Name</label>
+                    <input type="text" class="form-input" id="course-name" placeholder="Course name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Provider</label>
+                    <input type="text" class="form-input" id="course-provider" placeholder="e.g., Coursera, Udemy">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Completion Date</label>
+                    <input type="month" class="form-input" id="course-date">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description (optional)</label>
+                    <textarea class="form-textarea" id="course-desc" placeholder="What did you learn?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('course-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCourse()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        let profileData = null;
+        
+        function toggleProfileMenu() {
+            document.getElementById('profile-menu').classList.toggle('active');
+        }
+        
+        function toggleSubmenu(name) {
+            const submenu = document.getElementById(name + '-submenu');
+            submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.profile-section')) {
+                document.getElementById('profile-menu').classList.remove('active');
+            }
+        });
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/profile');
+                if (res.ok) {
+                    profileData = await res.json();
+                    renderProfile();
+                    
+                    const name = profileData.name || 'User';
+                    document.getElementById('user-name').textContent = name;
+                    document.getElementById('user-email').textContent = profileData.email;
+                    document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+                }
+            } catch (e) {
+                console.error('Failed to load profile', e);
+            }
+        }
+        
+        function renderProfile() {
+            if (!profileData) return;
+            
+            const basicDiv = document.getElementById('basic-info');
+            if (profileData.title || profileData.summary || profileData.location) {
+                basicDiv.innerHTML = `
+                    <div style="font-size: 18px; font-weight: 600; color: #1e293b;">${profileData.title || 'No title'}</div>
+                    <div style="color: #64748b; margin-top: 8px;">${profileData.summary || 'No summary'}</div>
+                    <div style="margin-top: 12px; font-size: 14px; color: #94a3b8;">
+                        ${profileData.location ? '📍 ' + profileData.location : ''}
+                        ${profileData.years_of_experience ? ' • ' + profileData.years_of_experience + ' years experience' : ''}
+                    </div>
+                `;
+            }
+            
+            renderList('experience-list', profileData.work_experience, 'exp');
+            renderList('education-list', profileData.education, 'edu');
+            renderList('certifications-list', profileData.certifications, 'cert');
+            renderList('achievements-list', profileData.achievements, 'ach');
+            renderList('courses-list', profileData.courses, 'course');
+            
+            const skillsList = document.getElementById('skills-list');
+            if (profileData.skills?.length) {
+                skillsList.innerHTML = profileData.skills.map(s => `
+                    <div class="list-item">
+                        <div class="item-content">
+                            <div class="item-title">${s.name}</div>
+                            <div style="margin-top: 4px;">
+                                <span class="tag ${s.category}">${s.category}</span>
+                                <span style="font-size: 12px; color: #64748b;">Proficiency: ${s.proficiency}/5</span>
+                                ${s.years_of_experience ? `<span style="font-size: 12px; color: #64748b;"> • ${s.years_of_experience} years</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="item-action" onclick="editSkill(${s.id})">Edit</button>
+                            <button class="item-action delete" onclick="deleteSkill(${s.id})">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            const projectsList = document.getElementById('projects-list');
+            if (profileData.projects?.length) {
+                projectsList.innerHTML = profileData.projects.map(p => `
+                    <div class="list-item">
+                        <div class="item-content">
+                            <div class="item-title">${p.name}</div>
+                            <div class="item-subtitle">${p.role || ''}</div>
+                            <div style="margin-top: 4px;">
+                                ${(p.technologies || []).map(t => `<span class="tag">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="item-action" onclick="editProject(${p.id})">Edit</button>
+                            <button class="item-action delete" onclick="deleteProject(${p.id})">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function renderList(containerId, items, prefix) {
+            const container = document.getElementById(containerId);
+            if (!items?.length) {
+                container.innerHTML = '<div class="empty-state"><p>No items added yet.</p></div>';
+                return;
+            }
+            container.innerHTML = items.map(item => `
+                <div class="list-item">
+                    <div class="item-content">
+                        <div class="item-title">${item.title || item.name || item.company || item.institution || ''}</div>
+                        <div class="item-subtitle">${item.subtitle || ''}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="item-action" onclick="edit${prefix.charAt(0).toUpperCase() + prefix.slice(1)}(${item.id})">Edit</button>
+                        <button class="item-action delete" onclick="delete${prefix.charAt(0).toUpperCase() + prefix.slice(1)}(${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Basic Info
+        function openBasicModal() {
+            document.getElementById('basic-name').value = profileData.name || '';
+            document.getElementById('basic-title').value = profileData.title || '';
+            document.getElementById('basic-summary').value = profileData.summary || '';
+            document.getElementById('basic-location').value = profileData.location || '';
+            document.getElementById('basic-years').value = profileData.years_of_experience || '';
+            openModal('basic-modal');
+        }
+        
+        async function saveBasic() {
+            const data = {
+                name: document.getElementById('basic-name').value,
+                title: document.getElementById('basic-title').value,
+                summary: document.getElementById('basic-summary').value,
+                location: document.getElementById('basic-location').value,
+                years_of_experience: parseInt(document.getElementById('basic-years').value) || 0
+            };
+            const res = await fetch('/api/profile/basic', {
+                method: 'PUT', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                closeModal('basic-modal');
+                showToast('Basic info saved');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        // Work Experience
+        function openExperienceModal(exp = null) {
+            if (exp) {
+                document.getElementById('exp-modal-title').textContent = 'Edit Work Experience';
+                document.getElementById('exp-id').value = exp.id;
+                document.getElementById('exp-company').value = exp.company || '';
+                document.getElementById('exp-title').value = exp.title || '';
+                document.getElementById('exp-location').value = exp.location || '';
+                document.getElementById('exp-start').value = exp.start_date || '';
+                document.getElementById('exp-end').value = exp.end_date || '';
+                document.getElementById('exp-current').checked = exp.current || false;
+                document.getElementById('exp-description').value = exp.description || '';
+            } else {
+                document.getElementById('exp-modal-title').textContent = 'Add Work Experience';
+                document.getElementById('exp-id').value = '';
+                ['exp-company','exp-title','exp-location','exp-start','exp-end','exp-description'].forEach(id => 
+                    document.getElementById(id).value = '');
+                document.getElementById('exp-current').checked = false;
+            }
+            openModal('experience-modal');
+        }
+        
+        async function saveExperience() {
+            const id = document.getElementById('exp-id').value;
+            const data = {
+                company: document.getElementById('exp-company').value,
+                title: document.getElementById('exp-title').value,
+                location: document.getElementById('exp-location').value,
+                start_date: document.getElementById('exp-start').value,
+                end_date: document.getElementById('exp-current').checked ? null : document.getElementById('exp-end').value,
+                current: document.getElementById('exp-current').checked,
+                description: document.getElementById('exp-description').value
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/experience/${id}` : '/api/profile/experience';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('experience-modal');
+                showToast(id ? 'Experience updated' : 'Experience added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editExperience(id) {
+            const exp = profileData.work_experience.find(e => e.id === id);
+            if (exp) openExperienceModal(exp);
+        }
+        
+        async function deleteExperience(id) {
+            if (!confirm('Delete this experience?')) return;
+            const res = await fetch(`/api/profile/experience/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('Experience deleted'); loadProfile(); }
+            else showToast('Failed to delete', 'error');
+        }
+        
+        // Skills
+        function openSkillModal(skill = null) {
+            if (skill) {
+                document.getElementById('skill-modal-title').textContent = 'Edit Skill';
+                document.getElementById('skill-id').value = skill.id;
+                document.getElementById('skill-name').value = skill.name || '';
+                document.getElementById('skill-category').value = skill.category || 'technical';
+                document.getElementById('skill-proficiency').value = skill.proficiency || 3;
+                document.getElementById('skill-years').value = skill.years_of_experience || '';
+            } else {
+                document.getElementById('skill-modal-title').textContent = 'Add Skill';
+                document.getElementById('skill-id').value = '';
+                document.getElementById('skill-name').value = '';
+                document.getElementById('skill-category').value = 'technical';
+                document.getElementById('skill-proficiency').value = 3;
+                document.getElementById('skill-years').value = '';
+            }
+            openModal('skill-modal');
+        }
+        
+        async function saveSkill() {
+            const id = document.getElementById('skill-id').value;
+            const data = {
+                name: document.getElementById('skill-name').value,
+                category: document.getElementById('skill-category').value,
+                proficiency: parseInt(document.getElementById('skill-proficiency').value),
+                years_of_experience: parseInt(document.getElementById('skill-years').value) || null
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/skills/${id}` : '/api/profile/skills';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('skill-modal');
+                showToast(id ? 'Skill updated' : 'Skill added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editSkill(id) {
+            const skill = profileData.skills.find(s => s.id === id);
+            if (skill) openSkillModal(skill);
+        }
+        
+        async function deleteSkill(id) {
+            if (!confirm('Delete this skill?')) return;
+            const res = await fetch(`/api/profile/skills/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('Skill deleted'); loadProfile(); }
+            else showToast('Failed to delete', 'error');
+        }
+        
+        // Education
+        function openEducationModal(edu = null) {
+            if (edu) {
+                document.getElementById('edu-modal-title').textContent = 'Edit Education';
+                document.getElementById('edu-id').value = edu.id;
+                document.getElementById('edu-institution').value = edu.institution || '';
+                document.getElementById('edu-degree').value = edu.degree || '';
+                document.getElementById('edu-field').value = edu.field || '';
+                document.getElementById('edu-start').value = edu.start_date || '';
+                document.getElementById('edu-end').value = edu.end_date || '';
+                document.getElementById('edu-gpa').value = edu.gpa || '';
+            } else {
+                document.getElementById('edu-modal-title').textContent = 'Add Education';
+                document.getElementById('edu-id').value = '';
+                ['edu-institution','edu-degree','edu-field','edu-start','edu-end','edu-gpa'].forEach(id => 
+                    document.getElementById(id).value = '');
+            }
+            openModal('education-modal');
+        }
+        
+        async function saveEducation() {
+            const id = document.getElementById('edu-id').value;
+            const data = {
+                institution: document.getElementById('edu-institution').value,
+                degree: document.getElementById('edu-degree').value,
+                field: document.getElementById('edu-field').value,
+                start_date: document.getElementById('edu-start').value,
+                end_date: document.getElementById('edu-end').value,
+                gpa: parseFloat(document.getElementById('edu-gpa').value) || null
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/education/${id}` : '/api/profile/education';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('education-modal');
+                showToast(id ? 'Education updated' : 'Education added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editEducation(id) {
+            const edu = profileData.education.find(e => e.id === id);
+            if (edu) openEducationModal(edu);
+        }
+        
+        async function deleteEducation(id) {
+            if (!confirm('Delete this education?')) return;
+            const res = await fetch(`/api/profile/education/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('Education deleted'); loadProfile(); }
+            else showToast('Failed to delete', 'error');
+        }
+        
+        // Certifications
+        function openCertModal(cert = null) {
+            if (cert) {
+                document.getElementById('cert-modal-title').textContent = 'Edit Certification';
+                document.getElementById('cert-id').value = cert.id;
+                document.getElementById('cert-name').value = cert.name || '';
+                document.getElementById('cert-issuer').value = cert.issuer || '';
+                document.getElementById('cert-issue').value = cert.issue_date || '';
+                document.getElementById('cert-expiry').value = cert.expiry_date || '';
+                document.getElementById('cert-credential').value = cert.credential_id || '';
+            } else {
+                document.getElementById('cert-modal-title').textContent = 'Add Certification';
+                document.getElementById('cert-id').value = '';
+                ['cert-name','cert-issuer','cert-issue','cert-expiry','cert-credential'].forEach(id => 
+                    document.getElementById(id).value = '');
+            }
+            openModal('cert-modal');
+        }
+        
+        async function saveCertification() {
+            const id = document.getElementById('cert-id').value;
+            const data = {
+                name: document.getElementById('cert-name').value,
+                issuer: document.getElementById('cert-issuer').value,
+                issue_date: document.getElementById('cert-issue').value,
+                expiry_date: document.getElementById('cert-expiry').value || null,
+                credential_id: document.getElementById('cert-credential').value || null
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/certifications/${id}` : '/api/profile/certifications';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('cert-modal');
+                showToast(id ? 'Certification updated' : 'Certification added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editCertification(id) {
+            const cert = profileData.certifications.find(c => c.id === id);
+            if (cert) openCertModal(cert);
+        }
+        
+        async function deleteCertification(id) {
+            if (!confirm('Delete this certification?')) return;
+            const res = await fetch(`/api/profile/certifications/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('Certification deleted'); loadProfile(); }
+            else showToast('Failed to delete', 'error');
+        }
+        
+        // Projects
+        function openProjectModal(proj = null) {
+            if (proj) {
+                document.getElementById('proj-modal-title').textContent = 'Edit Project';
+                document.getElementById('proj-id').value = proj.id;
+                document.getElementById('proj-name').value = proj.name || '';
+                document.getElementById('proj-role').value = proj.role || '';
+                document.getElementById('proj-description').value = proj.description || '';
+                document.getElementById('proj-tech').value = (proj.technologies || []).join(', ');
+                document.getElementById('proj-outcomes').value = (proj.outcomes || []).join(', ');
+                document.getElementById('proj-start').value = proj.start_date || '';
+                document.getElementById('proj-end').value = proj.end_date || '';
+            } else {
+                document.getElementById('proj-modal-title').textContent = 'Add Project';
+                document.getElementById('proj-id').value = '';
+                ['proj-name','proj-role','proj-description','proj-tech','proj-outcomes','proj-start','proj-end'].forEach(id => 
+                    document.getElementById(id).value = '');
+            }
+            openModal('project-modal');
+        }
+        
+        async function saveProject() {
+            const id = document.getElementById('proj-id').value;
+            const data = {
+                name: document.getElementById('proj-name').value,
+                role: document.getElementById('proj-role').value,
+                description: document.getElementById('proj-description').value,
+                technologies: document.getElementById('proj-tech').value.split(',').map(x => x.trim()).filter(Boolean),
+                outcomes: document.getElementById('proj-outcomes').value.split(',').map(x => x.trim()).filter(Boolean),
+                start_date: document.getElementById('proj-start').value,
+                end_date: document.getElementById('proj-end').value || null
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/projects/${id}` : '/api/profile/projects';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('project-modal');
+                showToast(id ? 'Project updated' : 'Project added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editProject(id) {
+            const proj = profileData.projects.find(p => p.id === id);
+            if (proj) openProjectModal(proj);
+        }
+        
+        async function deleteProject(id) {
+            if (!confirm('Delete this project?')) return;
+            const res = await fetch(`/api/profile/projects/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('Project deleted'); loadProfile(); }
+            else showToast('Failed to delete', 'error');
+        }
+        
+        // Achievements
+        function openAchievementModal(ach = null) {
+            if (ach) {
+                document.getElementById('ach-modal-title').textContent = 'Edit Achievement';
+                document.getElementById('ach-id').value = ach.id;
+                document.getElementById('ach-title').value = ach.title || '';
+                document.getElementById('ach-category').value = ach.category || 'other';
+                document.getElementById('ach-description').value = ach.description || '';
+                document.getElementById('ach-date').value = ach.date || '';
+                document.getElementById('ach-org').value = ach.organization || '';
+            } else {
+                document.getElementById('ach-modal-title').textContent = 'Add Achievement';
+                document.getElementById('ach-id').value = '';
+                ['ach-title','ach-description','ach-date','ach-org'].forEach(id => 
+                    document.getElementById(id).value = '');
+                document.getElementById('ach-category').value = 'other';
+            }
+            openModal('achievement-modal');
+        }
+        
+        async function saveAchievement() {
+            const id = document.getElementById('ach-id').value;
+            const data = {
+                title: document.getElementById('ach-title').value,
+                category: document.getElementById('ach-category').value,
+                description: document.getElementById('ach-description').value,
+                date: document.getElementById('ach-date').value,
+                organization: document.getElementById('ach-org').value || null
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/achievements/${id}` : '/api/profile/achievements';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('achievement-modal');
+                showToast(id ? 'Achievement updated' : 'Achievement added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editAchievement(id) {
+            const ach = profileData.achievements.find(a => a.id === id);
+            if (ach) openAchievementModal(ach);
+        }
+        
+        async function deleteAchievement(id) {
+            if (!confirm('Delete this achievement?')) return;
+            const res = await fetch(`/api/profile/achievements/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('Achievement deleted'); loadProfile(); }
+            else showToast('Failed to delete', 'error');
+        }
+        
+        // Courses
+        function openCourseModal(course = null) {
+            if (course) {
+                document.getElementById('course-modal-title').textContent = 'Edit Course';
+                document.getElementById('course-id').value = course.id;
+                document.getElementById('course-name').value = course.name || '';
+                document.getElementById('course-provider').value = course.provider || '';
+                document.getElementById('course-date').value = course.completion_date || '';
+                document.getElementById('course-desc').value = course.description || '';
+            } else {
+                document.getElementById('course-modal-title').textContent = 'Add Course';
+                document.getElementById('course-id').value = '';
+                ['course-name','course-provider','course-date','course-desc'].forEach(id => 
+                    document.getElementById(id).value = '');
+            }
+            openModal('course-modal');
+        }
+        
+        async function saveCourse() {
+            const id = document.getElementById('course-id').value;
+            const data = {
+                name: document.getElementById('course-name').value,
+                provider: document.getElementById('course-provider').value,
+                completion_date: document.getElementById('course-date').value,
+                description: document.getElementById('course-desc').value || null
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/courses/${id}` : '/api/profile/courses';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('course-modal');
+                showToast(id ? 'Course updated' : 'Course added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editCourse(id) {
+            const course = profileData.courses.find(c => c.id === id);
+            if (course) openCourseModal(course);
+        }
+        
+        async function deleteCourse(id) {
+            if (!confirm('Delete this course?')) return;
+            const res = await fetch(`/api/profile/courses/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('Course deleted'); loadProfile(); }
+            else showToast('Failed to delete', 'error');
+        }
+        
+        loadProfile();
+    </script>
+</body>
+</html>

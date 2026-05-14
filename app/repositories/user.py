@@ -12,14 +12,14 @@ class UserRepository:
             set_db_path(self.db_path)
         await init_db()
         
-    async def create(self, username: str, email: str) -> dict:
+    async def create(self, name: str, email: str) -> dict:
         conn = await get_connection()
         cursor = await conn.execute(
-            "INSERT INTO users (username, email) VALUES (?, ?)",
-            (username, email)
+            "INSERT INTO users (name, email) VALUES (?, ?)",
+            (name, email)
         )
         await conn.commit()
-        return {"id": cursor.lastrowid, "username": username, "email": email}
+        return {"id": cursor.lastrowid, "name": name, "email": email}
     
     async def get_by_id(self, user_id: int) -> Optional[dict]:
         conn = await get_connection()
@@ -27,10 +27,10 @@ class UserRepository:
         async with conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)) as cursor:
             return await cursor.fetchone()
     
-    async def get_by_username(self, username: str) -> Optional[dict]:
+    async def get_by_name(self, name: str) -> Optional[dict]:
         conn = await get_connection()
         conn.row_factory = lambda c, r: dict(zip([d[0] for d in c.description], r))
-        async with conn.execute("SELECT * FROM users WHERE username = ?", (username,)) as cursor:
+        async with conn.execute("SELECT * FROM users WHERE name = ?", (name,)) as cursor:
             return await cursor.fetchone()
 
     async def get_by_email(self, email: str) -> Optional[dict]:

@@ -127,16 +127,15 @@ class AIService:
             async with provider.connect_live(model, config) as session:
                 yield session
 
-    async def generate_title(self, user_id: int, username: str, message: str) -> str:
-        """Generate a short title for a chat based on the first message"""
-        prompt = [
-            {"role": "system", "content": "Generate a very short, concise title (max 3-4 words) for a chat conversation based on the user's first message. Respond ONLY with the title text, no quotes or periods."},
-            {"role": "user", "content": f"Message: {message}"}
-        ]
+    async def generate_title(self, user_id: int, name: str, message: str) -> str:
+        prompt = f"""Based on this first message from a user, create a short, descriptive title for a new chat session.
+        
+User's first message: "{message}"
+
+Respond with just the title, no quotes or explanation. Keep it under 50 characters."""
         
         try:
-            # We use the user's configured provider/model for title generation too
-            response = await self.send_message(user_id, username, 0, prompt)
+            response = await self.send_message(user_id, name, 0, prompt)
             if "content" in response:
                 return response["content"].strip()
             return "Untitled Chat"
@@ -144,7 +143,7 @@ class AIService:
             print(f"Error generating title: {e}")
             return "Untitled Chat"
     
-    async def send_message(self, user_id: int, username: str, session_id: int, messages: List[Dict[str, str]]) -> Dict:
+    async def send_message(self, user_id: int, name: str, session_id: int, messages: List[Dict[str, str]]) -> Dict:
         """Send message to AI and return response"""
         # Get user's settings
         settings = await self.repo.get_by_user(user_id)
@@ -156,7 +155,7 @@ class AIService:
         base_system_prompt = settings.get("system_prompt", "You are a helpful assistant.")
         
         # Inject user identity into system prompt
-        personalized_system_prompt = f"The user you are assisting is named {username}. {base_system_prompt}"
+        personalized_system_prompt = f"The user you are assisting is named {name}. {base_system_prompt}"
         
         # Check if we already have a system message in the thread
         thread = messages.copy()
@@ -166,7 +165,7 @@ class AIService:
             # Update existing system prompt if it exists
             for m in thread:
                 if m["role"] == "system":
-                    m["content"] = f"The user you are assisting is named {username}. {m['content']}"
+                    m["content"] = f"The user you are assisting is named {name}. {m['content']}"
         
         try:
             provider = get_provider(provider_name)
@@ -175,7 +174,7 @@ class AIService:
         except Exception as e:
             return {"error": str(e)}
     
-    async def send_message_streaming(self, user_id: int, username: str, session_id: int, messages: List[Dict[str, str]]):
+    async def send_message_streaming(self, user_id: int, name: str, session_id: int, messages: List[Dict[str, str]]):
         """Send message to AI with streaming response"""
         settings = await self.repo.get_by_user(user_id)
         if not settings:
@@ -186,7 +185,7 @@ class AIService:
         base_system_prompt = settings.get("system_prompt", "You are a helpful assistant.")
         
         # Inject user identity
-        personalized_system_prompt = f"The user you are assisting is named {username}. {base_system_prompt}"
+        personalized_system_prompt = f"The user you are assisting is named {name}. {base_system_prompt}"
         
         thread = messages.copy()
         if not any(m["role"] == "system" for m in thread):
@@ -194,7 +193,7 @@ class AIService:
         else:
             for m in thread:
                 if m["role"] == "system":
-                    m["content"] = f"The user you are assisting is named {username}. {m['content']}"
+                    m["content"] = f"The user you are assisting is named {name}. {m['content']}"
         
         provider = get_provider(provider_name)
         async for chunk in provider.chat_streaming(thread, model):

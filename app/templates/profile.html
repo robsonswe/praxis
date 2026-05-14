@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-grid">
+    <aside class="profile-sidebar">
+        <div class="identity-card">
+            <div class="identity-avatar" id="profile-avatar">U</div>
+            <div class="identity-name" id="profile-name">Your Name</div>
+            <div class="identity-title" id="profile-title">Add your title</div>
+            <div class="identity-location" id="profile-location"></div>
+        </div>
+        <a href="/profile/curriculum" class="edit-profile-btn">Edit Profile</a>
+        
+        <div class="completeness-card">
+            <div class="completeness-title">Profile Completeness</div>
+            <div class="completeness-value" id="completeness">0%</div>
+            <div class="completeness-bar">
+                <div class="completeness-fill" id="completeness-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+        
+        <div class="skills-card">
+            <div class="skills-title">Skills</div>
+            <div class="skills-list" id="skills-list">
+                <div style="color: #94a3b8; font-size: 13px;">No skills added yet</div>
+            </div>
+        </div>
+    </aside>
+    
+    <main class="profile-main">
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Professional History</span>
+            </div>
+            <div class="section-body" id="experience-section">
+                <div class="empty-section">
+                    <p>No work experience added yet</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Education</span>
+            </div>
+            <div class="section-body" id="education-section">
+                <div class="empty-section">
+                    <p>No education added yet</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Certifications</span>
+            </div>
+            <div class="section-body" id="certifications-section">
+                <div class="empty-section">
+                    <p>No certifications added yet</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Projects</span>
+            </div>
+            <div class="section-body" id="projects-section">
+                <div class="empty-section">
+                    <p>No projects added yet</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Achievements</span>
+            </div>
+            <div class="section-body" id="achievements-section">
+                <div class="empty-section">
+                    <p>No achievements added yet</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Courses</span>
+            </div>
+            <div class="section-body" id="courses-section">
+                <div class="empty-section">
+                    <p>No courses added yet</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    let profileData = null;
+    
+    async function loadProfile() {
+        try {
+            const response = await fetch('/api/profile');
+            if (response.ok) {
+                profileData = await response.json();
+                
+                if (profileData.basic) {
+                    document.getElementById('profile-name').textContent = profileData.basic.name || 'Your Name';
+                    document.getElementById('profile-title').textContent = profileData.basic.title || 'Add your title';
+                    document.getElementById('profile-avatar').textContent = (profileData.basic.name || 'U')[0].toUpperCase();
+                    
+                    if (profileData.basic.location) {
+                        document.getElementById('profile-location').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ' + profileData.basic.location;
+                    }
+                }
+                
+                const completeness = profileData.completeness || 0;
+                document.getElementById('completeness').textContent = completeness + '%';
+                document.getElementById('completeness-fill').style.width = completeness + '%';
+                
+                if (profileData.skills && profileData.skills.length > 0) {
+                    document.getElementById('skills-list').innerHTML = profileData.skills.map(s => 
+                        `<span class="skill-tag ${s.category === 'technical' ? 'technical' : 'domain'}">${s.name}</span>`
+                    ).join('');
+                }
+                
+                if (profileData.experience && profileData.experience.length > 0) {
+                    document.getElementById('experience-section').innerHTML = profileData.experience.map((exp, i) => `
+                        <div class="experience-item">
+                            <div class="exp-timeline">
+                                <div class="exp-dot"></div>
+                                ${i < profileData.experience.length - 1 ? '<div class="exp-line"></div>' : ''}
+                            </div>
+                            <div class="exp-content">
+                                <div class="exp-header">
+                                    <div>
+                                        <div class="exp-title">${exp.title}</div>
+                                        <div class="exp-company">${exp.company}</div>
+                                    </div>
+                                    <div class="exp-dates">${exp.start_date || ''} - ${exp.current ? 'Present' : exp.end_date || ''}</div>
+                                </div>
+                                ${exp.location ? `<div class="exp-location">${exp.location}</div>` : ''}
+                                ${exp.description ? `<div class="exp-description">${exp.description}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                if (profileData.education && profileData.education.length > 0) {
+                    document.getElementById('education-section').innerHTML = profileData.education.map((edu, i) => `
+                        <div class="education-item">
+                            <div class="exp-timeline">
+                                <div class="exp-dot"></div>
+                                ${i < profileData.education.length - 1 ? '<div class="exp-line"></div>' : ''}
+                            </div>
+                            <div class="edu-content">
+                                <div class="edu-header">
+                                    <div>
+                                        <div class="edu-degree">${edu.degree}</div>
+                                        <div class="edu-field">${edu.field_of_study}</div>
+                                    </div>
+                                    <div class="edu-dates">${edu.start_year || ''} - ${edu.end_year || ''}</div>
+                                </div>
+                                <div class="edu-school">${edu.institution}</div>
+                                ${edu.gpa ? `<div class="edu-gpa">GPA: ${edu.gpa}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                if (profileData.certifications && profileData.certifications.length > 0) {
+                    document.getElementById('certifications-section').innerHTML = '<div class="cert-grid">' + 
+                        profileData.certifications.map(cert => `
+                            <div class="cert-item">
+                                <div class="cert-name">${cert.name}</div>
+                                <div class="cert-issuer">${cert.issuer}</div>
+                                <div class="cert-date">${cert.date_obtained || ''}</div>
+                            </div>
+                        `).join('') + '</div>';
+                }
+                
+                if (profileData.projects && profileData.projects.length > 0) {
+                    document.getElementById('projects-section').innerHTML = profileData.projects.map(proj => `
+                        <div class="project-item">
+                            <div class="project-header">
+                                <div>
+                                    <div class="project-name">${proj.name}</div>
+                                    ${proj.role ? `<div class="project-role">${proj.role}</div>` : ''}
+                                </div>
+                                <div class="project-dates">${proj.start_date || ''} - ${proj.end_date || ''}</div>
+                            </div>
+                            ${proj.description ? `<div class="project-desc">${proj.description}</div>` : ''}
+                            ${proj.technologies ? `<div class="project-tech">${proj.technologies.split(',').map(t => `<span class="tech-tag">${t.trim()}</span>`).join('')}</div>` : ''}
+                        </div>
+                    `).join('');
+                }
+                
+                if (profileData.achievements && profileData.achievements.length > 0) {
+                    document.getElementById('achievements-section').innerHTML = profileData.achievements.map(ach => `
+                        <div class="achievement-item">
+                            <div class="achievement-icon ${ach.category || 'other'}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="achievement-content">
+                                <div class="achievement-title">${ach.title}</div>
+                                ${ach.description ? `<div class="achievement-desc">${ach.description}</div>` : ''}
+                                ${ach.date ? `<div class="achievement-date">${ach.date}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                if (profileData.courses && profileData.courses.length > 0) {
+                    document.getElementById('courses-section').innerHTML = profileData.courses.map(course => `
+                        <div class="course-item">
+                            <div class="course-name">${course.name}</div>
+                            <div class="course-provider">${course.provider}</div>
+                            <div class="course-date">${course.completion_date || ''}</div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load profile:', e);
+        }
+    }
+    
+    loadProfile();
+</script>
+{% endblock %}

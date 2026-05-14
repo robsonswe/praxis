@@ -8,9 +8,9 @@ from app.models import User, ChatSession, Message
 
 
 def test_user_model():
-    user = User(id=1, username="alice", email="alice@test.com")
+    user = User(id=1, name="alice", email="alice@test.com")
     d = user.to_dict()
-    assert d["username"] == "alice"
+    assert d["name"] == "alice"
     assert d["email"] == "alice@test.com"
 
 

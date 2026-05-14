@@ -166,9 +166,9 @@
                 <div class="menu-item" onclick="logout(); event.stopPropagation();">🚪 Log Out</div>
             </div>
             <div class="user-info">
-                <div class="avatar">{{ user.username[0].upper() }}</div>
+                <div class="avatar">{{ user.name[0].upper() }}</div>
                 <div class="user-details">
-                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-name">{{ user.name }}</div>
                     <div class="user-email">{{ user.email }}</div>
                 </div>
             </div>
@@ -177,7 +177,7 @@
     <div class="chat-main">
         <div class="messages" id="messagesList">
             <div class="welcome-screen">
-                <h1>How can I help you, {{ user.username }}?</h1>
+                <h1>How can I help you, {{ user.name }}?</h1>
                 <p>Start a new conversation or select an existing one from the sidebar.</p>
             </div>
         </div>
@@ -333,7 +333,7 @@
             document.querySelectorAll('.session').forEach(s => s.classList.remove('active'));
             document.getElementById('messagesList').innerHTML = `
                 <div class="welcome-screen">
-                    <h1>How can I help you, {{ user.username }}?</h1>
+<h1>How can I help you, {{ user.name }}?</h1>
                     <p>Start a new conversation or select an existing one from the sidebar.</p>
                 </div>
             `;

@@ -5,8 +5,8 @@ class UserService:
     def __init__(self, repository: UserRepository):
         self.repository = repository
         
-    async def create_user(self, username: str, email: str) -> User:
-        data = await self.repository.create(username, email)
+    async def create_user(self, name: str, email: str) -> User:
+        data = await self.repository.create(name, email)
         return User(**data)
     
     async def get_user(self, user_id: int) -> User | None:
@@ -15,8 +15,8 @@ class UserService:
             return User(**data)
         return None
     
-    async def get_by_username(self, username: str) -> User | None:
-        data = await self.repository.get_by_username(username)
+    async def get_by_name(self, name: str) -> User | None:
+        data = await self.repository.get_by_name(name)
         if data:
             return User(**data)
         return None

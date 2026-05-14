@@ -109,7 +109,7 @@ async def init_session(request: Request, first_message: str = Form()):
     
     # Generate title in parallel (well, sequentially here but we could optimize)
     await ai_service.initialize()
-    title = await ai_service.generate_title(user_id, user.username, first_message)
+    title = await ai_service.generate_title(user_id, user.name, first_message)
     
     session = await sess_service.create_session(user_id, title)
     return JSONResponse(content={"id": session.id, "title": session.title})
@@ -151,7 +151,7 @@ async def stream_chat(request: Request, session_id: int, message: str):
         await ai_service.initialize()
         
         try:
-            async for chunk in ai_service.send_message_streaming(user_id, user.username, session_id, ai_messages):
+            async for chunk in ai_service.send_message_streaming(user_id, user.name, session_id, ai_messages):
                 if chunk.startswith("Error:"):
                     yield f"data: {json.dumps({'error': chunk[6:].strip()})}\n\n"
                     return
@@ -196,7 +196,7 @@ async def send_message(request: Request, message: str = Form(), session_id: int 
     
     # Call AI service
     await ai_service.initialize()
-    ai_response = await ai_service.send_message(user_id, user.username, session_id, ai_messages)
+    ai_response = await ai_service.send_message(user_id, user.name, session_id, ai_messages)
     
     if "error" in ai_response:
         return JSONResponse(content={

@@ -6,16 +6,26 @@ from typing import Optional
 @dataclass
 class User:
     id: Optional[int] = None
-    username: str = ""
+    name: str = ""
     email: str = ""
+    title: str = ""
+    summary: str = ""
+    location: str = ""
+    years_of_experience: int = 0
     created_at: Optional[str] = None
+    updated_at: Optional[str] = None
     
     def to_dict(self):
         return {
             "id": self.id,
-            "username": self.username,
+            "name": self.name,
             "email": self.email,
-            "created_at": self.created_at
+            "title": self.title,
+            "summary": self.summary,
+            "location": self.location,
+            "years_of_experience": self.years_of_experience,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
         }
 
 
@@ -51,3 +61,45 @@ class Message:
             "content": self.content,
             "created_at": self.created_at
         }
+
+
+from app.models.profile import (
+    ProfileBasic,
+    WorkExperience,
+    WorkExperienceCreate,
+    Education,
+    EducationCreate,
+    Certification,
+    CertificationCreate,
+    Course,
+    CourseCreate,
+    Achievement,
+    AchievementCreate,
+    Skill,
+    SkillCreate,
+    Project,
+    ProjectCreate,
+    UserProfile,
+)
+
+__all__ = [
+    "User",
+    "ChatSession",
+    "Message",
+    "ProfileBasic",
+    "WorkExperience",
+    "WorkExperienceCreate",
+    "Education",
+    "EducationCreate",
+    "Certification",
+    "CertificationCreate",
+    "Course",
+    "CourseCreate",
+    "Achievement",
+    "AchievementCreate",
+    "Skill",
+    "SkillCreate",
+    "Project",
+    "ProjectCreate",
+    "UserProfile",
+]

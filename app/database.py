@@ -41,9 +41,14 @@ async def _create_tables(conn: aiosqlite.Connection):
     await conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL,
             email TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            title TEXT DEFAULT '',
+            summary TEXT DEFAULT '',
+            location TEXT DEFAULT '',
+            years_of_experience INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     
@@ -80,6 +85,109 @@ async def _create_tables(conn: aiosqlite.Connection):
             stt_mode TEXT NOT NULL DEFAULT 'batch',
             tts_provider TEXT NOT NULL DEFAULT 'browser',
             tts_model TEXT NOT NULL DEFAULT 'Browser Built In',
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS work_experience (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            company TEXT NOT NULL,
+            title TEXT NOT NULL,
+            location TEXT DEFAULT '',
+            start_date TEXT NOT NULL,
+            end_date TEXT,
+            current INTEGER DEFAULT 0,
+            description TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS education (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            institution TEXT NOT NULL,
+            degree TEXT NOT NULL,
+            field TEXT NOT NULL,
+            start_date TEXT NOT NULL,
+            end_date TEXT NOT NULL,
+            gpa REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS certifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            issuer TEXT NOT NULL,
+            issue_date TEXT NOT NULL,
+            expiry_date TEXT,
+            credential_id TEXT,
+            url TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS courses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            provider TEXT NOT NULL,
+            completion_date TEXT NOT NULL,
+            certificate_url TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS achievements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            category TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            date TEXT NOT NULL,
+            organization TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS skills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            proficiency INTEGER DEFAULT 3,
+            years_of_experience INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            role TEXT DEFAULT '',
+            technologies TEXT DEFAULT '',
+            outcomes TEXT DEFAULT '',
+            start_date TEXT NOT NULL,
+            end_date TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
