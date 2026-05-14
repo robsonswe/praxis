@@ -135,7 +135,8 @@ User's first message: "{message}"
 Respond with just the title, no quotes or explanation. Keep it under 50 characters."""
         
         try:
-            response = await self.send_message(user_id, name, 0, prompt)
+            messages = [{"role": "user", "content": prompt}]
+            response = await self.send_message(user_id, name, 0, messages)
             if "content" in response:
                 return response["content"].strip()
             return "Untitled Chat"

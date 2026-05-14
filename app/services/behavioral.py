@@ -249,6 +249,14 @@ class BehavioralService:
                 "title": "Transparent Leader",
                 "text": "Combines team awareness with personal integrity. Creates psychologically safe environments."
             },
+            frozenset(["Execution & Autonomy", "Collaboration & Synergy"]): {
+                "title": "Force Multiplier",
+                "text": "Drives individual results while unblocking others. A rare mix of individual productivity and team orchestration."
+            },
+            frozenset(["Analytical Rigor & Quality", "Resilience & Pressure Handling"]): {
+                "title": "Stoic Architect",
+                "text": "Maintains technical standards even under extreme pressure. Doesn't compromise on quality during crunch time."
+            },
             frozenset(["Resilience & Pressure Handling", "Accountability & Ownership"]): {
                 "title": "Crisis Owner",
                 "text": "Doesn't just survive pressure — takes ownership of the solution. First to raise their hand when things break."
