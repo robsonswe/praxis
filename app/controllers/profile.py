@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import date, datetime
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -8,7 +9,7 @@ from app.repositories.profile import ProfileRepository
 from app.services.profile import ProfileService
 from app.models.profile import (
     ProfileBasic, WorkExperienceCreate, EducationCreate, CertificationCreate,
-    CourseCreate, AchievementCreate, SkillCreate, ProjectCreate
+    CourseCreate, AchievementCreate, SkillCreate, ProjectCreate, UserProfile
 )
 from app.database import init_db, get_connection, close_connection
 
@@ -77,6 +78,47 @@ def get_current_user(request: Request) -> int | None:
     return None
 
 
+def calculate_age(date_of_birth: str | None) -> int | None:
+    if not date_of_birth:
+        return None
+    try:
+        dob = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
+    except ValueError:
+        try:
+            dob = datetime.fromisoformat(date_of_birth).date()
+        except ValueError:
+            return None
+    today = date.today()
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    if age < 0:
+        return None
+    return age
+
+
+def calculate_profile_completeness(profile: UserProfile) -> int:
+    checks = [
+        bool(profile.title),
+        bool(profile.summary),
+        bool(profile.location),
+        bool(profile.date_of_birth),
+        bool(profile.phone),
+        bool(profile.website),
+        bool(profile.linkedin),
+        bool(profile.github),
+        bool(profile.work_experience),
+        bool(profile.education),
+        bool(profile.skills),
+        bool(profile.projects),
+        bool(profile.certifications),
+        bool(profile.achievements),
+        bool(profile.courses)
+    ]
+    total = len(checks)
+    if total == 0:
+        return 0
+    return int(round((sum(checks) / total) * 100))
+
+
 @router.get("/")
 async def root(request: Request):
     user_id = get_current_user(request)
@@ -88,13 +130,56 @@ async def root(request: Request):
     if not user:
         return RedirectResponse(url="/login")
     
+    profile = await profile_service.get_profile(user_id)
+    if not profile:
+        profile = UserProfile(
+            id=user.id or 0,
+            name=user.name,
+            email=user.email,
+            title=user.title or "",
+            summary="",
+            location="",
+            years_of_experience=0,
+            date_of_birth=user.date_of_birth,
+            phone=user.phone,
+            website=user.website,
+            linkedin=user.linkedin,
+            github=user.github,
+            work_experience=[],
+            education=[],
+            certifications=[],
+            courses=[],
+            achievements=[],
+            skills=[],
+            projects=[]
+        )
+
+    profile_completeness = calculate_profile_completeness(profile)
+    if profile_completeness >= 80:
+        status_badge = "Healthy"
+        profile_status = "Complete"
+    elif profile_completeness >= 50:
+        status_badge = "In Progress"
+        profile_status = "Partial"
+    else:
+        status_badge = "Needs Work"
+        profile_status = "Incomplete"
+
     template = env.get_template("index.html")
     return HTMLResponse(content=template.render(
-        user_name=user.name,
-        user_email=user.email,
+        user_name=profile.name,
+        user_email=profile.email,
         active_page="dashboard",
         page_title="Dashboard",
-        page_subtitle="Your career preparation overview"
+        page_subtitle="Your career preparation overview",
+        profile_completeness=profile_completeness,
+        status_badge=status_badge,
+        profile_status=profile_status,
+        ai_status="Available",
+        interview_status="Not Started",
+        application_count=0,
+        interview_count=0,
+        chat_count=0
     ))
 
 
@@ -115,15 +200,44 @@ async def profile_page(request: Request):
     user = await user_service.get_user(user_id)
     if not user:
         return RedirectResponse(url="/login")
+
+    profile = await profile_service.get_profile(user_id)
+    if not profile:
+        profile = UserProfile(
+            id=user.id or 0,
+            name=user.name,
+            email=user.email,
+            title=user.title or "",
+            summary="",
+            location="",
+            years_of_experience=0,
+            date_of_birth=user.date_of_birth,
+            phone=user.phone,
+            website=user.website,
+            linkedin=user.linkedin,
+            github=user.github,
+            work_experience=[],
+            education=[],
+            certifications=[],
+            courses=[],
+            achievements=[],
+            skills=[],
+            projects=[]
+        )
+    profile_age = calculate_age(profile.date_of_birth)
+    profile_completeness = calculate_profile_completeness(profile)
     
     template = env.get_template("profile.html")
     return HTMLResponse(content=template.render(
-        user_name=user.name,
-        user_email=user.email,
-        user_title=user.title or "Professional",
+        user_name=profile.name,
+        user_email=profile.email,
+        user_title=profile.title or "Professional",
         active_page="profile",
         page_title="Profile Overview",
-        page_subtitle="Your unified career narrative"
+        page_subtitle="Your unified career narrative",
+        profile=profile,
+        profile_age=profile_age,
+        profile_completeness=profile_completeness
     ))
 
 

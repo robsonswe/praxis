@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div class="stat-title">Profile Index</div>
-            <div class="stat-value" id="profile-completeness">0%</div>
+            <div class="stat-value">{{ profile_completeness|default(0) }}%</div>
             <div class="stat-subtitle">Completion status</div>
         </div>
         <div class="stat-card">
@@ -20,7 +20,7 @@
                 </div>
             </div>
             <div class="stat-title">Applications</div>
-            <div class="stat-value" id="application-count">0</div>
+            <div class="stat-value">{{ application_count|default(0) }}</div>
             <div class="stat-subtitle">Total this month</div>
         </div>
         <div class="stat-card">
@@ -30,7 +30,7 @@
                 </div>
             </div>
             <div class="stat-title">Interviews</div>
-            <div class="stat-value" id="interview-count">0</div>
+            <div class="stat-value">{{ interview_count|default(0) }}</div>
             <div class="stat-subtitle">Completed sessions</div>
         </div>
         <div class="stat-card">
@@ -40,7 +40,7 @@
                 </div>
             </div>
             <div class="stat-title">AI Chats</div>
-            <div class="stat-value" id="chat-count">0</div>
+            <div class="stat-value">{{ chat_count|default(0) }}</div>
             <div class="stat-subtitle">Conversations</div>
         </div>
     </div>
@@ -81,20 +81,20 @@
             <div class="status-card">
                 <div class="status-header">
                     <div class="status-title">System Status</div>
-                    <div class="status-badge good" id="status-badge">Ready</div>
+                    <div class="status-badge good">{{ status_badge|default('Ready') }}</div>
                 </div>
                 <div class="status-details">
                     <div class="status-row">
                         <span class="status-label">AI Assistant</span>
-                        <span class="status-value" id="ai-status">Available</span>
+                        <span class="status-value">{{ ai_status|default('Available') }}</span>
                     </div>
                     <div class="status-row">
                         <span class="status-label">Profile Data</span>
-                        <span class="status-value" id="profile-status">Incomplete</span>
+                        <span class="status-value">{{ profile_status|default('Incomplete') }}</span>
                     </div>
                     <div class="status-row">
                         <span class="status-label">Interview Mode</span>
-                        <span class="status-value" id="interview-status">Not Started</span>
+                        <span class="status-value">{{ interview_status|default('Not Started') }}</span>
                     </div>
                 </div>
             </div>
@@ -120,33 +120,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    async function loadUserData() {
-        try {
-            const response = await fetch('/api/profile');
-            if (response.ok) {
-                const profile = await response.json();
-                
-                if (profile.basic) {
-                    document.getElementById('profile-completeness').textContent = profile.completeness + '%';
-                    
-                    if (profile.completeness >= 80) {
-                        document.getElementById('status-badge').textContent = 'Healthy';
-                        document.getElementById('profile-status').textContent = 'Complete';
-                    } else if (profile.completeness >= 50) {
-                        document.getElementById('status-badge').textContent = 'In Progress';
-                        document.getElementById('profile-status').textContent = 'Partial';
-                    } else {
-                        document.getElementById('status-badge').textContent = 'Needs Work';
-                        document.getElementById('profile-status').textContent = 'Incomplete';
-                    }
-                }
-            }
-        } catch (e) {
-            console.log('Could not load profile data');
-        }
-    }
-    loadUserData();
-</script>
 {% endblock %}

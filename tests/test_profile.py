@@ -43,13 +43,28 @@ async def test_profile_repository_basic_info(repo, user_repo):
     await user_repo.initialize()
     user = await user_repo.create("testuser", "test@example.com")
     
-    result = await repo.update_basic(user["id"], name="John Doe", title="Software Engineer", summary="Experienced dev", location="NYC", years_of_experience=5)
+    result = await repo.update_basic(
+        user["id"],
+        name="John Doe",
+        title="Software Engineer",
+        summary="Experienced dev",
+        location="NYC",
+        years_of_experience=5,
+        phone="+1 555 123 4567",
+        website="https://example.com",
+        linkedin="https://linkedin.com/in/johndoe",
+        github="https://github.com/johndoe"
+    )
     
     assert result["name"] == "John Doe"
     assert result["title"] == "Software Engineer"
     assert result["summary"] == "Experienced dev"
     assert result["location"] == "NYC"
     assert result["years_of_experience"] == 5
+    assert result["phone"] == "+1 555 123 4567"
+    assert result["website"] == "https://example.com"
+    assert result["linkedin"] == "https://linkedin.com/in/johndoe"
+    assert result["github"] == "https://github.com/johndoe"
 
 
 @pytest.mark.asyncio
@@ -58,17 +73,40 @@ async def test_profile_repository_work_experience(repo, user_repo):
     user = await user_repo.create("testuser", "test@example.com")
     user_id = user["id"]
     
-    result = await repo.create_work_experience(user_id, "Acme Corp", "Developer", "NYC", "2020-01", None, True, "Built stuff")
+    result = await repo.create_work_experience(
+        user_id,
+        "Acme Corp",
+        "Developer",
+        "employment",
+        "NYC",
+        "2020-01",
+        None,
+        True,
+        "Built stuff"
+    )
     
     assert result["company"] == "Acme Corp"
     assert result["title"] == "Developer"
+    assert result["experience_type"] == "employment"
     assert result["current"] == True
     
     all_exp = await repo.get_work_experience(user_id)
     assert len(all_exp) == 1
     
-    updated = await repo.update_work_experience(result["id"], user_id, "Acme Corp", "Senior Dev", "NYC", "2020-01", "2023-12", False, "Built more stuff")
+    updated = await repo.update_work_experience(
+        result["id"],
+        user_id,
+        "Acme Corp",
+        "Senior Dev",
+        "volunteer",
+        "NYC",
+        "2020-01",
+        "2023-12",
+        False,
+        "Built more stuff"
+    )
     assert updated["title"] == "Senior Dev"
+    assert updated["experience_type"] == "volunteer"
     assert updated["current"] == False
     
     deleted = await repo.delete_work_experience(result["id"], user_id)
@@ -196,11 +234,24 @@ async def test_profile_service_basic(service, user_repo):
     user = await user_repo.create("testuser", "test@example.com")
     user_id = user["id"]
     
-    basic = ProfileBasic(title="Engineer", summary="Summary", location="NYC", years_of_experience=3)
+    basic = ProfileBasic(
+        title="Engineer",
+        summary="Summary",
+        location="NYC",
+        years_of_experience=3,
+        phone="+1 555 111 2222",
+        website="https://example.com",
+        linkedin="https://linkedin.com/in/test",
+        github="https://github.com/test"
+    )
     result = await service.update_basic(user_id, basic)
     
     assert result["title"] == "Engineer"
     assert result["location"] == "NYC"
+    assert result["phone"] == "+1 555 111 2222"
+    assert result["website"] == "https://example.com"
+    assert result["linkedin"] == "https://linkedin.com/in/test"
+    assert result["github"] == "https://github.com/test"
 
 
 @pytest.mark.asyncio
@@ -208,10 +259,20 @@ async def test_profile_service_full_profile(service, user_repo):
     user = await user_repo.create("testuser", "test@example.com")
     user_id = user["id"]
     
-    basic = ProfileBasic(name="Test User", title="Engineer", summary="Summary", location="NYC", years_of_experience=3)
+    basic = ProfileBasic(
+        name="Test User",
+        title="Engineer",
+        summary="Summary",
+        location="NYC",
+        years_of_experience=3,
+        phone="+1 555 333 4444",
+        website="https://example.com",
+        linkedin="https://linkedin.com/in/test-user",
+        github="https://github.com/test-user"
+    )
     await service.update_basic(user_id, basic)
     
-    exp_data = WorkExperienceCreate(company="Acme", title="Dev", location="NYC", start_date="2020-01", end_date=None, current=True, description="Worked")
+    exp_data = WorkExperienceCreate(company="Acme", title="Dev", experience_type="internship", location="NYC", start_date="2020-01", end_date=None, current=True, description="Worked")
     await service.create_work_experience(user_id, exp_data)
     
     skill_data = SkillCreate(name="Python", category="technical", proficiency=5, years_of_experience=3)
@@ -236,8 +297,13 @@ async def test_profile_service_full_profile(service, user_repo):
     
     assert profile.name == "Test User"
     assert profile.title == "Engineer"
+    assert profile.phone == "+1 555 333 4444"
+    assert profile.website == "https://example.com"
+    assert profile.linkedin == "https://linkedin.com/in/test-user"
+    assert profile.github == "https://github.com/test-user"
     assert len(profile.work_experience) == 1
     assert profile.work_experience[0].company == "Acme"
+    assert profile.work_experience[0].experience_type == "internship"
     assert len(profile.skills) == 1
     assert profile.skills[0].name == "Python"
     assert len(profile.education) == 1

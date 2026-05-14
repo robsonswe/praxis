@@ -32,6 +32,11 @@ class ProfileService:
             summary=user.get("summary", ""),
             location=user.get("location", ""),
             years_of_experience=user.get("years_of_experience", 0),
+            date_of_birth=user.get("date_of_birth", ""),
+            phone=user.get("phone", ""),
+            website=user.get("website", ""),
+            linkedin=user.get("linkedin", ""),
+            github=user.get("github", ""),
             work_experience=[WorkExperience(**w) for w in work_experience],
             education=[Education(**e) for e in education],
             certifications=[Certification(**c) for c in certifications],
@@ -48,7 +53,12 @@ class ProfileService:
             title=basic.title if basic.title else None, 
             summary=basic.summary if basic.summary else None, 
             location=basic.location if basic.location else None, 
-            years_of_experience=basic.years_of_experience if basic.years_of_experience else None
+            years_of_experience=basic.years_of_experience if basic.years_of_experience else None,
+            date_of_birth=basic.date_of_birth if basic.date_of_birth else None,
+            phone=basic.phone if basic.phone else None,
+            website=basic.website if basic.website else None,
+            linkedin=basic.linkedin if basic.linkedin else None,
+            github=basic.github if basic.github else None
         )
     
     async def get_work_experience(self, user_id: int) -> list[WorkExperience]:
@@ -57,14 +67,14 @@ class ProfileService:
     
     async def create_work_experience(self, user_id: int, data: WorkExperienceCreate) -> WorkExperience:
         result = await self.repository.create_work_experience(
-            user_id, data.company, data.title, data.location, data.start_date,
+            user_id, data.company, data.title, data.experience_type, data.location, data.start_date,
             data.end_date, data.current, data.description
         )
         return WorkExperience(**result)
     
     async def update_work_experience(self, exp_id: int, user_id: int, data: WorkExperienceCreate) -> WorkExperience | None:
         result = await self.repository.update_work_experience(
-            exp_id, user_id, data.company, data.title, data.location, data.start_date,
+            exp_id, user_id, data.company, data.title, data.experience_type, data.location, data.start_date,
             data.end_date, data.current, data.description
         )
         if result:

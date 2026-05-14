@@ -47,6 +47,11 @@ async def _create_tables(conn: aiosqlite.Connection):
             summary TEXT DEFAULT '',
             location TEXT DEFAULT '',
             years_of_experience INTEGER DEFAULT 0,
+            date_of_birth TEXT DEFAULT '',
+            phone TEXT DEFAULT '',
+            website TEXT DEFAULT '',
+            linkedin TEXT DEFAULT '',
+            github TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -95,6 +100,7 @@ async def _create_tables(conn: aiosqlite.Connection):
             user_id INTEGER NOT NULL,
             company TEXT NOT NULL,
             title TEXT NOT NULL,
+            experience_type TEXT DEFAULT 'employment',
             location TEXT DEFAULT '',
             start_date TEXT NOT NULL,
             end_date TEXT,
@@ -192,4 +198,24 @@ async def _create_tables(conn: aiosqlite.Connection):
         )
     """)
     
+    await conn.commit()
+
+    await _ensure_columns(conn, "users", {
+        "phone": "phone TEXT DEFAULT ''",
+        "website": "website TEXT DEFAULT ''",
+        "linkedin": "linkedin TEXT DEFAULT ''",
+        "github": "github TEXT DEFAULT ''"
+    })
+    await _ensure_columns(conn, "work_experience", {
+        "experience_type": "experience_type TEXT DEFAULT 'employment'"
+    })
+
+
+async def _ensure_columns(conn: aiosqlite.Connection, table: str, columns: dict[str, str]):
+    async with conn.execute(f"PRAGMA table_info({table})") as cursor:
+        rows = await cursor.fetchall()
+    existing = {row[1] for row in rows}
+    for name, ddl in columns.items():
+        if name not in existing:
+            await conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
     await conn.commit()

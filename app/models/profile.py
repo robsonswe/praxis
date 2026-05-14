@@ -9,11 +9,17 @@ class ProfileBasic(BaseModel):
     summary: str = ""
     location: str = ""
     years_of_experience: int = 0
+    date_of_birth: str = ""
+    phone: str = ""
+    website: str = ""
+    linkedin: str = ""
+    github: str = ""
 
 
 class WorkExperienceCreate(BaseModel):
     company: str
     title: str
+    experience_type: str = "employment"
     location: str = ""
     start_date: str
     end_date: Optional[str] = None
@@ -26,6 +32,7 @@ class WorkExperience(BaseModel):
     user_id: int
     company: str
     title: str
+    experience_type: str = "employment"
     location: str = ""
     start_date: str
     end_date: Optional[str] = None
@@ -155,6 +162,11 @@ class UserProfile(BaseModel):
     summary: str = ""
     location: str = ""
     years_of_experience: int = 0
+    date_of_birth: str = ""
+    phone: str = ""
+    website: str = ""
+    linkedin: str = ""
+    github: str = ""
     work_experience: list[WorkExperience] = []
     education: list[Education] = []
     certifications: list[Certification] = []

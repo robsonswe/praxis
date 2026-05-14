@@ -12,6 +12,11 @@ class User:
     summary: str = ""
     location: str = ""
     years_of_experience: int = 0
+    date_of_birth: str = ""
+    phone: str = ""
+    website: str = ""
+    linkedin: str = ""
+    github: str = ""
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
     
@@ -24,6 +29,11 @@ class User:
             "summary": self.summary,
             "location": self.location,
             "years_of_experience": self.years_of_experience,
+            "date_of_birth": self.date_of_birth,
+            "phone": self.phone,
+            "website": self.website,
+            "linkedin": self.linkedin,
+            "github": self.github,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }

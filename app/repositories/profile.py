@@ -9,7 +9,7 @@ class ProfileRepository:
         async with conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)) as cursor:
             return await cursor.fetchone()
     
-    async def update_basic(self, user_id: int, name: str = "", title: str = "", summary: str = "", location: str = "", years_of_experience: int = 0) -> dict | None:
+    async def update_basic(self, user_id: int, name: str = "", title: str = "", summary: str = "", location: str = "", years_of_experience: int = 0, date_of_birth: str = "", phone: str = "", website: str = "", linkedin: str = "", github: str = "") -> dict | None:
         conn = await get_connection()
         
         # Build dynamic update based on what's provided
@@ -31,6 +31,21 @@ class ProfileRepository:
         if years_of_experience is not None:
             fields.append("years_of_experience = ?")
             values.append(years_of_experience)
+        if date_of_birth is not None:
+            fields.append("date_of_birth = ?")
+            values.append(date_of_birth)
+        if phone is not None:
+            fields.append("phone = ?")
+            values.append(phone)
+        if website is not None:
+            fields.append("website = ?")
+            values.append(website)
+        if linkedin is not None:
+            fields.append("linkedin = ?")
+            values.append(linkedin)
+        if github is not None:
+            fields.append("github = ?")
+            values.append(github)
         
         fields.append("updated_at = CURRENT_TIMESTAMP")
         
@@ -52,27 +67,28 @@ class ProfileRepository:
                 row["current"] = bool(row["current"])
             return rows
     
-    async def create_work_experience(self, user_id: int, company: str, title: str, location: str,
+    async def create_work_experience(self, user_id: int, company: str, title: str, experience_type: str, location: str,
                                       start_date: str, end_date: str | None, current: bool, description: str) -> dict:
         conn = await get_connection()
         cursor = await conn.execute(
-            """INSERT INTO work_experience (user_id, company, title, location, start_date, end_date, current, description)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (user_id, company, title, location, start_date, end_date, int(current), description)
+            """INSERT INTO work_experience (user_id, company, title, experience_type, location, start_date, end_date, current, description)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (user_id, company, title, experience_type, location, start_date, end_date, int(current), description)
         )
         await conn.commit()
         return {"id": cursor.lastrowid, "user_id": user_id, "company": company, "title": title,
+                "experience_type": experience_type,
                 "location": location, "start_date": start_date, "end_date": end_date,
                 "current": current, "description": description}
     
     async def update_work_experience(self, exp_id: int, user_id: int, company: str, title: str,
-                                      location: str, start_date: str, end_date: str | None,
-                                      current: bool, description: str) -> dict | None:
+                                                  experience_type: str, location: str, start_date: str, end_date: str | None,
+                                                  current: bool, description: str) -> dict | None:
         conn = await get_connection()
         await conn.execute(
-            """UPDATE work_experience SET company = ?, title = ?, location = ?, start_date = ?,
-               end_date = ?, current = ?, description = ? WHERE id = ? AND user_id = ?""",
-            (company, title, location, start_date, end_date, int(current), description, exp_id, user_id)
+                """UPDATE work_experience SET company = ?, title = ?, experience_type = ?, location = ?, start_date = ?,
+                    end_date = ?, current = ?, description = ? WHERE id = ? AND user_id = ?""",
+                (company, title, experience_type, location, start_date, end_date, int(current), description, exp_id, user_id)
         )
         await conn.commit()
         conn.row_factory = lambda c, r: dict(zip([d[0] for d in c.description], r))
