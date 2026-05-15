@@ -4,33 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Praxis</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Spectral:ital,wght@1,400&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-               display: flex; justify-content: center; align-items: center; height: 100vh;
-               background: #f5f5f5; }
-        .container { background: white; padding: 40px; border-radius: 12px; 
-                     box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 400px; }
-        h1 { margin-bottom: 10px; color: #333; font-size: 24px; text-align: center; }
-        p { margin-bottom: 25px; color: #666; text-align: center; font-size: 14px; }
-        label { display: block; margin-bottom: 5px; color: #555; font-size: 14px; font-weight: 500; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; 
-                border-radius: 8px; font-size: 14px; outline: none; }
-        input:focus { border-color: #2563eb; }
-        button { width: 100%; padding: 12px; background: #2563eb; color: white; 
-                 border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; }
-        button:hover { background: #1d4ed8; }
-        .error { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 6px; 
-                 font-size: 13px; margin-bottom: 15px; text-align: center; }
-        .footer { margin-top: 20px; text-align: center; font-size: 14px; color: #666; }
-        .footer a { color: #2563eb; text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
+        body { font-family: var(--font-sans); color: var(--text); background: var(--bg); min-height: 100vh; }
+        .auth-body { display: flex; align-items: center; justify-content: center; padding: var(--space-8) var(--space-6); }
+        .auth-shell {
+            width: min(100%, 420px);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-7);
+            position: relative;
+        }
+        .auth-body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='2' cy='2' r='1' fill='rgba(0,0,0,0.06)'/%3E%3C/svg%3E");
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .auth-shell > * { position: relative; z-index: 1; }
+        .auth-header { display: grid; gap: var(--space-3); margin-bottom: var(--space-6); justify-items: center; text-align: center; }
+        .auth-mark { width: 64px; height: 64px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); display: grid; place-items: center; }
+        .auth-mark img { width: 36px; height: 36px; }
+        .auth-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+        .auth-subtitle { color: var(--text-muted); font-size: 0.95rem; }
+        label { display: block; margin-bottom: var(--space-2); color: var(--text-soft); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+        input { width: 100%; padding: 0.85rem 1rem; margin-bottom: var(--space-4); border: 1px solid var(--border); 
+                border-radius: var(--radius-md); font-size: 0.95rem; outline: none; background: var(--surface); color: var(--text); }
+        input:focus { border-color: var(--primary); }
+        button { width: 100%; padding: 0.85rem 1rem; background: var(--primary); color: var(--surface); 
+                 border: none; border-radius: var(--radius-md); cursor: pointer; font-size: 0.95rem; font-weight: 700; }
+        button:hover { background: var(--primary-strong); }
+        .error { color: var(--danger); background: var(--danger-soft); padding: 0.7rem; border-radius: var(--radius-sm); 
+                 font-size: 0.85rem; margin-bottom: var(--space-4); text-align: center; border: 1px solid color-mix(in oklch, var(--danger) 20%, var(--border)); }
+        .footer { margin-top: var(--space-5); text-align: center; font-size: 0.9rem; color: var(--text-muted); }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .footer a:hover { color: var(--primary-strong); }
+
+        @media (max-width: 520px) {
+            .auth-shell { padding: var(--space-6); }
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Welcome Back</h1>
-        <p>Enter your email to access your personal assistant</p>
+<body class="auth-body">
+    <div class="auth-shell">
+        <div class="auth-header">
+            <div class="auth-mark">
+                <img src="/static/logo.png" alt="Praxis logo">
+            </div>
+            <h1 class="auth-title">Welcome back</h1>
+            <p class="auth-subtitle">Sign in to pick up your interview prep.</p>
+        </div>
         
         {% if error %}
         <div class="error">{{ error }}</div>
@@ -44,7 +74,7 @@
         </form>
 
         <div class="footer">
-            Don't have an account? <a href="/setup">Register</a>
+            Need an account? <a href="/setup">Create one</a>
         </div>
     </div>
 </body>
