@@ -186,11 +186,14 @@
         const messages = await response.json();
 
         container.innerHTML = messages.map((m, idx) => `
-            <div class="message ${m.role}">
+            <div class="message ${m.role}" style="${m.role === 'user' ? 'margin-left: auto; text-align: right;' : 'margin-right: auto; text-align: left;'}">
+                <div class="message-header" style="font-size: 0.7rem; font-weight: 700; margin-bottom: 4px; ${m.role === 'user' ? 'text-align: right;' : ''}">
+                    ${m.role === 'user' ? '{{ user.name.split(" ")[0] }}' : 'Praxis AI'}
+                </div>
                 <div class="message-content">${m.content}</div>
-                <div class="message-footer">
-                    ${m.role === 'assistant' ? `<div class="message-actions"><button class="tts-btn" onclick="speakText(\`${escapeQuotes(m.content)}\`, ${idx})" title="Speak"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5l-5 4H3v6h3l5 4z" /><path d="M15.5 8.5a4 4 0 0 1 0 7" /><path d="M18 6a7 7 0 0 1 0 12" /></svg></button></div>` : '<div></div>'}
+                <div class="message-footer" style="${m.role === 'user' ? 'justify-content: flex-end; gap: 8px;' : 'justify-content: space-between;'}">
                     <div class="message-time">${m.created_at ? new Date(m.created_at).toLocaleTimeString() : new Date().toLocaleTimeString()}</div>
+                    ${m.role === 'assistant' ? `<div class="message-actions" style="margin-left: auto;"><button class="tts-btn" onclick="speakText(\`${escapeQuotes(m.content)}\`, ${idx})" title="Speak"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5l-5 4H3v6h3l5 4z" /><path d="M15.5 8.5a4 4 0 0 1 0 7" /><path d="M18 6a7 7 0 0 1 0 12" /></svg></button></div>` : ''}
                 </div>
             </div>
         `).join('');

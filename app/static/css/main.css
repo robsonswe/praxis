@@ -648,11 +648,15 @@ button, input, select, textarea { font-family: inherit; }
 
 .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
 .messages { flex: 1; padding: var(--space-6); overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); }
-.message { max-width: 75%; padding: 14px 18px; border-radius: var(--radius-lg); position: relative; line-height: 1.6; font-size: 0.9rem; }
+.message { max-width: 75%; min-width: 120px; padding: 14px 18px; border-radius: var(--radius-lg); position: relative; line-height: 1.6; font-size: 0.9rem; }
 .message.user { align-self: flex-end; background: var(--primary); color: var(--surface); }
 .message.assistant { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); color: var(--text); }
 .message.error { align-self: center; background: var(--danger-soft); color: var(--danger); border: 1px solid color-mix(in oklch, var(--danger) 25%, var(--border)); font-size: 0.82rem; }
-.message-footer { display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-2); font-size: 0.7rem; color: var(--text-soft); }
+.message-footer { display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-2); font-size: 0.7rem; }
+.message.user .message-footer { color: color-mix(in oklch, var(--surface) 90%, var(--primary)); }
+.message.user .message-header { color: color-mix(in oklch, var(--surface) 90%, var(--primary)); }
+.message.user .message-header { color: color-mix(in oklch, var(--surface) 90%, var(--primary)); }
+.message.assistant .message-header { color: var(--text-soft); }
 .message-actions { display: flex; gap: var(--space-2); }
 .tts-btn { background: transparent; border: none; color: var(--text-soft); cursor: pointer; font-size: 0.85rem; }
 .tts-btn:hover { color: var(--text); }
