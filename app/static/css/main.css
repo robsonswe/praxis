@@ -47,8 +47,9 @@ body {
     font-family: var(--font-sans);
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
+    overflow: hidden;
 }
 a { color: var(--primary); text-decoration: none; }
 a:hover { color: var(--primary-strong); }
@@ -60,7 +61,7 @@ button, input, select, textarea { font-family: inherit; }
     outline-offset: 2px;
 }
 
-.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100vh; }
 .header {
     padding: var(--space-6) var(--space-8);
     background: color-mix(in oklch, var(--bg) 92%, transparent);
@@ -85,6 +86,7 @@ button, input, select, textarea { font-family: inherit; }
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    height: 100vh;
 }
 .sidebar-header { padding: var(--space-6) var(--space-6) var(--space-4); border-bottom: 1px solid var(--border); }
 .logo { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; }

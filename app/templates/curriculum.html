@@ -520,13 +520,9 @@
                 if (res.ok) {
                     profileData = await res.json();
                     renderProfile();
-                    
-                    const name = profileData.name || 'User';
-                    document.getElementById('user-name').textContent = name;
-                    document.getElementById('user-email').textContent = profileData.email;
-                    document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
-                }
-            } catch (e) {
+                    }
+                    } catch (e) {
+
                 console.error('Failed to load profile', e);
             }
         }

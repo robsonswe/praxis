@@ -715,6 +715,7 @@ async def mock_setup_page(request: Request, job_id: int):
     return HTMLResponse(content=template.render(
         user_id=user_id,
         user_name=user.name,
+        user_email=user.email,
         job=job,
         ai_configured=ai_configured,
         stt_available=stt_available,

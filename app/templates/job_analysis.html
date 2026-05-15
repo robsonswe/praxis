@@ -265,6 +265,7 @@
                 <div class="main-tabs">
                     <button class="main-tab-btn active" data-main-tab="analysis">Fit Analysis</button>
                     <button class="main-tab-btn" data-main-tab="interviews">Mock Interviews</button>
+                    <button class="main-tab-btn" data-main-tab="curriculum">Curriculum</button>
                 </div>
 
                 <div class="main-tab-pane active" id="main-tab-analysis">
@@ -412,6 +413,27 @@
                                 `).join('')}
                                 ${mockSessions.length === 0 ? '<div class="empty-history">No practice sessions recorded yet.</div>' : ''}
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-tab-pane" id="main-tab-curriculum">
+                    <div class="mock-interview-placeholder">
+                        <div class="placeholder-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                        </div>
+                        <h4>Curriculum</h4>
+                        <p>Generate a job-specific CV that highlights the exact skills and impact this role requires. Our AI rewrites your profile to speak the company's language.</p>
+                        
+                        <div class="ai-warning" style="background: var(--bg-muted); border-style: dashed;">
+                            <p><strong>Coming Soon.</strong> This feature will allow you to export a customized PDF version of your curriculum optimized for this specific job posting.</p>
+                            <button class="job-primary" disabled>Generate Curriculum</button>
                         </div>
                     </div>
                 </div>

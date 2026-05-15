@@ -1,7 +1,5 @@
-{% set user_name = user_name|default('User') %}
-{% set user_email = user_email|default('') %}
-{% set user_title = user_title|default('') %}
-{% set active_page = active_page|default('') %}
+{% set display_name = user_name if user_name else 'User' %}
+{% set display_email = user_email if user_email else '' %}
 
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -14,7 +12,7 @@
             <span class="logo-text">Praxis</span>
         </a>
     </div>
-    
+
     <nav class="nav-menu">
         <div class="nav-section">
             <div class="nav-section-title">Main</div>
@@ -34,7 +32,7 @@
                 Mentorship
             </a>
         </div>
-        
+
         <div class="nav-section">
             <div class="nav-section-title">Career</div>
             <a href="/profile" class="nav-item{% if active_page == 'profile' %} active{% endif %}">
@@ -53,13 +51,13 @@
             </a>
         </div>
     </nav>
-    
+
     <div class="profile-section" onclick="toggleProfileMenu()">
         <div class="user-info">
-            <div class="avatar" id="user-avatar">{{ user_name[0].upper() }}</div>
+            <div class="avatar" id="user-avatar">{{ display_name[0].upper() if display_name else 'U' }}</div>
             <div class="user-details">
-                <div class="user-name" id="user-name">{{ user_name if user_name else 'User' }}</div>
-                <div class="user-email" id="user-email">{{ user_email }}</div>
+                <div class="user-name" id="user-name">{{ display_name }}</div>
+                <div class="user-email" id="user-email">{{ display_email }}</div>
             </div>
         </div>
         <div class="profile-menu" id="profile-menu">
