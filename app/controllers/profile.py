@@ -15,6 +15,8 @@ from app.repositories.job_analysis import JobAnalysisRepository
 from app.services.job_analysis import JobAnalysisService
 from app.repositories.mock_interview import MockInterviewRepository
 from app.services.mock_interview import MockInterviewService
+from app.repositories.chat_session import ChatSessionRepository
+from app.services.chat_session import ChatSessionService
 from app.services.ai_service import AIService
 from app.models.profile import (
     ProfileBasic, WorkExperienceCreate, EducationCreate, CertificationCreate,
@@ -58,7 +60,15 @@ job_analysis_service = JobAnalysisService(
     ai_service
 )
 mock_repo = MockInterviewRepository()
-mock_service = MockInterviewService(mock_repo, job_repo, profile_service, ai_service)
+mock_service = MockInterviewService(
+    mock_repo,
+    job_repo,
+    profile_service,
+    ai_service
+)
+chat_repo = ChatSessionRepository()
+chat_service = ChatSessionService(chat_repo)
+
 
 
 @router.get("/setup")
@@ -198,6 +208,11 @@ async def root(request: Request):
         status_badge = "Needs Work"
         profile_status = "Incomplete"
 
+    # Calculate metrics
+    jobs = await job_repo.list_by_user(user_id)
+    interviews = await mock_service.list_sessions(user_id)
+    chats = await chat_service.get_user_sessions(user_id)
+    
     template = env.get_template("index.html")
     return HTMLResponse(content=template.render(
         user_name=profile.name,
@@ -210,9 +225,9 @@ async def root(request: Request):
         profile_status=profile_status,
         ai_status="Available",
         interview_status="Not Started",
-        application_count=0,
-        interview_count=0,
-        chat_count=0
+        application_count=len(jobs),
+        interview_count=len(interviews),
+        chat_count=len(chats)
     ))
 
 
