@@ -2,82 +2,38 @@
 
 {% block content %}
 <div class="dashboard">
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon blue">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    <div class="dashboard-top">
+        <section class="dashboard-hero">
+            <div class="eyebrow">Readiness</div>
+            <div class="hero-score">
+                <div class="hero-score-value">{{ profile_completeness|default(0) }}%</div>
+                <div class="hero-score-label">Profile Index</div>
+            </div>
+            <p class="hero-score-sub">Completion status and signal strength.</p>
+            <div class="hero-metrics">
+                <div class="metric-row">
+                    <div class="metric-label">Applications</div>
+                    <div class="metric-value">{{ application_count|default(0) }}</div>
+                    <div class="metric-note">This month</div>
+                </div>
+                <div class="metric-row">
+                    <div class="metric-label">Interviews</div>
+                    <div class="metric-value">{{ interview_count|default(0) }}</div>
+                    <div class="metric-note">Completed sessions</div>
+                </div>
+                <div class="metric-row">
+                    <div class="metric-label">AI Chats</div>
+                    <div class="metric-value">{{ chat_count|default(0) }}</div>
+                    <div class="metric-note">Conversations</div>
                 </div>
             </div>
-            <div class="stat-title">Profile Index</div>
-            <div class="stat-value">{{ profile_completeness|default(0) }}%</div>
-            <div class="stat-subtitle">Completion status</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon green">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                </div>
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="window.location.href='/profile/curriculum'">Update profile</button>
+                <button class="btn btn-outline" onclick="window.location.href='/chat'">Start a mock chat</button>
             </div>
-            <div class="stat-title">Applications</div>
-            <div class="stat-value">{{ application_count|default(0) }}</div>
-            <div class="stat-subtitle">Total this month</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon purple">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                </div>
-            </div>
-            <div class="stat-title">Interviews</div>
-            <div class="stat-value">{{ interview_count|default(0) }}</div>
-            <div class="stat-subtitle">Completed sessions</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon orange">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                </div>
-            </div>
-            <div class="stat-title">AI Chats</div>
-            <div class="stat-value">{{ chat_count|default(0) }}</div>
-            <div class="stat-subtitle">Conversations</div>
-        </div>
-    </div>
-    
-    <div class="section-title">Quick Actions</div>
-    <div class="quick-actions">
-        <div class="action-card" onclick="window.location.href='/profile'">
-            <div class="action-icon blue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </div>
-            <div class="action-text">
-                <div class="action-title">View Profile</div>
-                <div class="action-desc">Review your career profile</div>
-            </div>
-        </div>
-        <div class="action-card" onclick="window.location.href='/profile/curriculum'">
-            <div class="action-icon green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            </div>
-            <div class="action-text">
-                <div class="action-title">Edit Profile</div>
-                <div class="action-desc">Update your information</div>
-            </div>
-        </div>
-        <div class="action-card" onclick="window.location.href='/chat'">
-            <div class="action-icon purple">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            </div>
-            <div class="action-text">
-                <div class="action-title">Start Chat</div>
-                <div class="action-desc">Ask AI about your career</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="two-column">
-        <div>
+        </section>
+
+        <aside class="dashboard-side">
             <div class="status-card">
                 <div class="status-header">
                     <div class="status-title">System Status</div>
@@ -98,8 +54,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div>
             <div class="status-card">
                 <div class="status-header">
                     <div class="status-title">Recent Activity</div>
@@ -117,7 +71,43 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </aside>
     </div>
+
+    <section class="dashboard-actions">
+        <div class="section-title-large">Next actions</div>
+        <div class="action-list">
+            <button class="action-row" onclick="window.location.href='/profile'">
+                <span class="action-row-icon blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </span>
+                <span class="action-row-text">
+                    <span class="action-row-title">Review your profile</span>
+                    <span class="action-row-desc">Check gaps and verify contact details.</span>
+                </span>
+                <span class="action-row-cta">Open</span>
+            </button>
+            <button class="action-row" onclick="window.location.href='/profile/curriculum'">
+                <span class="action-row-icon green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </span>
+                <span class="action-row-text">
+                    <span class="action-row-title">Add missing sections</span>
+                    <span class="action-row-desc">Focus on projects with outcomes.</span>
+                </span>
+                <span class="action-row-cta">Edit</span>
+            </button>
+            <button class="action-row" onclick="window.location.href='/chat'">
+                <span class="action-row-icon purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                </span>
+                <span class="action-row-text">
+                    <span class="action-row-title">Run a targeted chat</span>
+                    <span class="action-row-desc">Ask for gaps against a role.</span>
+                </span>
+                <span class="action-row-cta">Start</span>
+            </button>
+        </div>
+    </section>
 </div>
 {% endblock %}

@@ -1,269 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Praxis - Edit Profile</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-               background: #f8fafc; height: 100vh; display: flex; }
-        
-        .sidebar { width: 280px; background: white; border-right: 1px solid #e2e8f0; 
-                   display: flex; flex-direction: column; flex-shrink: 0; }
-        
-        .sidebar-header { padding: 20px; border-bottom: 1px solid #e2e8f0; }
-        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .logo-icon { width: 36px; height: 36px; background: #2563eb; border-radius: 8px; 
-                     display: flex; align-items: center; justify-content: center; }
-        .logo-icon svg { width: 20px; height: 20px; color: white; }
-        .logo-text { font-size: 20px; font-weight: 700; color: #1e293b; }
-        
-        .nav-menu { padding: 16px 12px; flex: 1; overflow-y: auto; }
-        .nav-section { margin-bottom: 20px; }
-        .nav-section-title { font-size: 11px; font-weight: 600; color: #94a3b8; 
-                            text-transform: uppercase; letter-spacing: 0.05em; padding: 0 12px; margin-bottom: 8px; }
-        
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; 
-                    border-radius: 8px; color: #475569; text-decoration: none; 
-                    font-size: 14px; font-weight: 500; transition: all 0.15s; cursor: pointer; }
-        .nav-item:hover { background: #f1f5f9; color: #1e293b; }
-        .nav-item.active { background: #eff6ff; color: #2563eb; }
-        .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
-        
-        .nav-item-children { margin-left: 30px; margin-top: 4px; }
-        .nav-child { padding: 8px 12px; font-size: 13px; color: #64748b; 
-                     border-radius: 6px; cursor: pointer; display: block; text-decoration: none; }
-        .nav-child:hover { background: #f1f5f9; color: #1e293b; }
-        .nav-child.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
-        
-        .profile-section { padding: 16px 20px; border-top: 1px solid #e2e8f0; 
-                           background: #f8fafc; cursor: pointer; position: relative; }
-        .profile-section:hover { background: #f1f5f9; }
-        .user-info { display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #2563eb, #1d4ed8); 
-                  color: white; border-radius: 50%; display: flex; align-items: center; 
-                  justify-content: center; font-weight: 600; font-size: 14px; }
-        .user-details { flex: 1; min-width: 0; }
-        .user-name { font-size: 14px; font-weight: 600; color: #1e293b; 
-                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .user-email { font-size: 12px; color: #64748b; 
-                      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .profile-menu { display: none; position: absolute; bottom: 100%; left: 12px; right: 12px;
-                        background: white; border: 1px solid #e2e8f0; border-radius: 10px; 
-                        box-shadow: 0 -4px 20px rgba(0,0,0,0.08); margin-bottom: 8px; z-index: 100; }
-        .profile-menu.active { display: block; }
-        .menu-item { padding: 12px 16px; cursor: pointer; font-size: 14px; color: #475569; 
-                     display: flex; align-items: center; gap: 10px; }
-        .menu-item:hover { background: #f8fafc; }
-        .menu-item svg { width: 16px; height: 16px; }
-        .menu-item:last-child { border-top: 1px solid #e2e8f0; color: #dc2626; }
-        
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        
-        .header { padding: 20px 32px; background: white; border-bottom: 1px solid #e2e8f0; }
-        .header-left h1 { font-size: 24px; font-weight: 700; color: #1e293b; }
-        .header-left p { font-size: 14px; color: #64748b; margin-top: 4px; }
-        
-        .content { flex: 1; padding: 24px 32px; overflow-y: auto; }
-        
-        .section-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .section-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; 
-                          justify-content: space-between; align-items: center; }
-        .section-title { font-size: 16px; font-weight: 600; color: #1e293b; }
-        .section-action { font-size: 14px; color: #2563eb; cursor: pointer; font-weight: 500; }
-        
-        .section-body { padding: 20px; }
-        
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 6px; }
-        .form-input, .form-textarea, .form-select { width: 100%; padding: 10px 12px; 
-               border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; 
-               color: #1e293b; background: white; }
-        .form-input:focus, .form-textarea:focus, .form-select:focus { 
-               outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .form-textarea { min-height: 100px; resize: vertical; }
-        
-        .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-        
-        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; 
-               border: none; transition: all 0.15s; }
-        .btn-primary { background: #2563eb; color: white; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-secondary { background: #f1f5f9; color: #475569; }
-        .btn-secondary:hover { background: #e2e8f0; }
-        
-        .item-list { display: flex; flex-direction: column; gap: 12px; }
-        .list-item { display: flex; justify-content: space-between; align-items: flex-start; 
-                     padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; }
-        .item-content { flex: 1; }
-        .item-title { font-size: 15px; font-weight: 600; color: #1e293b; }
-        .item-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
-        .item-meta { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-        .item-actions { display: flex; gap: 8px; }
-        .item-action { padding: 6px 10px; font-size: 12px; color: #64748b; background: #f1f5f9; 
-                      border: none; border-radius: 6px; cursor: pointer; }
-        .item-action:hover { background: #e2e8f0; }
-        .item-action.delete { color: #dc2626; background: #fef2f2; }
-        .item-action.delete:hover { background: #fee2e2; }
-        
-        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
-        
-        .tag { display: inline-block; padding: 4px 10px; font-size: 12px; border-radius: 12px; 
-               background: #f1f5f9; color: #475569; margin-right: 6px; margin-bottom: 6px; }
-        .tag.technical { background: #eff6ff; color: #2563eb; }
-        .tag.domain { background: #f0fdf4; color: #16a34a; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-                 background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 500px; 
-                         max-height: 90vh; overflow-y: auto; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; 
-                        justify-content: space-between; align-items: center; }
-        .modal-title { font-size: 18px; font-weight: 600; color: #1e293b; }
-        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b; }
-        .modal-body { padding: 20px; }
-        .modal-footer { padding: 16px 20px; border-top: 1px solid #e2e8f0; 
-                        display: flex; justify-content: flex-end; gap: 12px; }
-        
-        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; 
-                 background: #1e293b; color: white; border-radius: 8px; font-size: 14px; 
-                 display: none; z-index: 2000; }
-        .toast.show { display: block; }
-        .toast.success { background: #16a34a; }
-        .toast.error { background: #dc2626; }
-        
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .form-row { grid-template-columns: 1fr; }
-        }
-    </style>
-</head>
-<body>
-    {% include 'sidebar.html' %}
-    
-    <main class="main-content">
-        <header class="header">
-            <div class="header-left">
-                <h1>Edit Profile</h1>
-                <p>Update your career information</p>
+{% extends 'base.html' %}
+{% set page_title = 'Edit Profile' %}
+{% set page_subtitle = 'Give each section a claim and a proof.' %}
+
+{% block content %}
+    <div class="stack">
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Basics</span>
+                <span class="section-action" onclick="openBasicModal()">Edit</span>
             </div>
-        </header>
-        
-        <div class="content">
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Basic Information</span>
-                    <span class="section-action" onclick="openBasicModal()">Edit</span>
+            <div class="section-body" id="basic-info">
+                <div class="empty-state">
+                    <p>No basics yet. Add title, summary, and contact.</p>
                 </div>
-                <div class="section-body" id="basic-info">
+            </div>
+        </div>
+            
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Experience</span>
+                <span class="section-action" onclick="openExperienceModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="experience-list">
                     <div class="empty-state">
-                        <p>No basic info added yet. Click Edit to add your details.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Work Experience</span>
-                    <span class="section-action" onclick="openExperienceModal()">+ Add</span>
-                </div>
-                <div class="section-body">
-                    <div class="item-list" id="experience-list">
-                        <div class="empty-state">
-                            <p>No work experience added yet.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Skills</span>
-                    <span class="section-action" onclick="openSkillModal()">+ Add</span>
-                </div>
-                <div class="section-body">
-                    <div class="item-list" id="skills-list">
-                        <div class="empty-state">
-                            <p>No skills added yet.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Education</span>
-                    <span class="section-action" onclick="openEducationModal()">+ Add</span>
-                </div>
-                <div class="section-body">
-                    <div class="item-list" id="education-list">
-                        <div class="empty-state">
-                            <p>No education added yet.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Certifications</span>
-                    <span class="section-action" onclick="openCertModal()">+ Add</span>
-                </div>
-                <div class="section-body">
-                    <div class="item-list" id="certifications-list">
-                        <div class="empty-state">
-                            <p>No certifications added yet.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Projects</span>
-                    <span class="section-action" onclick="openProjectModal()">+ Add</span>
-                </div>
-                <div class="section-body">
-                    <div class="item-list" id="projects-list">
-                        <div class="empty-state">
-                            <p>No projects added yet.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Achievements</span>
-                    <span class="section-action" onclick="openAchievementModal()">+ Add</span>
-                </div>
-                <div class="section-body">
-                    <div class="item-list" id="achievements-list">
-                        <div class="empty-state">
-                            <p>No achievements added yet.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section-card">
-                <div class="section-header">
-                    <span class="section-title">Courses</span>
-                    <span class="section-action" onclick="openCourseModal()">+ Add</span>
-                </div>
-                <div class="section-body">
-                    <div class="item-list" id="courses-list">
-                        <div class="empty-state">
-                            <p>No courses added yet.</p>
-                        </div>
+                        <p>No experience yet. Add your most recent role.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+            
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Skills</span>
+                <span class="section-action" onclick="openSkillModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="skills-list">
+                    <div class="empty-state">
+                        <p>No skills yet. Add your top tools first.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Education</span>
+                <span class="section-action" onclick="openEducationModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="education-list">
+                    <div class="empty-state">
+                        <p>No education yet. Add your most recent program.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Certifications</span>
+                <span class="section-action" onclick="openCertModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="certifications-list">
+                    <div class="empty-state">
+                        <p>No certifications yet. Add proof of skill depth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Projects</span>
+                <span class="section-action" onclick="openProjectModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="projects-list">
+                    <div class="empty-state">
+                        <p>No projects yet. Add the ones with outcomes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Achievements</span>
+                <span class="section-action" onclick="openAchievementModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="achievements-list">
+                    <div class="empty-state">
+                        <p>No achievements yet. Add the wins that changed scope.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Courses</span>
+                <span class="section-action" onclick="openCourseModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="courses-list">
+                    <div class="empty-state">
+                        <p>No courses yet. Add the ones tied to your target role.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Basic Info Modal -->
     <div class="modal" id="basic-modal">
@@ -641,22 +491,7 @@
     
     <script>
         let profileData = null;
-        
-        function toggleProfileMenu() {
-            document.getElementById('profile-menu').classList.toggle('active');
-        }
-        
-        function toggleSubmenu(name) {
-            const submenu = document.getElementById(name + '-submenu');
-            submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.profile-section')) {
-                document.getElementById('profile-menu').classList.remove('active');
-            }
-        });
-        
+
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -736,14 +571,16 @@
                 ].filter(Boolean);
                 const contactLine = contactParts.join(' • ');
                 basicDiv.innerHTML = `
-                    <div style="font-size: 18px; font-weight: 600; color: #1e293b;">${profileData.title || 'No title'}</div>
-                    <div style="color: #64748b; margin-top: 8px;">${profileData.summary || 'No summary'}</div>
-                    <div style="margin-top: 12px; font-size: 14px; color: #94a3b8;">
-                        ${profileData.location ? '📍 ' + profileData.location : ''}
-                        ${profileData.years_of_experience ? ' • ' + profileData.years_of_experience + ' years experience' : ''}
-                        ${ageText ? ' • ' + ageText : ''}
+                    <div class="basic-block">
+                        <div class="basic-title">${profileData.title || 'Add a title'}</div>
+                        <div class="basic-summary">${profileData.summary || 'Add a short summary with concrete outcomes.'}</div>
+                        <div class="basic-meta">
+                            ${profileData.location ? 'Location: ' + profileData.location : ''}
+                            ${profileData.years_of_experience ? (profileData.location ? ' • ' : '') + profileData.years_of_experience + ' years experience' : ''}
+                            ${ageText ? (profileData.location || profileData.years_of_experience ? ' • ' : '') + ageText : ''}
+                        </div>
+                        ${contactLine ? `<div class="basic-contacts">${contactLine}</div>` : ''}
                     </div>
-                    ${contactLine ? `<div style="margin-top: 8px; font-size: 13px; color: #64748b;">${contactLine}</div>` : ''}
                 `;
             }
             
@@ -759,10 +596,10 @@
                     <div class="list-item">
                         <div class="item-content">
                             <div class="item-title">${s.name}</div>
-                            <div style="margin-top: 4px;">
+                            <div class="skill-meta">
                                 <span class="tag ${s.category}">${s.category}</span>
-                                <span style="font-size: 12px; color: #64748b;">Proficiency: ${s.proficiency}/5</span>
-                                ${s.years_of_experience ? `<span style="font-size: 12px; color: #64748b;"> • ${s.years_of_experience} years</span>` : ''}
+                                <span class="meta-text">Proficiency: ${s.proficiency}/5</span>
+                                ${s.years_of_experience ? `<span class="meta-text">${s.years_of_experience} years</span>` : ''}
                             </div>
                         </div>
                         <div class="item-actions">
@@ -780,7 +617,7 @@
                         <div class="item-content">
                             <div class="item-title">${p.name}</div>
                             <div class="item-subtitle">${p.role || ''}</div>
-                            <div style="margin-top: 4px;">
+                            <div class="project-tags">
                                 ${(p.technologies || []).map(t => `<span class="tag">${t}</span>`).join('')}
                             </div>
                         </div>
@@ -796,7 +633,7 @@
         function renderList(containerId, items, prefix) {
             const container = document.getElementById(containerId);
             if (!items?.length) {
-                container.innerHTML = '<div class="empty-state"><p>No items added yet.</p></div>';
+                container.innerHTML = '<div class="empty-state"><p>No entries yet. Add one.</p></div>';
                 return;
             }
             container.innerHTML = items.map(item => `
@@ -847,7 +684,7 @@
             });
             if (res.ok) {
                 closeModal('basic-modal');
-                showToast('Basic info saved');
+                showToast('Basics saved');
                 loadProfile();
             } else showToast('Failed to save', 'error');
         }
@@ -907,7 +744,7 @@
             if (!confirm('Delete this experience?')) return;
             const res = await fetch(`/api/profile/experience/${id}`, { method: 'DELETE' });
             if (res.ok) { showToast('Experience deleted'); loadProfile(); }
-            else showToast('Failed to delete', 'error');
+            else showToast('Delete failed', 'error');
         }
         
         // Skills
@@ -957,7 +794,7 @@
             if (!confirm('Delete this skill?')) return;
             const res = await fetch(`/api/profile/skills/${id}`, { method: 'DELETE' });
             if (res.ok) { showToast('Skill deleted'); loadProfile(); }
-            else showToast('Failed to delete', 'error');
+            else showToast('Delete failed', 'error');
         }
         
         // Education
@@ -1217,5 +1054,4 @@
         
         loadProfile();
     </script>
-</body>
-</html>
+{% endblock %}

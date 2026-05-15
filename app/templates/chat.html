@@ -1,102 +1,85 @@
 {% extends "base.html" %}
-
-{% block head %}
-<style>
-    .chat-layout { display: flex; height: calc(100vh - 40px); margin: -24px -32px; overflow: hidden; background: white; }
-    
-    /* Internal Sidebar */
-    .chat-sidebar { width: 280px; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; flex-shrink: 0; background: #f8fafc; }
-    .chat-sidebar-header { padding: 20px; border-bottom: 1px solid #e2e8f0; }
-    .new-chat-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
-    .new-chat-btn:hover { background: #1d4ed8; }
-    
-    .chat-sessions { flex: 1; overflow-y: auto; padding: 12px; }
-    .session-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: #475569; cursor: pointer; transition: all 0.15s; margin-bottom: 4px; position: relative; }
-    .session-item:hover { background: #f1f5f9; color: #1e293b; }
-    .session-item.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
-    .session-title { flex: 1; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .session-actions { display: none; gap: 4px; }
-    .session-item:hover .session-actions { display: flex; }
-    .action-icon { cursor: pointer; opacity: 0.6; padding: 4px; font-size: 14px; }
-    .action-icon:hover { opacity: 1; }
-
-    /* Chat Content area */
-    .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #f5f5f5; }
-    .messages { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-    .message { max-width: 75%; padding: 14px 18px; border-radius: 12px; position: relative; line-height: 1.5; font-size: 14px; }
-    .message.user { align-self: flex-end; background: #2563eb; color: white; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1); }
-    .message.assistant { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .message.error { align-self: center; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; font-size: 13px; }
-    
-    .message-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 11px; opacity: 0.6; }
-    
-    .input-area { padding: 24px; background: white; border-top: 1px solid #e2e8f0; }
-    .input-wrapper { max-width: 800px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
-    .input-form { flex: 1; display: flex; gap: 8px; background: #f1f5f9; border-radius: 24px; padding: 4px 4px 4px 16px; border: 1px solid transparent; transition: all 0.2s; }
-    .input-form:focus-within { background: white; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-    .input-form input { flex: 1; background: transparent; border: none; outline: none; padding: 8px 0; font-size: 14px; }
-    .send-btn { background: #2563eb; color: white; border: none; border-radius: 20px; padding: 8px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-    .send-btn:hover { background: #1d4ed8; }
-    .send-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
-
-    .mic-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #64748b; transition: all 0.2s; }
-    .mic-btn:hover { background: #e2e8f0; color: #1e293b; }
-    .mic-btn.listening { background: #ef4444; color: white; animation: pulse 1s infinite; }
-
-    .welcome-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
-    .welcome-screen h1 { font-size: 32px; font-weight: 800; color: #1e293b; margin-bottom: 12px; }
-    .welcome-screen p { font-size: 16px; color: #64748b; max-width: 480px; }
-    
-    .loading-dots { display: inline-flex; gap: 4px; }
-    .dot { width: 6px; height: 6px; background: #cbd5e1; border-radius: 50%; animation: blink 1.4s infinite both; }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    
-    .edit-title-input { width: 100%; background: white; border: 1px solid #2563eb; color: #1e293b; border-radius: 4px; padding: 2px 8px; font-size: 14px; outline: none; }
-</style>
-{% endblock %}
+{% set page_title = 'Mentorship' %}
+{% set page_subtitle = 'Ask about gaps, practice answers, or compare roles.' %}
 
 {% block content %}
 <div class="chat-layout">
-    <!-- Secondary Sidebar (Session List) -->
-    <div class="chat-sidebar">
-        <div class="chat-sidebar-header">
-            <button class="new-chat-btn" onclick="startNewChat()">
-                <span>+</span> New Chat
-            </button>
-        </div>
-        <div class="chat-sessions" id="sessionsList">
-            {% for session in sessions %}
-            <div class="session-item {% if session.id == active_session_id %}active{% endif %}" id="session-{{ session.id }}" onclick="selectChat({{ session.id }})">
-                <div class="session-title">{{ session.title }}</div>
-                <div class="session-actions">
-                    <span class="action-icon" title="Rename" onclick="event.stopPropagation(); editTitle({{ session.id }})">✏️</span>
-                    <span class="action-icon" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat({{ session.id }})">✕</span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Main Chat Content -->
     <div class="chat-main">
         <div class="messages" id="messagesList">
             <div class="welcome-screen">
-                <h1>How can I help you, {{ user.name }}?</h1>
-                <p>Start a new conversation or select an existing one from the sidebar.</p>
+                <h1>What do you want to improve, {{ user.name }}?</h1>
+                <p>Pick a session or start a new one. Keep it specific, you get better feedback.</p>
             </div>
         </div>
         <div class="input-area">
-            <div class="input-wrapper">
-                <button type="button" id="micBtn" class="mic-btn" onclick="toggleSTT()" title="Voice input">🎤</button>
-                <form class="input-form" id="chatForm" onsubmit="sendMessage(event)">
-                    <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" disabled>
-                    <button type="submit" id="sendBtn" class="send-btn" disabled>Send</button>
-                </form>
+            <div class="chat-control-bar">
+                <div class="chat-control-left">
+                    <button type="button" class="btn btn-outline chat-bar-btn chat-icon-btn" onclick="openChatList()" title="Chat list" aria-label="Chat list">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M4 6h16" />
+                            <path d="M4 12h16" />
+                            <path d="M4 18h16" />
+                        </svg>
+                    </button>
+                    <button type="button" class="btn btn-primary chat-bar-btn chat-icon-btn" onclick="startNewChat()" title="New chat" aria-label="New chat">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="chat-control-main">
+                    <button type="button" id="micBtn" class="mic-btn" onclick="toggleSTT()" title="Voice input">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3z" />
+                            <path d="M19 11v1a7 7 0 0 1-14 0v-1" />
+                            <path d="M12 19v3" />
+                            <path d="M8 22h8" />
+                        </svg>
+                    </button>
+                    <form class="input-form" id="chatForm" onsubmit="sendMessage(event)">
+                        <input type="text" id="messageInput" placeholder="Ask about a role, a gap, or a response." autocomplete="off" disabled>
+                        <button type="submit" id="sendBtn" class="send-btn btn btn-primary" disabled>Send</button>
+                    </form>
+                </div>
+                <div class="chat-control-spacer"></div>
             </div>
-            <div id="sttStatus" style="text-align: center; font-size: 12px; color: #94a3b8; height: 20px; margin-top: 8px;"></div>
+            <div id="sttStatus" class="stt-status"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="chatListModal" aria-hidden="true">
+    <div class="modal-content chat-list-panel" role="dialog" aria-modal="true" aria-labelledby="chatListTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="chatListTitle">Chat sessions</div>
+            <button class="modal-close" type="button" onclick="closeChatList()" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="chat-sessions" id="sessionsList">
+                {% for session in sessions %}
+                <div class="session-item {% if session.id == active_session_id %}active{% endif %}" id="session-{{ session.id }}" onclick="selectChat({{ session.id }}); closeChatList();">
+                    <div class="session-title">{{ session.title }}</div>
+                    <div class="session-actions">
+                        <button class="action-icon" type="button" title="Rename" onclick="event.stopPropagation(); editTitle({{ session.id }})">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                            </svg>
+                        </button>
+                        <button class="action-icon" type="button" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat({{ session.id }})">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M3 6h18" />
+                                <path d="M8 6V4h8v2" />
+                                <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="chat-empty">No chats yet. Start one to build history.</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
@@ -121,16 +104,47 @@
         const sessions = await response.json();
         const container = document.getElementById('sessionsList');
         if (!container) return;
-        
+
+        if (!sessions.length) {
+            container.innerHTML = '<div class="chat-empty">No chats yet. Start one to build history.</div>';
+            return;
+        }
+
         container.innerHTML = sessions.map(s => `
-            <div class="session-item ${s.id === currentSessionId ? 'active' : ''}" id="session-${s.id}" onclick="selectChat(${s.id})">
+            <div class="session-item ${s.id === currentSessionId ? 'active' : ''}" id="session-${s.id}" onclick="selectChat(${s.id}); closeChatList();">
                 <div class="session-title">${s.title}</div>
                 <div class="session-actions">
-                    <span class="action-icon" title="Rename" onclick="event.stopPropagation(); editTitle(${s.id})">✏️</span>
-                    <span class="action-icon" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat(${s.id})">✕</span>
+                    <button class="action-icon" type="button" title="Rename" onclick="event.stopPropagation(); editTitle(${s.id})">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                        </svg>
+                    </button>
+                    <button class="action-icon" type="button" title="Delete" onclick="event.stopPropagation(); confirmDeleteChat(${s.id})">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M3 6h18" />
+                            <path d="M8 6V4h8v2" />
+                            <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         `).join('');
+    }
+
+    function openChatList() {
+        const modal = document.getElementById('chatListModal');
+        if (!modal) return;
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        loadSessions();
+    }
+
+    function closeChatList() {
+        const modal = document.getElementById('chatListModal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
     }
 
     function startNewChat() {
@@ -140,8 +154,8 @@
         document.querySelectorAll('.session-item').forEach(s => s.classList.remove('active'));
         document.getElementById('messagesList').innerHTML = `
             <div class="welcome-screen">
-                <h1>How can I help you, {{ user.name }}?</h1>
-                <p>Start a new conversation or select an existing one from the sidebar.</p>
+                <h1>What do you want to improve, {{ user.name }}?</h1>
+                <p>Pick a session or start a new one. Keep it specific, you get better feedback.</p>
             </div>
         `;
         window.history.pushState({}, '', '/chat');
@@ -175,7 +189,7 @@
             <div class="message ${m.role}">
                 <div class="message-content">${m.content}</div>
                 <div class="message-footer">
-                    ${m.role === 'assistant' ? `<div class="message-actions"><button class="tts-btn" onclick="speakText(\`${escapeQuotes(m.content)}\`, ${idx})" title="Speak">🔊</button></div>` : '<div></div>'}
+                    ${m.role === 'assistant' ? `<div class="message-actions"><button class="tts-btn" onclick="speakText(\`${escapeQuotes(m.content)}\`, ${idx})" title="Speak"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5l-5 4H3v6h3l5 4z" /><path d="M15.5 8.5a4 4 0 0 1 0 7" /><path d="M18 6a7 7 0 0 1 0 12" /></svg></button></div>` : '<div></div>'}
                     <div class="message-time">${m.created_at ? new Date(m.created_at).toLocaleTimeString() : new Date().toLocaleTimeString()}</div>
                 </div>
             </div>
@@ -258,7 +272,7 @@
                         const data = JSON.parse(line.substring(6));
                         if (data.error) {
                             assistantDiv.className = 'message error';
-                            contentDiv.innerHTML = `⚠️ ${data.error}`;
+                            contentDiv.innerHTML = `<span class="inline-error"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>${data.error}</span>`;
                             isStreaming = false;
                             document.getElementById('sendBtn').disabled = false;
                             return;
@@ -274,13 +288,13 @@
             }
         } catch (err) {
             assistantDiv.className = 'message error';
-            contentDiv.innerHTML = `⚠️ Connection error`;
+            contentDiv.innerHTML = `<span class="inline-error"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>Connection error</span>`;
         } finally {
             isStreaming = false;
             document.getElementById('sendBtn').disabled = false;
             if (assistantText && !assistantDiv.classList.contains('error')) {
                 const actionsDiv = assistantDiv.querySelector('.message-actions');
-                actionsDiv.innerHTML = `<button class="tts-btn" onclick="speakText(\`${escapeQuotes(assistantText)}\`, 'stream')" title="Speak">🔊</button>`;
+                actionsDiv.innerHTML = `<button class="tts-btn" onclick="speakText(\`${escapeQuotes(assistantText)}\`, 'stream')" title="Speak"><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5l-5 4H3v6h3l5 4z" /><path d="M15.5 8.5a4 4 0 0 1 0 7" /><path d="M18 6a7 7 0 0 1 0 12" /></svg></button>`;
             }
         }
     }
@@ -366,7 +380,7 @@
             if (micBtn) micBtn.disabled = true;
         } else {
             input.disabled = false;
-            input.placeholder = 'Type a message...';
+            input.placeholder = 'Ask about a role, a gap, or a response.';
             sendBtn.disabled = false;
             updateMicButtonState();
         }
@@ -481,7 +495,7 @@
                     mediaRecorder.onstop = async () => {
                         const blob = new Blob(audioChunks, { type: 'audio/wav' });
                         const fd = new FormData(); fd.append('file', blob);
-                        const orig = micBtn.innerHTML; micBtn.innerHTML = '...'; micBtn.disabled = true;
+                        const orig = micBtn.innerHTML; micBtn.innerHTML = '<span class="icon-ellipsis">...</span>'; micBtn.disabled = true;
                         status.textContent = 'Transcribing...';
                         try {
                             const res = await fetch('/ai/stt', { method: 'POST', body: fd });

@@ -5,32 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title|default('Praxis') }}</title>
     <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Spectral:ital,wght@1,400&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <link rel="manifest" href="/static/site.webmanifest">
     <style>
-        /* Shared Modal Styles */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                         background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 12px; padding: 24px; width: 400px; max-width: 90%; 
-                 box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .modal h3 { margin-bottom: 15px; font-size: 18px; color: #333; }
-        .modal h4 { margin: 20px 0 10px 0; font-size: 14px; color: #2563eb; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
-        .modal h4:first-of-type { margin-top: 0; }
-        .modal p { margin-bottom: 20px; color: #666; font-size: 14px; line-height: 1.5; }
-        .modal label { display: block; margin-bottom: 6px; color: #555; font-size: 14px; }
-        .modal select, .modal input { width: 100%; padding: 10px; margin-bottom: 15px; 
-                                      border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
-        .modal-buttons button { padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
-        .modal-buttons .btn-secondary { background: #f3f4f6; border: 1px solid #ddd; color: #666; }
-        .modal-buttons .btn-primary { background: #2563eb; border: none; color: white; }
-        .modal-buttons .btn-primary:hover { background: #1d4ed8; }
-        .modal-buttons .btn-danger { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
-        .modal-buttons .btn-danger:hover { background: #fecaca; }
-
         .spinner {
             display: inline-block; width: 1em; height: 1em; border: 2px solid rgba(153,153,153,.3);
             border-radius: 50%; border-top-color: #333; animation: spin 1s ease-in-out infinite;
@@ -45,21 +27,25 @@
     <main class="main-content">
         {% if page_title %}
         <header class="header">
-            <div class="header-left">
-                <h1>{{ page_title }}</h1>
-                {% if page_subtitle %}<p>{{ page_subtitle }}</p>{% endif %}
+            <div class="header-inner">
+                <div class="header-left">
+                    <h1>{{ page_title }}</h1>
+                    {% if page_subtitle %}<p>{{ page_subtitle }}</p>{% endif %}
+                </div>
             </div>
         </header>
         {% endif %}
-        
+
         <div class="content">
-            {% block content %}{% endblock %}
+            <div class="content-inner">
+                {% block content %}{% endblock %}
+            </div>
         </div>
     </main>
 
     <!-- Generic Dialog Modal -->
-    <div class="modal-overlay" id="dialogModal">
-        <div class="modal">
+    <div class="modal" id="dialogModal">
+        <div class="modal-content">
             <h3 id="dialogTitle">Dialog</h3>
             <p id="dialogMessage">Message goes here.</p>
             <div class="modal-buttons">
@@ -70,8 +56,8 @@
     </div>
 
     <!-- AI Settings Modal -->
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal">
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
             <h3>AI Settings</h3>
             
             <h4>Text Generation</h4>
