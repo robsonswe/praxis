@@ -10,66 +10,13 @@
                     <h3>Role library</h3>
                     <p class="job-panel-sub">Track the roles you want to pressure-test.</p>
                 </div>
-                <button class="job-ghost" id="toggleAddJob" type="button">
+                <button class="btn-primary" onclick="openJobModal()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                     Add role
                 </button>
             </div>
 
-            <form class="job-form" id="jobForm">
-                <div class="job-form-header">
-                    <div class="job-form-title" id="jobFormTitle">Add role</div>
-                    <p class="job-form-sub">Give the essentials so the analysis can be specific.</p>
-                </div>
-                <input type="hidden" id="job-id" name="id">
-                <div class="job-form-row">
-                    <div>
-                        <label for="job-title">Role title</label>
-                        <input class="job-input" id="job-title" name="title" placeholder="Senior Product Designer" required>
-                    </div>
-                    <div>
-                        <label for="job-company">Company</label>
-                        <input class="job-input" id="job-company" name="company" placeholder="Solstice Labs" required>
-                    </div>
-                </div>
-                <div class="job-form-row">
-                    <div>
-                        <label for="job-location">Location</label>
-                        <input class="job-input" id="job-location" name="location" placeholder="Remote, LATAM">
-                    </div>
-                    <div>
-                        <label for="job-type">Type</label>
-                        <select class="job-select" id="job-type" name="job_type">
-                            <option value="full-time">Full-time</option>
-                            <option value="contract">Contract</option>
-                            <option value="internship">Internship</option>
-                            <option value="freelance">Freelance</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="job-form-row">
-                    <div>
-                        <label for="job-salary">Salary range</label>
-                        <input class="job-input" id="job-salary" name="salary" placeholder="$80k-$110k">
-                    </div>
-                    <div>
-                        <label for="job-link">Job link</label>
-                        <input class="job-input" id="job-link" name="link" placeholder="https://...">
-                    </div>
-                </div>
-                <div>
-                    <label for="job-description">Job description</label>
-                    <textarea class="job-textarea" id="job-description" name="description" placeholder="Paste the key responsibilities and requirements" required></textarea>
-                </div>
-                <div>
-                    <label for="job-company-description">Company context (optional)</label>
-                    <textarea class="job-textarea" id="job-company-description" name="company_description" placeholder="Share team size, mission, or culture notes"></textarea>
-                </div>
-                <div class="job-form-actions">
-                    <button class="job-ghost" id="cancelJob" type="button">Cancel</button>
-                    <button class="job-primary" type="submit">Save job</button>
-                </div>
-            </form>
+            {% include 'partials/job_modal.html' %}
 
             <div class="job-list" id="jobList"></div>
             <div class="job-empty" id="jobEmpty">
@@ -107,11 +54,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const jobForm = document.getElementById('jobForm');
         const jobList = document.getElementById('jobList');
         const jobEmpty = document.getElementById('jobEmpty');
-        const toggleAddJob = document.getElementById('toggleAddJob');
-        const cancelJob = document.getElementById('cancelJob');
         const analysisBody = document.getElementById('analysisBody');
         const jobInfoSection = document.getElementById('jobInfoSection');
         const analysisContent = document.getElementById('analysisContent');
@@ -130,23 +74,13 @@
             </div>
         `;
         let selectedId = null;
+        let jobs = [];
         let mockSessions = [];
-
-        async function fetchJson(url, options = {}) {
-            const response = await fetch(url, {
-                headers: { 'Content-Type': 'application/json' },
-                ...options
-            });
-            if (!response.ok) {
-                const message = await response.text();
-                throw new Error(message || 'Request failed');
-            }
-            return response.json();
-        }
 
         async function loadJobs() {
             try {
                 jobs = await fetchJson('/api/jobs');
+                console.log('Loaded jobs:', jobs);
                 renderJobs();
             } catch (error) {
                 console.error('Failed to load jobs', error);
@@ -483,19 +417,7 @@
         }
 
         function editJob(job) {
-            document.getElementById('job-id').value = job.id;
-            document.getElementById('job-title').value = job.title;
-            document.getElementById('job-company').value = job.company;
-            document.getElementById('job-location').value = job.location || '';
-            document.getElementById('job-type').value = job.job_type;
-            document.getElementById('job-salary').value = job.salary || '';
-            document.getElementById('job-link').value = job.link || '';
-            document.getElementById('job-description').value = job.description;
-            document.getElementById('job-company-description').value = job.company_description || '';
-            
-            jobForm.querySelector('h3') ? jobForm.querySelector('h3').textContent = 'Edit Role' : '';
-            jobForm.classList.add('active');
-            jobForm.scrollIntoView({ behavior: 'smooth' });
+            openJobModal(job);
         }
 
         function renderInsight(insight, type) {
@@ -547,13 +469,6 @@
                         await fetchJson(`/api/jobs/${id}`, { method: 'DELETE' });
                         jobs = jobs.filter(j => j.id !== id);
                         
-                        // Reset form if we were editing this job
-                        if (document.getElementById('job-id').value == id) {
-                            jobForm.reset();
-                            document.getElementById('job-id').value = '';
-                            jobForm.classList.remove('active');
-                        }
-
                         if (selectedId === id) {
                             selectedId = null;
                             jobInfoSection.innerHTML = '';
@@ -568,60 +483,6 @@
                 }
             });
         }
-
-        toggleAddJob.addEventListener('click', () => {
-            jobForm.classList.toggle('active');
-            if (!document.getElementById('job-id').value) {
-                document.getElementById('jobFormTitle').textContent = 'Add role';
-            }
-        });
-
-        cancelJob.addEventListener('click', () => {
-            jobForm.reset();
-            jobForm.classList.remove('active');
-            document.getElementById('jobFormTitle').textContent = 'Add role';
-        });
-
-        jobForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const data = new FormData(jobForm);
-            const jobId = data.get('id');
-            const job = {
-                title: data.get('title').trim(),
-                company: data.get('company').trim(),
-                location: data.get('location').trim(),
-                job_type: data.get('job_type'),
-                salary: data.get('salary').trim(),
-                link: data.get('link').trim(),
-                description: data.get('description').trim(),
-                company_description: data.get('company_description').trim()
-            };
-            try {
-                if (jobId) {
-                    await fetchJson(`/api/jobs/${jobId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(job)
-                    });
-                    const idx = jobs.findIndex(j => j.id == jobId);
-                    if (idx !== -1) jobs[idx] = { ...jobs[idx], ...job };
-                } else {
-                    const created = await fetchJson('/api/jobs', {
-                        method: 'POST',
-                        body: JSON.stringify(job)
-                    });
-                    jobs.unshift(created);
-                    selectedId = created.id;
-                }
-                jobForm.reset();
-                document.getElementById('job-id').value = '';
-                jobForm.classList.remove('active');
-                document.getElementById('jobFormTitle').textContent = 'Add role';
-                renderJobs();
-                selectJob(selectedId || jobId);
-            } catch (error) {
-                console.error('Failed to save job', error);
-            }
-        });
 
         async function checkTextModelConfigured() {
             try {
@@ -638,8 +499,27 @@
         }
         window.checkTextModelConfigured = checkTextModelConfigured;
 
+        window.addEventListener('jobCreated', (e) => {
+            jobs.unshift(e.detail);
+            selectedId = e.detail.id;
+            renderJobs();
+            selectJob(selectedId);
+        });
+
+        window.addEventListener('jobUpdated', (e) => {
+            const idx = jobs.findIndex(j => j.id == e.detail.id);
+            if (idx !== -1) {
+                jobs[idx] = { ...jobs[idx], ...e.detail };
+            }
+            renderJobs();
+            selectJob(e.detail.id);
+        });
+
         loadJobs();
     });
 </script>
 
+{% block scripts %}
+<script src="/static/js/job_modal.js"></script>
+{% endblock %}
 {% endblock %}

@@ -1,0 +1,59 @@
+<!-- Job Form Modal -->
+<div class="modal" id="jobModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="jobModalTitle">Add role</h3>
+            <button class="modal-close" onclick="closeJobModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="jobForm">
+                <input type="hidden" id="job-id" name="id">
+                <div class="form-group">
+                    <label for="job-title">Role title</label>
+                    <input class="form-input" id="job-title" name="title" placeholder="Senior Product Designer" required>
+                </div>
+                <div class="form-group">
+                    <label for="job-company">Company</label>
+                    <input class="form-input" id="job-company" name="company" placeholder="Solstice Labs" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="job-location">Location</label>
+                        <input class="form-input" id="job-location" name="location" placeholder="Remote, LATAM">
+                    </div>
+                    <div class="form-group">
+                        <label for="job-type">Type</label>
+                        <select class="form-select" id="job-type" name="job_type">
+                            <option value="full-time">Full-time</option>
+                            <option value="contract">Contract</option>
+                            <option value="internship">Internship</option>
+                            <option value="freelance">Freelance</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="job-salary">Salary range</label>
+                        <input class="form-input" id="job-salary" name="salary" placeholder="$80k-$110k">
+                    </div>
+                    <div class="form-group">
+                        <label for="job-link">Job link</label>
+                        <input class="form-input" id="job-link" name="link" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="job-description">Job description</label>
+                    <textarea class="form-textarea" id="job-description" name="description" placeholder="Paste the key responsibilities and requirements" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="job-company-description">Company context (optional)</label>
+                    <textarea class="form-textarea" id="job-company-description" name="company_description" placeholder="Share team size, mission, or culture notes"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeJobModal()">Cancel</button>
+            <button class="btn-primary" id="saveJobBtn">Save role</button>
+        </div>
+    </div>
+</div>
