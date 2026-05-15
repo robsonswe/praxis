@@ -6,13 +6,20 @@
         <header class="setup-view-header">
             <a href="/jobs" class="back-link">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Back to Dashboard
+                Back to roles
             </a>
             <div class="setup-title-group">
-                <div class="setup-icon">🎙️</div>
+                <div class="setup-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="6" y="3" width="12" height="12" rx="4" />
+                        <path d="M9 15v2a3 3 0 0 0 6 0v-2" />
+                        <path d="M4 11v1a8 8 0 0 0 16 0v-1" />
+                    </svg>
+                </div>
                 <div>
-                    <h1>Configure Your Interview</h1>
-                    <p>Preparing for <strong>{{ job.title }}</strong> at <strong>{{ job.company }}</strong></p>
+                    <div class="eyebrow">Mock interview</div>
+                    <h1>Configure your session</h1>
+                    <p>Prepare for <strong>{{ job.title }}</strong> at <strong>{{ job.company }}</strong></p>
                 </div>
             </div>
         </header>
@@ -64,21 +71,43 @@
                     <label class="setup-label">Interview Focus</label>
                     <div class="type-grid">
                         <div class="type-card active" data-type="behavioral" onclick="selectType(this)">
-                            <div class="type-icon-box">🧠</div>
+                            <div class="type-icon-box" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M9.5 4.5a2.5 2.5 0 0 0-2.5 2.5v.5" />
+                                    <path d="M14.5 4.5a2.5 2.5 0 0 1 2.5 2.5v.5" />
+                                    <path d="M6 9.5a3.5 3.5 0 0 0 0 7" />
+                                    <path d="M18 9.5a3.5 3.5 0 0 1 0 7" />
+                                    <path d="M9 19.5h6" />
+                                    <path d="M9 6.5h6" />
+                                </svg>
+                            </div>
                             <div class="type-text">
                                 <span>Behavioral</span>
                                 <small>Soft skills & culture</small>
                             </div>
                         </div>
                         <div class="type-card" data-type="technical" onclick="selectType(this)">
-                            <div class="type-icon-box">💻</div>
+                            <div class="type-icon-box" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="4" width="18" height="12" rx="2" />
+                                    <path d="M8 20h8" />
+                                    <path d="M12 16v4" />
+                                </svg>
+                            </div>
                             <div class="type-text">
                                 <span>Technical</span>
                                 <small>Hard skills & logic</small>
                             </div>
                         </div>
                         <div class="type-card" data-type="mixed" onclick="selectType(this)">
-                            <div class="type-icon-box">🔀</div>
+                            <div class="type-icon-box" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M4 8h7a4 4 0 0 1 4 4v4" />
+                                    <path d="M4 16h7a4 4 0 0 0 4-4V8" />
+                                    <path d="M16 4l3 4-3 4" />
+                                    <path d="M16 12l3 4-3 4" />
+                                </svg>
+                            </div>
                             <div class="type-text">
                                 <span>Mixed</span>
                                 <small>Full simulation</small>
@@ -125,75 +154,85 @@
 </div>
 
 <style>
-    .setup-page { min-height: 100vh; background: #f8fafc; padding: 3rem 2rem; }
-    .setup-container { max-width: 800px; margin: 0 auto; }
+    .setup-page { min-height: 100vh; background: var(--bg); padding: var(--space-8) var(--space-6); }
+    .setup-container { max-width: 900px; margin: 0 auto; }
 
-    .setup-view-header { margin-bottom: 2.5rem; }
-    .back-link { display: flex; align-items: center; gap: 0.5rem; color: #64748b; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin-bottom: 2rem; transition: color 0.2s; }
-    .back-link:hover { color: #2563eb; }
+    .setup-view-header { margin-bottom: var(--space-7); }
+    .back-link { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--text-soft); text-decoration: none; font-weight: 600; font-size: 0.9rem; margin-bottom: var(--space-5); transition: color 0.2s; }
+    .back-link:hover { color: var(--primary-strong); }
     
-    .setup-title-group { display: flex; align-items: center; gap: 1.5rem; }
-    .setup-icon { font-size: 3rem; background: #fff; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-    .setup-title-group h1 { font-size: 1.75rem; font-weight: 800; color: #1e293b; margin: 0; }
-    .setup-title-group p { font-size: 1.05rem; color: #64748b; margin: 0.25rem 0 0 0; }
+    .setup-title-group { display: flex; align-items: center; gap: var(--space-4); }
+    .setup-icon { background: var(--surface); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg); border: 1px solid var(--border); color: var(--text); }
+    .setup-icon svg { width: 28px; height: 28px; }
+    .setup-title-group h1 { font-size: 1.7rem; font-weight: 800; color: var(--text); margin: 0; }
+    .setup-title-group p { font-size: 1rem; color: var(--text-muted); margin: var(--space-1) 0 0 0; }
 
-    .setup-card { background: #fff; border-radius: 24px; padding: 3rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-    .setup-form { display: flex; flex-direction: column; gap: 2.5rem; }
+    .setup-card { background: var(--surface); border-radius: var(--radius-xl); padding: var(--space-7); border: 1px solid var(--border); }
+    .setup-form { display: flex; flex-direction: column; gap: var(--space-7); }
     
-    .setup-label { font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: block; }
+    .setup-label { font-size: 0.75rem; font-weight: 800; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-3); display: block; }
 
     /* Mode Grid */
-    .mode-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 1.25rem; }
-    .mode-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; display: flex; gap: 1.25rem; cursor: pointer; transition: all 0.2s; position: relative; }
-    .mode-card:hover:not(.disabled) { border-color: #2563eb; background: #f8fafc; transform: translateY(-2px); }
-    .mode-card.active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    .mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+    .mode-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); display: flex; gap: var(--space-4); cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease; position: relative; background: var(--surface); }
+    .mode-card:hover:not(.disabled) { border-color: color-mix(in oklch, var(--text) 20%, var(--border)); background: var(--bg-muted); }
+    .mode-card.active { border-color: var(--primary); background: var(--primary-soft); }
     
-    .mode-icon-box { color: #64748b; }
-    .mode-card.active .mode-icon-box { color: #2563eb; }
+    .mode-icon-box { color: var(--text-soft); }
+    .mode-card.active .mode-icon-box { color: var(--primary-strong); }
     
-    .mode-info { display: flex; flex-direction: column; gap: 0.25rem; }
-    .mode-name { font-size: 1.05rem; font-weight: 700; color: #1e293b; }
-    .mode-desc { font-size: 0.85rem; color: #64748b; line-height: 1.4; }
+    .mode-info { display: flex; flex-direction: column; gap: var(--space-1); }
+    .mode-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .mode-desc { font-size: 0.85rem; color: var(--text-soft); line-height: 1.5; }
 
     /* Mic Test Box */
-    .mic-test-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; animation: slideDown 0.3s ease-out; }
+    .mic-test-box { background: var(--bg-muted); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); animation: slideDown 0.3s ease-out; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .test-input-wrapper { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
-    .test-input-wrapper input { flex: 1; padding: 0.8rem 1.25rem; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.95rem; color: #475569; outline: none; }
+    .test-input-wrapper { display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3); }
+    .test-input-wrapper input { flex: 1; padding: 0.8rem 1.1rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); font-size: 0.95rem; color: var(--text); outline: none; }
     
-    .mic-circle-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: #2563eb; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
-    .mic-circle-btn:hover { background: #1d4ed8; transform: scale(1.05); }
+    .mic-circle-btn { width: 48px; height: 48px; border-radius: 50%; border: none; background: var(--primary); color: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease; flex-shrink: 0; }
+    .mic-circle-btn:hover { background: var(--primary-strong); }
     .mic-circle-btn.listening { background: #ef4444; animation: pulse-red 1s infinite; }
     @keyframes pulse-red { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } }
 
-    .test-status { font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; }
-    .test-status.passed { color: #10b981; }
-    .test-status.failed { color: #ef4444; }
-    .test-instruction { font-size: 0.8rem; color: #94a3b8; line-height: 1.4; }
+    .test-status { font-size: 0.8rem; font-weight: 700; color: var(--text-soft); margin-bottom: var(--space-2); }
+    .test-status.passed { color: var(--success-fg); }
+    .test-status.failed { color: var(--danger); }
+    .test-instruction { font-size: 0.8rem; color: var(--text-soft); line-height: 1.4; }
 
     /* Type Grid */
-    .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-    .type-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.25rem; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 1rem; }
-    .type-card:hover { border-color: #2563eb; background: #f8fafc; transform: translateY(-2px); }
-    .type-card.active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-    .type-icon-box { font-size: 1.5rem; background: #f1f5f9; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0; }
-    .type-card.active .type-icon-box { background: #dbeafe; }
+    .type-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+    .type-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.1rem; text-align: left; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease; display: flex; align-items: center; gap: var(--space-3); background: var(--surface); }
+    .type-card:hover { border-color: color-mix(in oklch, var(--text) 20%, var(--border)); background: var(--bg-muted); }
+    .type-card.active { border-color: var(--primary); background: var(--primary-soft); }
+    .type-icon-box { color: var(--text-soft); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-muted); flex-shrink: 0; }
+    .type-icon-box svg { width: 22px; height: 22px; }
+    .type-card.active .type-icon-box { color: var(--primary-strong); background: var(--surface); }
     .type-text { display: flex; flex-direction: column; }
-    .type-text span { font-size: 0.95rem; font-weight: 700; color: #1e293b; }
-    .type-text small { font-size: 0.75rem; color: #64748b; margin-top: 0.1rem; }
-    .type-card.active span { color: #2563eb; }
+    .type-text span { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .type-text small { font-size: 0.75rem; color: var(--text-soft); margin-top: 0.1rem; }
+    .type-card.active span { color: var(--primary-strong); }
 
     /* Select */
-    .setup-select { width: 100%; padding: 0.8rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; font-weight: 600; color: #1e293b; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 1rem center; }
-    .setup-select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-    .helper-text { font-size: 0.85rem; color: #94a3b8; margin-top: 0.75rem; }
+    .setup-select { width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.95rem; font-weight: 600; color: var(--text); appearance: none; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 1rem center; }
+    .setup-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent); }
+    .helper-text { font-size: 0.85rem; color: var(--text-soft); margin-top: 0.75rem; }
 
     /* Footer */
-    .setup-footer { margin-top: 1rem; }
-    .start-btn { width: 100%; background: #2563eb; color: #fff; border: none; padding: 1.25rem; border-radius: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.2s; }
-    .start-btn:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
-    .start-btn:disabled { background: #cbd5e1; opacity: 0.7; cursor: not-allowed; }
+    .setup-footer { margin-top: var(--space-3); }
+    .start-btn { width: 100%; background: var(--primary); color: var(--surface); border: none; padding: 1.1rem; border-radius: var(--radius-lg); font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: background 0.2s ease; }
+    .start-btn:hover:not(:disabled) { background: var(--primary-strong); }
+    .start-btn:disabled { background: var(--bg-muted); color: var(--text-soft); cursor: not-allowed; }
+
+    @media (max-width: 720px) {
+        .setup-page { padding: var(--space-6) var(--space-4); }
+        .setup-card { padding: var(--space-6); }
+        .setup-title-group { flex-direction: column; align-items: flex-start; }
+        .mode-grid { grid-template-columns: 1fr; }
+        .type-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
 {% endblock %}
@@ -294,7 +333,7 @@
         if (text.trim().length > 3) {
             testPassed = true;
             const status = document.getElementById('testStatus');
-            status.textContent = '✓ Mic test passed!';
+            status.textContent = 'Mic test passed.';
             status.className = 'test-status passed';
             updateStartButtonState();
         }
