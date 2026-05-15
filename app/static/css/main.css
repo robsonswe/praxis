@@ -322,6 +322,7 @@ button, input, select, textarea { font-family: inherit; }
     max-height: 90vh;
     overflow-y: auto;
     border: 1px solid var(--border);
+    padding: var(--space-6);
 }
 .modal-header { padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
