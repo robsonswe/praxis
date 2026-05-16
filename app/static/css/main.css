@@ -787,7 +787,7 @@ button, input, select, textarea { font-family: inherit; }
 .job-delete-btn { position: absolute; top: var(--space-2); right: var(--space-2); background: none; border: none; font-size: 1.1rem; color: var(--text-soft); cursor: pointer; display: none; }
 .job-card:hover .job-delete-btn { display: block; }
 
-.job-analysis-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--bg); }
+.job-analysis-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: var(--space-6); background: var(--bg); }
 .analysis-section-content { flex: 1; display: flex; flex-direction: column; }
 .job-blank, .loading-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: var(--space-8) var(--space-6); color: var(--text-soft); }
 .job-blank h4, .loading-state h4 { font-size: 1.15rem; color: var(--text); margin-bottom: var(--space-2); }

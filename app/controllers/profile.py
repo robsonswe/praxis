@@ -259,8 +259,8 @@ async def jobs_page(request: Request):
         user_name=user.name,
         user_email=user.email,
         active_page="jobs",
-        page_title="Job Analysis",
-        page_subtitle="Track roles and gather insights",
+        page_title="Jobs",
+        page_subtitle="Analyze fit, rehearse interviews, and tailor your narrative for every role.",
         ai_configured=ai_configured
     ))
 
