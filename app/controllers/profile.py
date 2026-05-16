@@ -23,7 +23,8 @@ from app.services.chat_session import ChatSessionService
 from app.services.ai_service import AIService
 from app.models.profile import (
     ProfileBasic, WorkExperienceCreate, EducationCreate, CertificationCreate,
-    CourseCreate, AchievementCreate, SkillCreate, ProjectCreate, UserProfile
+    CourseCreate, AchievementCreate, SkillCreate, ProjectCreate, UserProfile,
+    LanguageCreate
 )
 from app.models.job import JobPostCreate
 from app.database import init_db, get_connection, close_connection
@@ -761,17 +762,41 @@ async def update_project(request: Request, proj_id: int, data: ProjectCreate):
     return result
 
 
-@router.delete("/api/profile/projects/{proj_id}")
-async def delete_project(request: Request, proj_id: int):
+@router.get("/api/profile/languages")
+async def get_languages(request: Request):
     user_id = get_current_user(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    success = await profile_service.delete_project(proj_id, user_id)
+    return await profile_service.get_languages(user_id)
+
+
+@router.post("/api/profile/languages")
+async def create_language(request: Request, data: LanguageCreate):
+    user_id = get_current_user(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    success = await profile_service.delete_project(proj_id, user_id)
+    return await profile_service.create_language(user_id, data)
+
+
+@router.put("/api/profile/languages/{lang_id}")
+async def update_language(request: Request, lang_id: int, data: LanguageCreate):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    result = await profile_service.repository.update_language(lang_id, user_id, data.name, data.level)
+    if not result:
+        raise HTTPException(status_code=404, detail="Language not found")
+    return result
+
+
+@router.delete("/api/profile/languages/{lang_id}")
+async def delete_language(request: Request, lang_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    success = await profile_service.delete_language(lang_id, user_id)
     if not success:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail="Language not found")
     return {"success": True}
 
 

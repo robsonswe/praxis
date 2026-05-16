@@ -345,6 +345,28 @@
                 {% endif %}
             </div>
         </div>
-    </main>
-</div>
-{% endblock %}
+
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Languages</span>
+            </div>
+            <div class="section-body">
+                {% if profile.languages %}
+                <div class="cert-grid">
+                    {% for lang in profile.languages %}
+                    <div class="cert-item">
+                        <div class="cert-name">{{ lang.name }}</div>
+                        <div class="cert-issuer">{{ lang.level }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-section">
+                    <p>No languages added yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        </main>
+        </div>
+        {% endblock %}

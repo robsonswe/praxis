@@ -113,6 +113,53 @@
                 </div>
             </div>
         </div>
+        
+        <div class="section-card">
+            <div class="section-header">
+                <span class="section-title">Languages</span>
+                <span class="section-action" onclick="openLanguageModal()">Add</span>
+            </div>
+            <div class="section-body">
+                <div class="item-list" id="languages-list">
+                    <div class="empty-state">
+                        <p>No languages added yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Language Modal -->
+    <div class="modal" id="language-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="lang-modal-title">Add Language</span>
+                <button class="modal-close" onclick="closeModal('language-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="lang-id">
+                <div class="form-group">
+                    <label class="form-label">Language Name</label>
+                    <input type="text" class="form-input" id="lang-name" placeholder="e.g., Spanish">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proficiency Level</label>
+                    <select class="form-select" id="lang-level">
+                        <option value="A1">A1 (Beginner)</option>
+                        <option value="A2">A2 (Elementary)</option>
+                        <option value="B1">B1 (Intermediate)</option>
+                        <option value="B2">B2 (Upper-Intermediate)</option>
+                        <option value="C1">C1 (Advanced)</option>
+                        <option value="C2">C2 (Proficient/Mastery)</option>
+                        <option value="Native">Native</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('language-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveLanguage()">Save</button>
+            </div>
+        </div>
     </div>
     
     <!-- Basic Info Modal -->
@@ -590,6 +637,7 @@
             renderList('certifications-list', profileData.certifications, 'certification');
             renderList('achievements-list', profileData.achievements, 'achievement');
             renderList('courses-list', profileData.courses, 'course');
+            renderLanguages('languages-list', profileData.languages);
             
             const skillsList = document.getElementById('skills-list');
             if (profileData.skills?.length) {
@@ -1126,6 +1174,77 @@
                 }
             });
         }
+        
+        function renderLanguages(containerId, languages) {
+            const container = document.getElementById(containerId);
+            if (!languages?.length) {
+                container.innerHTML = '<div class="empty-state"><p>No languages added yet.</p></div>';
+                return;
+            }
+            container.innerHTML = languages.map(lang => `
+                <div class="list-item">
+                    <div class="item-content">
+                        <div class="item-title">${lang.name}</div>
+                        <div class="item-subtitle">${lang.level}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="item-action" onclick="editLanguage(${lang.id})">Edit</button>
+                        <button class="item-action delete" onclick="deleteLanguage(${lang.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openLanguageModal(lang = null) {
+            if (lang) {
+                document.getElementById('lang-modal-title').textContent = 'Edit Language';
+                document.getElementById('lang-id').value = lang.id;
+                document.getElementById('lang-name').value = lang.name || '';
+                document.getElementById('lang-level').value = lang.level || 'A1';
+            } else {
+                document.getElementById('lang-modal-title').textContent = 'Add Language';
+                document.getElementById('lang-id').value = '';
+                document.getElementById('lang-name').value = '';
+                document.getElementById('lang-level').value = 'A1';
+            }
+            openModal('language-modal');
+        }
+        
+        async function saveLanguage() {
+            const id = document.getElementById('lang-id').value;
+            const data = {
+                name: document.getElementById('lang-name').value,
+                level: document.getElementById('lang-level').value
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profile/languages/${id}` : '/api/profile/languages';
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            if (res.ok) {
+                closeModal('language-modal');
+                showToast(id ? 'Language updated' : 'Language added');
+                loadProfile();
+            } else showToast('Failed to save', 'error');
+        }
+        
+        function editLanguage(id) {
+            const lang = profileData.languages.find(l => l.id === id);
+            if (lang) openLanguageModal(lang);
+        }
+        
+        async function deleteLanguage(id) {
+            showDialog({
+                title: 'Delete Language',
+                message: 'Are you sure you want to delete this language?',
+                confirmText: 'Delete',
+                variant: 'danger',
+                onConfirm: async () => {
+                    const res = await fetch(`/api/profile/languages/${id}`, { method: 'DELETE' });
+                    if (res.ok) { showToast('Language deleted'); loadProfile(); }
+                    else showToast('Delete failed', 'error');
+                }
+            });
+        }
+        
         
         loadProfile();
     </script>

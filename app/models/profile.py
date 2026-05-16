@@ -78,7 +78,7 @@ class EducationCreate(BaseModel):
     degree: str = Field(..., min_length=1)
     field: str = Field(..., min_length=1)
     start_date: str = Field(..., min_length=1)
-    end_date: Optional[str] = None
+    end_date: str = Field(..., min_length=1)
     gpa: Optional[float] = Field(None, ge=0.0, le=4.0)
 
     @field_validator('start_date', 'end_date')
@@ -163,7 +163,23 @@ class AchievementCreate(BaseModel):
 class Achievement(AchievementCreate):
     id: Optional[int] = None
     user_id: int
+
+
+LanguageLevel = Literal['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Native']
+
+
+class LanguageCreate(BaseModel):
+    name: str = Field(..., min_length=1)
+    level: LanguageLevel
+
+
+class Language(LanguageCreate):
+    id: Optional[int] = None
+    user_id: int
+
+
 class SkillCreate(BaseModel):
+
     name: str = Field(..., min_length=1)
     category: Literal['technical', 'domain']
     proficiency: int = Field(3, ge=1, le=5)
@@ -232,3 +248,4 @@ class UserProfile(BaseModel):
     achievements: list[Achievement] = []
     skills: list[Skill] = []
     projects: list[Project] = []
+    languages: list[Language] = []

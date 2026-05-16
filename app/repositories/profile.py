@@ -347,3 +347,35 @@ class ProfileRepository:
         cursor = await conn.execute("DELETE FROM projects WHERE id = ? AND user_id = ?", (proj_id, user_id))
         await conn.commit()
         return cursor.rowcount > 0
+
+    async def get_languages(self, user_id: int) -> list[dict]:
+        conn = await get_connection()
+        conn.row_factory = lambda c, r: dict(zip([d[0] for d in c.description], r))
+        async with conn.execute("SELECT * FROM languages WHERE user_id = ? ORDER BY name", (user_id,)) as cursor:
+            return await cursor.fetchall()
+
+    async def create_language(self, user_id: int, name: str, level: str) -> dict:
+        conn = await get_connection()
+        cursor = await conn.execute(
+            """INSERT INTO languages (user_id, name, level) VALUES (?, ?, ?)""",
+            (user_id, name, level)
+        )
+        await conn.commit()
+        return {"id": cursor.lastrowid, "user_id": user_id, "name": name, "level": level}
+
+    async def delete_language(self, lang_id: int, user_id: int) -> bool:
+        conn = await get_connection()
+        cursor = await conn.execute("DELETE FROM languages WHERE id = ? AND user_id = ?", (lang_id, user_id))
+        await conn.commit()
+        return cursor.rowcount > 0
+
+    async def update_language(self, lang_id: int, user_id: int, name: str, level: str) -> dict | None:
+        conn = await get_connection()
+        await conn.execute(
+            """UPDATE languages SET name = ?, level = ? WHERE id = ? AND user_id = ?""",
+            (name, level, lang_id, user_id)
+        )
+        await conn.commit()
+        conn.row_factory = lambda c, r: dict(zip([d[0] for d in c.description], r))
+        async with conn.execute("SELECT * FROM languages WHERE id = ?", (lang_id,)) as cursor:
+            return await cursor.fetchone()

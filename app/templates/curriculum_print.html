@@ -226,4 +226,19 @@
     </section>
     {% endif %}
 
-</div>
+    <!-- LANGUAGES -->
+    {% if profile.languages %}
+    <section>
+        <h2 class="section-title">Languages</h2>
+        <ul>
+            {% for lang in profile.languages %}
+            <li>
+                <strong>{{ lang.name }}</strong> &ndash; 
+                {% if lang.level == 'Native' %}Native{% else %}{{ lang.level }}{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    </div>

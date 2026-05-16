@@ -4,7 +4,8 @@ from app.models.profile import (
     ProfileBasic, WorkExperience, WorkExperienceCreate,
     Education, EducationCreate, Certification, CertificationCreate,
     Course, CourseCreate, Achievement, AchievementCreate,
-    Skill, SkillCreate, Project, ProjectCreate, UserProfile
+    Skill, SkillCreate, Project, ProjectCreate, UserProfile,
+    Language, LanguageCreate
 )
 
 
@@ -28,6 +29,7 @@ class ProfileService:
         achievements = await self.repository.get_achievements(user_id)
         skills = await self.repository.get_skills(user_id)
         projects = await self.repository.get_projects(user_id)
+        languages = await self.repository.get_languages(user_id)
         
         return UserProfile(
             id=user["id"],
@@ -48,7 +50,8 @@ class ProfileService:
             courses=[Course(**c) for c in courses],
             achievements=[Achievement(**a) for a in achievements],
             skills=[Skill(**s) for s in skills],
-            projects=[Project(**p) for p in projects]
+            projects=[Project(**p) for p in projects],
+            languages=[Language(**l) for l in languages]
         )
     
     async def update_basic(self, user_id: int, basic: ProfileBasic) -> dict | None:
@@ -300,6 +303,21 @@ class ProfileService:
     
     async def delete_project(self, proj_id: int, user_id: int) -> bool:
         return await self.repository.delete_project(proj_id, user_id)
+
+    async def get_languages(self, user_id: int) -> list[Language]:
+        data = await self.repository.get_languages(user_id)
+        return [Language(**l) for l in data]
+
+    async def create_language(self, user_id: int, data: LanguageCreate) -> Language:
+        result = await self.repository.create_language(
+            user_id, 
+            _strip_str(data.name), 
+            data.level
+        )
+        return Language(**result)
+
+    async def delete_language(self, lang_id: int, user_id: int) -> bool:
+        return await self.repository.delete_language(lang_id, user_id)
 
     async def check_completeness(self, user_id: int, context: str = "general") -> dict:
         """
