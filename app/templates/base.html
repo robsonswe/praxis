@@ -46,9 +46,14 @@
     <!-- Generic Dialog Modal -->
     <div class="modal" id="dialogModal">
         <div class="modal-content">
-            <h3 id="dialogTitle">Dialog</h3>
-            <p id="dialogMessage">Message goes here.</p>
-            <div class="modal-buttons">
+            <div class="modal-header">
+                <div class="modal-title" id="dialogTitle">Dialog</div>
+                <button class="modal-close" onclick="closeDialog()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="dialogMessage">Message goes here.</p>
+            </div>
+            <div class="modal-footer">
                 <button class="btn-secondary" id="dialogCancelBtn" onclick="closeDialog()">Cancel</button>
                 <button class="btn-primary" id="dialogConfirmBtn">Confirm</button>
             </div>
@@ -58,50 +63,53 @@
     <!-- AI Settings Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
-            <h3>AI Settings</h3>
-            
-            <h4>Text Generation</h4>
-            <label for="providerSelect">Provider</label>
-            <select id="providerSelect" onchange="loadModels()">
-                <option value="">Select provider...</option>
-            </select>
-            
-            <label for="modelSelect">Model</label>
-            <select id="modelSelect" disabled onmousedown="maybeLoadModels()">
-                <option value="">Select provider first...</option>
-            </select>
-            
-            <h4>Speech-to-Text (STT)</h4>
-            <label for="sttProviderSelect">Provider</label>
-            <select id="sttProviderSelect" onchange="updateSTTUI()">
-                <option value="browser">Browser</option>
-            </select>
-            
-            <div id="sttModeContainer" style="display: none;">
-                <label for="sttModeSelect">Mode</label>
-                <select id="sttModeSelect">
-                    <option value="batch">Batch (Record-and-Upload)</option>
-                    <option value="live">Live (Streaming)</option>
+            <div class="modal-header">
+                <div class="modal-title">AI Settings</div>
+                <button class="modal-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>Text Generation</h4>
+                <label for="providerSelect">Provider</label>
+                <select id="providerSelect" onchange="loadModels()">
+                    <option value="">Select provider...</option>
+                </select>
+                
+                <label for="modelSelect">Model</label>
+                <select id="modelSelect" disabled onmousedown="maybeLoadModels()">
+                    <option value="">Select provider first...</option>
+                </select>
+                
+                <h4>Speech-to-Text (STT)</h4>
+                <label for="sttProviderSelect">Provider</label>
+                <select id="sttProviderSelect" onchange="updateSTTUI()">
+                    <option value="browser">Browser</option>
+                </select>
+                
+                <div id="sttModeContainer" style="display: none;">
+                    <label for="sttModeSelect">Mode</label>
+                    <select id="sttModeSelect">
+                        <option value="batch">Batch (Record-and-Upload)</option>
+                        <option value="live">Live (Streaming)</option>
+                    </select>
+                </div>
+                
+                <label for="sttModelSelect">Model</label>
+                <select id="sttModelSelect" onmousedown="maybeLoadSTTModels()">
+                    <option value="Browser Built In">Browser Built In</option>
+                </select>
+                
+                <h4>Text-to-Speech (TTS)</h4>
+                <label for="ttsProviderSelect">Provider</label>
+                <select id="ttsProviderSelect" onchange="loadTTSModels()">
+                    <option value="browser">Browser</option>
+                </select>
+                
+                <label for="ttsModelSelect">Model</label>
+                <select id="ttsModelSelect" onmousedown="maybeLoadTTSModels()">
+                    <option value="Browser Built In">Browser Built In</option>
                 </select>
             </div>
-            
-            <label for="sttModelSelect">Model</label>
-            <select id="sttModelSelect" onmousedown="maybeLoadSTTModels()">
-                <option value="Browser Built In">Browser Built In</option>
-            </select>
-            
-            <h4>Text-to-Speech (TTS)</h4>
-            <label for="ttsProviderSelect">Provider</label>
-            <select id="ttsProviderSelect" onchange="loadTTSModels()">
-                <option value="browser">Browser</option>
-            </select>
-            
-            <label for="ttsModelSelect">Model</label>
-            <select id="ttsModelSelect" onmousedown="maybeLoadTTSModels()">
-                <option value="Browser Built In">Browser Built In</option>
-            </select>
-            
-            <div class="modal-buttons">
+            <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
                 <button class="btn-primary" onclick="saveSettings()">Save</button>
             </div>
