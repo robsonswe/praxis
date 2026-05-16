@@ -444,6 +444,49 @@ async def get_profile_completeness(request: Request, context: str = "general"):
     return result
 
 
+@router.get("/profile/curriculum/preview", response_class=HTMLResponse)
+async def get_curriculum_preview(request: Request):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    profile = await profile_service.get_profile(user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    template = env.get_template("curriculum_print.html")
+    return template.render(profile=profile)
+
+
+@router.get("/api/profile/pdf")
+async def generate_pdf(request: Request):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    profile = await profile_service.get_profile(user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    template = env.get_template("curriculum_print.html")
+    html_content = template.render(profile=profile)
+    
+    # xhtml2pdf needs a byte buffer
+    pdf_buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html_content, dest=pdf_buffer)
+    
+    if pisa_status.err:
+        raise HTTPException(status_code=500, detail="PDF generation failed")
+    
+    pdf_buffer.seek(0)
+    
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={profile.name.replace(' ', '_')}_Curriculum.pdf"}
+    )
+
+
 
 
 @router.put("/api/profile/basic")
