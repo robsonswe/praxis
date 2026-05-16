@@ -230,15 +230,73 @@ async def test_profile_repository_courses(repo, user_repo):
 
 
 @pytest.mark.asyncio
+async def test_profile_basic_validation():
+    # Test valid profile
+    basic = ProfileBasic(
+        name="Test",
+        email="test@test.com",
+        title="Engineer",
+        summary="Summary",
+        location="NYC",
+        years_of_experience=3,
+        date_of_birth="1990-01-01",
+        phone="+1 555 000 0000"
+    )
+    assert basic.name == "Test"
+    
+    # Test invalid: empty strings
+    with pytest.raises(Exception):
+        ProfileBasic(
+            name="",
+            email="test@test.com",
+            title="Engineer",
+            summary="Summary",
+            location="NYC",
+            years_of_experience=3,
+            date_of_birth="1990-01-01",
+            phone="+1 555 000 0000"
+        )
+    
+    # Test invalid: negative experience
+    with pytest.raises(Exception):
+        ProfileBasic(
+            name="Test",
+            email="test@test.com",
+            title="Engineer",
+            summary="Summary",
+            location="NYC",
+            years_of_experience=-1,
+            date_of_birth="1990-01-01",
+            phone="+1 555 000 0000"
+        )
+    
+    # Test invalid: bad email
+    with pytest.raises(Exception):
+        ProfileBasic(
+            name="Test",
+            email="not-an-email",
+            title="Engineer",
+            summary="Summary",
+            location="NYC",
+            years_of_experience=3,
+            date_of_birth="1990-01-01",
+            phone="+1 555 000 0000"
+        )
+
+
+@pytest.mark.asyncio
 async def test_profile_service_basic(service, user_repo):
     user = await user_repo.create("testuser", "test@example.com")
     user_id = user["id"]
     
     basic = ProfileBasic(
+        name="John Doe",
+        email="john@example.com",
         title="Engineer",
         summary="Summary",
         location="NYC",
         years_of_experience=3,
+        date_of_birth="1990-01-01",
         phone="+1 555 111 2222",
         website="https://example.com",
         linkedin="https://linkedin.com/in/test",
@@ -261,10 +319,12 @@ async def test_profile_service_full_profile(service, user_repo):
     
     basic = ProfileBasic(
         name="Test User",
+        email="testuser@example.com",
         title="Engineer",
         summary="Summary",
         location="NYC",
         years_of_experience=3,
+        date_of_birth="1990-01-01",
         phone="+1 555 333 4444",
         website="https://example.com",
         linkedin="https://linkedin.com/in/test-user",
@@ -278,16 +338,16 @@ async def test_profile_service_full_profile(service, user_repo):
     skill_data = SkillCreate(name="Python", category="technical", proficiency=5, years_of_experience=3)
     await service.create_skill(user_id, skill_data)
     
-    edu_data = EducationCreate(institution="MIT", degree="BS", field="CS", start_date="2015", end_date="2019", gpa=3.8)
+    edu_data = EducationCreate(institution="MIT", degree="bachelor", field="CS", start_date="2015-09", end_date="2019-06", gpa=3.8)
     await service.create_education(user_id, edu_data)
     
     cert_data = CertificationCreate(name="AWS", issuer="Amazon", issue_date="2023-01")
     await service.create_certification(user_id, cert_data)
     
-    proj_data = ProjectCreate(name="App", description="Built it", role="Lead", technologies=["React"], outcomes=["Shipped"], start_date="2022", end_date="2023")
+    proj_data = ProjectCreate(name="App", description="Built it", role="Lead", technologies=["React"], outcomes=["Shipped"], start_date="2022-01", end_date="2023-12")
     await service.create_project(user_id, proj_data)
     
-    ach_data = AchievementCreate(title="Award", category="award", description="Won", date="2023")
+    ach_data = AchievementCreate(title="Award", category="award", description="Won", date="2023-06")
     await service.create_achievement(user_id, ach_data)
     
     course_data = CourseCreate(name="Course", provider="Coursera", completion_date="2023-06")
@@ -347,6 +407,15 @@ async def test_profile_service_not_found(service, user_repo):
     profile = await service.get_profile(999)
     assert profile is None
     
-    basic = ProfileBasic(title="Test", summary="", location="", years_of_experience=0)
+    basic = ProfileBasic(
+        name="Test",
+        email="test@test.com",
+        title="Test",
+        summary="Summary",
+        location="NYC",
+        years_of_experience=0,
+        date_of_birth="1990-01-01",
+        phone="+1 555 000 0000"
+    )
     result = await service.update_basic(999, basic)
     assert result is None

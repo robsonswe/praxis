@@ -354,6 +354,10 @@
                     <label class="form-label">Credential ID (optional)</label>
                     <input type="text" class="form-input" id="cert-credential" placeholder="Credential ID">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">URL (optional)</label>
+                    <input type="url" class="form-input" id="cert-url" placeholder="https://example.com/cert">
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('cert-modal')">Cancel</button>
@@ -678,6 +682,7 @@
         async function saveBasic() {
             const data = {
                 name: document.getElementById('basic-name').value,
+                email: profileData.email,
                 title: document.getElementById('basic-title').value,
                 summary: document.getElementById('basic-summary').value,
                 location: document.getElementById('basic-location').value,
@@ -696,7 +701,16 @@
                 closeModal('basic-modal');
                 showToast('Basics saved');
                 loadProfile();
-            } else showToast('Failed to save', 'error');
+            } else {
+                const errorData = await res.json();
+                let message = 'Failed to save';
+                if (errorData.detail && Array.isArray(errorData.detail)) {
+                    message = errorData.detail.map(e => `${e.loc[e.loc.length-1]}: ${e.msg}`).join(', ');
+                } else if (errorData.detail) {
+                    message = errorData.detail;
+                }
+                showToast(message, 'error');
+            }
         }
         
         // Work Experience
@@ -890,10 +904,11 @@
                 document.getElementById('cert-issue').value = cert.issue_date ? cert.issue_date.substring(0, 7) : '';
                 document.getElementById('cert-expiry').value = cert.expiry_date ? cert.expiry_date.substring(0, 7) : '';
                 document.getElementById('cert-credential').value = cert.credential_id || '';
+                document.getElementById('cert-url').value = cert.url || '';
             } else {
                 document.getElementById('cert-modal-title').textContent = 'Add Certification';
                 document.getElementById('cert-id').value = '';
-                ['cert-name','cert-issuer','cert-issue','cert-expiry','cert-credential'].forEach(id => 
+                ['cert-name','cert-issuer','cert-issue','cert-expiry','cert-credential', 'cert-url'].forEach(id => 
                     document.getElementById(id).value = '');
             }
             openModal('cert-modal');
@@ -906,7 +921,8 @@
                 issuer: document.getElementById('cert-issuer').value,
                 issue_date: document.getElementById('cert-issue').value,
                 expiry_date: document.getElementById('cert-expiry').value || null,
-                credential_id: document.getElementById('cert-credential').value || null
+                credential_id: document.getElementById('cert-credential').value || null,
+                url: document.getElementById('cert-url').value || null
             };
             const method = id ? 'PUT' : 'POST';
             const url = id ? `/api/profile/certifications/${id}` : '/api/profile/certifications';

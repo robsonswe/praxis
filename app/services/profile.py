@@ -1,3 +1,4 @@
+from typing import Any, Optional
 from app.repositories.profile import ProfileRepository
 from app.models.profile import (
     ProfileBasic, WorkExperience, WorkExperienceCreate,
@@ -5,6 +6,10 @@ from app.models.profile import (
     Course, CourseCreate, Achievement, AchievementCreate,
     Skill, SkillCreate, Project, ProjectCreate, UserProfile
 )
+
+
+def _strip_str(val: Any) -> Any:
+    return val.strip() if isinstance(val, str) else val
 
 
 class ProfileService:
@@ -49,16 +54,16 @@ class ProfileService:
     async def update_basic(self, user_id: int, basic: ProfileBasic) -> dict | None:
         return await self.repository.update_basic(
             user_id, 
-            name=basic.name, 
-            title=basic.title, 
-            summary=basic.summary, 
-            location=basic.location, 
+            name=_strip_str(basic.name), 
+            title=_strip_str(basic.title), 
+            summary=_strip_str(basic.summary), 
+            location=_strip_str(basic.location), 
             years_of_experience=basic.years_of_experience,
-            date_of_birth=basic.date_of_birth,
-            phone=basic.phone,
-            website=basic.website,
-            linkedin=basic.linkedin,
-            github=basic.github
+            date_of_birth=_strip_str(basic.date_of_birth),
+            phone=_strip_str(basic.phone),
+            website=_strip_str(basic.website),
+            linkedin=_strip_str(basic.linkedin),
+            github=_strip_str(basic.github)
         )
     
     async def get_work_experience(self, user_id: int) -> list[WorkExperience]:
@@ -66,21 +71,37 @@ class ProfileService:
         return [WorkExperience(**w) for w in data]
     
     async def create_work_experience(self, user_id: int, data: WorkExperienceCreate) -> WorkExperience:
+        data.experience_type = data.experience_type.strip().lower().replace("_", "-")
         result = await self.repository.create_work_experience(
-            user_id, data.company, data.title, data.experience_type, data.location, data.start_date,
-            data.end_date, data.current, data.description
+            user_id, 
+            _strip_str(data.company), 
+            _strip_str(data.title), 
+            data.experience_type, 
+            _strip_str(data.location), 
+            data.start_date,
+            data.end_date, 
+            data.current, 
+            _strip_str(data.description)
         )
         return WorkExperience(**result)
     
     async def update_work_experience(self, exp_id: int, user_id: int, data: WorkExperienceCreate) -> WorkExperience | None:
+        data.experience_type = data.experience_type.strip().lower().replace("_", "-")
         result = await self.repository.update_work_experience(
-            exp_id, user_id, data.company, data.title, data.experience_type, data.location, data.start_date,
-            data.end_date, data.current, data.description
+            exp_id, user_id, 
+            _strip_str(data.company), 
+            _strip_str(data.title), 
+            data.experience_type, 
+            _strip_str(data.location), 
+            data.start_date,
+            data.end_date, 
+            data.current, 
+            _strip_str(data.description)
         )
         if result:
             return WorkExperience(**result)
         return None
-    
+
     async def delete_work_experience(self, exp_id: int, user_id: int) -> bool:
         return await self.repository.delete_work_experience(exp_id, user_id)
     
@@ -90,14 +111,25 @@ class ProfileService:
     
     async def create_education(self, user_id: int, data: EducationCreate) -> Education:
         result = await self.repository.create_education(
-            user_id, data.institution, data.degree, data.field, data.start_date, data.end_date, data.gpa
+            user_id, 
+            _strip_str(data.institution), 
+            _strip_str(data.degree), 
+            _strip_str(data.field), 
+            data.start_date, 
+            data.end_date, 
+            data.gpa
         )
         return Education(**result)
     
     async def update_education(self, edu_id: int, user_id: int, data: EducationCreate) -> Education | None:
         result = await self.repository.update_education(
-            edu_id, user_id, data.institution, data.degree, data.field,
-            data.start_date, data.end_date, data.gpa
+            edu_id, user_id, 
+            _strip_str(data.institution), 
+            _strip_str(data.degree), 
+            _strip_str(data.field),
+            data.start_date, 
+            data.end_date, 
+            data.gpa
         )
         if result:
             return Education(**result)
@@ -112,14 +144,25 @@ class ProfileService:
     
     async def create_certification(self, user_id: int, data: CertificationCreate) -> Certification:
         result = await self.repository.create_certification(
-            user_id, data.name, data.issuer, data.issue_date, data.expiry_date, data.credential_id, data.url
+            user_id, 
+            _strip_str(data.name), 
+            _strip_str(data.issuer), 
+            data.issue_date, 
+            data.expiry_date, 
+            _strip_str(data.credential_id), 
+            _strip_str(data.url)
         )
         return Certification(**result)
     
     async def update_certification(self, cert_id: int, user_id: int, data: CertificationCreate) -> Certification | None:
         result = await self.repository.update_certification(
-            cert_id, user_id, data.name, data.issuer, data.issue_date,
-            data.expiry_date, data.credential_id, data.url
+            cert_id, user_id, 
+            _strip_str(data.name), 
+            _strip_str(data.issuer), 
+            data.issue_date,
+            data.expiry_date, 
+            _strip_str(data.credential_id), 
+            _strip_str(data.url)
         )
         if result:
             return Certification(**result)
@@ -134,14 +177,23 @@ class ProfileService:
     
     async def create_course(self, user_id: int, data: CourseCreate) -> Course:
         result = await self.repository.create_course(
-            user_id, data.name, data.provider, data.completion_date, data.certificate_url, data.description
+            user_id, 
+            _strip_str(data.name), 
+            _strip_str(data.provider), 
+            data.completion_date, 
+            _strip_str(data.certificate_url), 
+            _strip_str(data.description)
         )
         return Course(**result)
     
     async def update_course(self, course_id: int, user_id: int, data: CourseCreate) -> Course | None:
         result = await self.repository.update_course(
-            course_id, user_id, data.name, data.provider, data.completion_date,
-            data.certificate_url, data.description
+            course_id, user_id, 
+            _strip_str(data.name), 
+            _strip_str(data.provider), 
+            data.completion_date,
+            _strip_str(data.certificate_url), 
+            _strip_str(data.description)
         )
         if result:
             return Course(**result)
@@ -155,14 +207,26 @@ class ProfileService:
         return [Achievement(**a) for a in data]
     
     async def create_achievement(self, user_id: int, data: AchievementCreate) -> Achievement:
+        data.category = data.category.strip().lower()
         result = await self.repository.create_achievement(
-            user_id, data.title, data.category, data.description, data.date, data.organization
+            user_id, 
+            _strip_str(data.title), 
+            data.category, 
+            _strip_str(data.description), 
+            data.date, 
+            _strip_str(data.organization)
         )
         return Achievement(**result)
     
     async def update_achievement(self, ach_id: int, user_id: int, data: AchievementCreate) -> Achievement | None:
+        data.category = data.category.strip().lower()
         result = await self.repository.update_achievement(
-            ach_id, user_id, data.title, data.category, data.description, data.date, data.organization
+            ach_id, user_id, 
+            _strip_str(data.title), 
+            data.category, 
+            _strip_str(data.description), 
+            data.date, 
+            _strip_str(data.organization)
         )
         if result:
             return Achievement(**result)
@@ -176,14 +240,24 @@ class ProfileService:
         return [Skill(**s) for s in data]
     
     async def create_skill(self, user_id: int, data: SkillCreate) -> Skill:
+        data.category = data.category.strip().lower()
         result = await self.repository.create_skill(
-            user_id, data.name, data.category, data.proficiency, data.years_of_experience
+            user_id, 
+            _strip_str(data.name), 
+            data.category, 
+            data.proficiency, 
+            data.years_of_experience
         )
         return Skill(**result)
     
     async def update_skill(self, skill_id: int, user_id: int, data: SkillCreate) -> Skill | None:
+        data.category = data.category.strip().lower()
         result = await self.repository.update_skill(
-            skill_id, user_id, data.name, data.category, data.proficiency, data.years_of_experience
+            skill_id, user_id, 
+            _strip_str(data.name), 
+            data.category, 
+            data.proficiency, 
+            data.years_of_experience
         )
         if result:
             return Skill(**result)
@@ -198,15 +272,27 @@ class ProfileService:
     
     async def create_project(self, user_id: int, data: ProjectCreate) -> Project:
         result = await self.repository.create_project(
-            user_id, data.name, data.description, data.role,
-            data.technologies, data.outcomes, data.start_date, data.end_date
+            user_id, 
+            _strip_str(data.name), 
+            _strip_str(data.description), 
+            _strip_str(data.role),
+            [_strip_str(t) for t in data.technologies], 
+            [_strip_str(o) for o in data.outcomes], 
+            data.start_date, 
+            data.end_date
         )
         return Project(**result)
     
     async def update_project(self, proj_id: int, user_id: int, data: ProjectCreate) -> Project | None:
         result = await self.repository.update_project(
-            proj_id, user_id, data.name, data.description, data.role,
-            data.technologies, data.outcomes, data.start_date, data.end_date
+            proj_id, user_id, 
+            _strip_str(data.name), 
+            _strip_str(data.description), 
+            _strip_str(data.role),
+            [_strip_str(t) for t in data.technologies], 
+            [_strip_str(o) for o in data.outcomes], 
+            data.start_date, 
+            data.end_date
         )
         if result:
             return Project(**result)

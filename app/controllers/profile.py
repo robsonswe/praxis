@@ -2,6 +2,7 @@ import json as json_module
 from pathlib import Path
 from datetime import date, datetime
 from fastapi import APIRouter, Request, Form, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from app.services.user import UserService
@@ -438,10 +439,14 @@ async def update_basic(request: Request, basic: ProfileBasic):
     user_id = get_current_user(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    result = await profile_service.update_basic(user_id, basic)
-    if not result:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return result
+    try:
+        result = await profile_service.update_basic(user_id, basic)
+        if not result:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return result
+    except Exception as e:
+        print(f"Validation error in update_basic: {e}")
+        raise e
 
 
 @router.get("/api/profile/experience")

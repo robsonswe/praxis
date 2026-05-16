@@ -6,7 +6,9 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.controllers.profile import router as profile_router
 from app.controllers.chat import router as chat_router
@@ -23,6 +25,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(f"Validation error: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
 
 BASE_DIR = Path(__file__).parent
 
