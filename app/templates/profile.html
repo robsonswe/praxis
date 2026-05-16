@@ -46,29 +46,10 @@
         </div>
         <div class="profile-actions">
             <a href="/profile/curriculum" class="edit-profile-btn">Edit Profile</a>
-            <button class="print-profile-btn" onclick="openPrintModal()">Print</button>
+            <button class="print-profile-btn" onclick="openPrintModal('/profile/curriculum/preview', 'Curriculum Preview')">Print</button>
         </div>
         
-        <div id="printModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title">Curriculum Preview</h2>
-                    <button class="modal-close" onclick="closePrintModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <iframe src="/profile/curriculum/preview" style="width: 100%; height: 600px; border: none;"></iframe>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="closePrintModal()">Close</button>
-                    <a href="/api/profile/pdf" class="btn btn-primary">Download PDF</a>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            function openPrintModal() { document.getElementById('printModal').classList.add('active'); }
-            function closePrintModal() { document.getElementById('printModal').classList.remove('active'); }
-        </script>
+        {% include 'components/print_modal.html' %}
         
         <div class="completeness-card">
             <div class="completeness-title">Profile Completeness</div>

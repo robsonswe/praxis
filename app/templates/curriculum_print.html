@@ -4,92 +4,148 @@
     <meta name="description" content="{{ profile.name }} - {{ profile.title }}">
 </head>
 <style>
-    /* ATS-Optimized CSS: Single column, standard fonts, clear hierarchy */
+    /* ─── Reset ───────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Root ────────────────────────────────────────────────────────── */
+    /*
+     * ATS constraints respected throughout:
+     *   - Single column, strictly top-to-bottom text flow
+     *   - Arial only (safe across every parser)
+     *   - Standard section labels kept in the HTML (parsers key on those)
+     *   - No images, no tables, no text boxes, no headers/footers
+     *   - All contact info in normal body flow
+     *   - Plain disc bullets only
+     *   - Flexbox used ONLY for left/right alignment within a single row
+     *     (parsers read text nodes, not box layout)
+     */
     .print-container {
         font-family: Arial, Helvetica, sans-serif;
-        color: #000000;
-        line-height: 1.4;
-        max-width: 850px;
+        color: #1a1a1a;
+        font-size: 13px;
+        line-height: 1.5;
+        max-width: 820px;
         margin: 0 auto;
-        padding: 20px;
-        text-align: left; 
+        padding: 36px 44px;
     }
-    
-    /* Contact Header */
-    .print-header { 
-        margin-bottom: 15px; 
+
+    /* ─── Header ──────────────────────────────────────────────────────── */
+    .print-header {
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1.5px solid #1a1a1a;
     }
-    .print-header h1 { 
-        font-size: 24px; 
-        text-transform: uppercase; 
-        margin: 0 0 5px 0; 
+
+    .print-header h1 {
+        font-size: 25px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        line-height: 1.1;
+        margin-bottom: 4px;
     }
-    .print-header h2 { 
-        font-size: 16px; 
-        font-weight: normal; 
-        margin: 0 0 5px 0; 
+
+    .print-header h2 {
+        font-size: 13.5px;
+        font-weight: 400;
+        color: #444;
+        margin-bottom: 9px;
+        letter-spacing: 0.02em;
     }
-    .contact-info { 
-        font-size: 14px; 
+
+    .contact-info {
+        font-size: 11.5px;
+        color: #333;
+        line-height: 1.7;
     }
+
     .contact-info a {
-        color: #000000;
+        color: #333;
         text-decoration: none;
     }
 
-    /* Standard Section Headings */
-    .print-container h2.section-title { 
-        font-size: 14px; 
-        text-transform: uppercase; 
-        border-bottom: 1px solid #000; 
-        padding-bottom: 2px; 
-        margin-top: 15px; 
-        margin-bottom: 10px; 
-        font-weight: bold;
+    /* ─── Section titles ──────────────────────────────────────────────── */
+    /*
+     * Smaller + letter-spaced all-caps labels read cleanly at a glance
+     * while the underline marks the boundary — no bold/thick needed.
+     * Parsers match on the text content, not weight or size.
+     */
+    h2.section-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #1a1a1a;
+        border-bottom: 1px solid #999;
+        padding-bottom: 3px;
+        margin-top: 22px;
+        margin-bottom: 11px;
     }
 
-    /* Entry Layouts (Experience, Education, Projects) */
+    /* ─── Entry wrapper ───────────────────────────────────────────────── */
+    .entry { margin-bottom: 11px; }
+    .entry:last-child { margin-bottom: 0; }
+
+    /* ─── Entry header row ────────────────────────────────────────────── */
     .entry-header {
-        display: flex; 
-        justify-content: space-between; 
+        display: flex;
+        justify-content: space-between;
         align-items: baseline;
+        gap: 14px;
+        margin-bottom: 2px;
+    }
+
+    .entry-title {
+        font-size: 13px;
+        font-weight: 700;
+        flex: 1;
+    }
+
+    .entry-date {
+        font-size: 11.5px;
+        color: #555;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* ─── Body text ───────────────────────────────────────────────────── */
+    .text-block {
+        font-size: 13px;
+        line-height: 1.55;
+        margin-top: 3px;
         margin-bottom: 5px;
+        white-space: pre-wrap;
     }
-    .entry-title { 
-        font-size: 14px; 
-        font-weight: bold; 
-        margin: 0; 
+
+    p {
+        font-size: 13px;
+        line-height: 1.55;
+        margin-bottom: 4px;
     }
-    .entry-date { 
-        font-size: 14px; 
-        white-space: nowrap; 
+
+    /* ─── Lists ───────────────────────────────────────────────────────── */
+    ul {
+        padding-left: 17px;
+        margin-top: 4px;
+        margin-bottom: 0;
     }
-    
-    /* Text formatting */
-    .text-block { 
-        margin: 0 0 10px 0; 
-        font-size: 14px; 
-        white-space: pre-wrap; /* Preserves newlines (\n) passed from your Pydantic string fields */
-    }
-    p { margin: 0 0 10px 0; font-size: 14px; }
-    ul { 
-        margin: 0 0 10px 0; 
-        padding-left: 20px; 
-    }
-    li { 
-        font-size: 14px; 
-        margin-bottom: 4px; 
+
+    li {
+        font-size: 13px;
+        line-height: 1.55;
+        margin-bottom: 3px;
         list-style-type: disc;
     }
 
+    /* ─── Print overrides ─────────────────────────────────────────────── */
     @media print {
         .print-container { padding: 0; max-width: 100%; }
     }
 </style>
 
 <div class="print-container">
-    
-    <!-- HEADER: Dynamic contact logic to handle Optionals cleanly -->
+
+    <!-- ── HEADER: name, title, contact in body flow (ATS: no header/footer) ── -->
     <div class="print-header">
         <h1>{{ profile.name }}</h1>
         <h2>{{ profile.title }}</h2>
@@ -101,7 +157,7 @@
         </div>
     </div>
 
-    <!-- SUMMARY -->
+    <!-- ── SUMMARY ─────────────────────────────────────────────────────── -->
     {% if profile.summary %}
     <section>
         <h2 class="section-title">Professional Summary</h2>
@@ -109,11 +165,11 @@
     </section>
     {% endif %}
 
-    <!-- SKILLS -->
+    <!-- ── SKILLS ──────────────────────────────────────────────────────── -->
+    <!-- ATS: comma-separated paragraph parses as cleanly as a list -->
     {% if profile.skills %}
     <section>
         <h2 class="section-title">Technical Skills</h2>
-        <!-- Using a comma-separated paragraph saves space and reads perfectly in an ATS -->
         <p>
             {% for skill in profile.skills %}
                 {{ skill.name }}{% if not loop.last %}, {% endif %}
@@ -122,12 +178,12 @@
     </section>
     {% endif %}
 
-    <!-- PROFESSIONAL EXPERIENCE -->
+    <!-- ── PROFESSIONAL EXPERIENCE ─────────────────────────────────────── -->
     {% if profile.work_experience %}
     <section>
         <h2 class="section-title">Professional Experience</h2>
         {% for exp in profile.work_experience %}
-        <div>
+        <div class="entry">
             <div class="entry-header">
                 <h3 class="entry-title">{{ exp.company }} &ndash; {{ exp.title }}</h3>
                 <span class="entry-date">{{ exp.start_date }} &ndash; {% if exp.current or not exp.end_date %}Present{% else %}{{ exp.end_date }}{% endif %}</span>
@@ -140,25 +196,22 @@
     </section>
     {% endif %}
 
-    <!-- PROJECTS (Handles 'outcomes' and 'technologies' lists from Pydantic) -->
+    <!-- ── PROJECTS ─────────────────────────────────────────────────────── -->
     {% if profile.projects %}
     <section>
         <h2 class="section-title">Projects</h2>
         {% for proj in profile.projects %}
-        <div>
+        <div class="entry">
             <div class="entry-header">
                 <h3 class="entry-title">{{ proj.name }}{% if proj.role %} &ndash; {{ proj.role }}{% endif %}</h3>
                 <span class="entry-date">{{ proj.start_date }} &ndash; {% if proj.end_date %}{{ proj.end_date }}{% else %}Present{% endif %}</span>
             </div>
-            
             {% if proj.description %}
             <div class="text-block">{{ proj.description }}</div>
             {% endif %}
-
             {% if proj.technologies %}
             <p><strong>Technologies:</strong> {{ proj.technologies | join(', ') }}</p>
             {% endif %}
-            
             {% if proj.outcomes %}
             <ul>
                 {% for outcome in proj.outcomes %}
@@ -171,26 +224,26 @@
     </section>
     {% endif %}
 
-    <!-- EDUCATION -->
+    <!-- ── EDUCATION ────────────────────────────────────────────────────── -->
     {% if profile.education %}
     <section>
         <h2 class="section-title">Education</h2>
         {% for edu in profile.education %}
-        <div>
+        <div class="entry">
             <div class="entry-header">
                 <h3 class="entry-title">{{ edu.institution }}</h3>
                 <span class="entry-date">{{ edu.start_date }} &ndash; {% if edu.end_date %}{{ edu.end_date }}{% else %}Present{% endif %}</span>
             </div>
-            <p>{{ edu.degree }} in {{ edu.field }}{% if edu.gpa %} (GPA: {{ edu.gpa }}){% endif %}</p>
+            <p>{{ edu.degree }} in {{ edu.field }}{% if edu.gpa %} &mdash; GPA: {{ edu.gpa }}{% endif %}</p>
         </div>
         {% endfor %}
     </section>
     {% endif %}
 
-    <!-- ACHIEVEMENTS -->
+    <!-- ── ACHIEVEMENTS ──────────────────────────────────────────────────── -->
     {% if profile.achievements %}
     <section>
-        <h2 class="section-title">Achievements & Awards</h2>
+        <h2 class="section-title">Achievements &amp; Awards</h2>
         <ul>
             {% for ach in profile.achievements %}
             <li>
@@ -202,7 +255,7 @@
     </section>
     {% endif %}
 
-    <!-- CERTIFICATIONS -->
+    <!-- ── CERTIFICATIONS ────────────────────────────────────────────────── -->
     {% if profile.certifications %}
     <section>
         <h2 class="section-title">Certifications</h2>
@@ -214,7 +267,7 @@
     </section>
     {% endif %}
 
-    <!-- COURSES -->
+    <!-- ── COURSES ───────────────────────────────────────────────────────── -->
     {% if profile.courses %}
     <section>
         <h2 class="section-title">Courses</h2>
@@ -226,19 +279,16 @@
     </section>
     {% endif %}
 
-    <!-- LANGUAGES -->
+    <!-- ── LANGUAGES ─────────────────────────────────────────────────────── -->
     {% if profile.languages %}
     <section>
         <h2 class="section-title">Languages</h2>
         <ul>
             {% for lang in profile.languages %}
-            <li>
-                <strong>{{ lang.name }}</strong> &ndash; 
-                {% if lang.level == 'Native' %}Native{% else %}{{ lang.level }}{% endif %}
-            </li>
+            <li><strong>{{ lang.name }}</strong> &ndash; {% if lang.level == 'Native' %}Native{% else %}{{ lang.level }}{% endif %}</li>
             {% endfor %}
         </ul>
     </section>
     {% endif %}
 
-    </div>
+</div>

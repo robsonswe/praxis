@@ -3,10 +3,8 @@ from pathlib import Path
 from datetime import date, datetime
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-import io
-from xhtml2pdf import pisa
 from app.services.user import UserService
 from app.repositories.user import UserRepository
 from app.repositories.profile import ProfileRepository
@@ -457,37 +455,8 @@ async def get_curriculum_preview(request: Request):
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    template = env.get_template("curriculum_print.html")
+    template = env.get_template("curriculum_preview.html")
     return template.render(profile=profile)
-
-
-@router.get("/api/profile/pdf")
-async def generate_pdf(request: Request):
-    user_id = get_current_user(request)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    profile = await profile_service.get_profile(user_id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
-    template = env.get_template("curriculum_print.html")
-    html_content = template.render(profile=profile)
-    
-    # xhtml2pdf needs a byte buffer
-    pdf_buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(html_content, dest=pdf_buffer)
-    
-    if pisa_status.err:
-        raise HTTPException(status_code=500, detail="PDF generation failed")
-    
-    pdf_buffer.seek(0)
-    
-    return StreamingResponse(
-        pdf_buffer,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename={profile.name.replace(' ', '_')}_Curriculum.pdf"}
-    )
 
 
 
