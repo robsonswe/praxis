@@ -10,9 +10,8 @@
                     <h3>Role library</h3>
                     <p class="job-panel-sub">Track the roles you want to pressure-test.</p>
                 </div>
-                <button class="btn-primary" onclick="openJobModal()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                    Add role
+                <button class="btn-secondary" onclick="openJobModal()" title="Add new role" style="padding: 0.6rem; line-height: 1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 </button>
             </div>
 
@@ -20,7 +19,15 @@
 
             <div class="job-list" id="jobList"></div>
             <div class="job-empty" id="jobEmpty">
-                <div>No roles yet. Add your first target role to start.</div>
+                <div class="job-blank-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                </div>
+                <h4>No roles yet</h4>
+                <p>Add your first target role to start the analysis.</p>
+                <button class="btn-primary" onclick="openJobModal()">Add first role</button>
             </div>
         </section>
 
@@ -90,10 +97,12 @@
         function renderJobs() {
             jobList.innerHTML = '';
             if (!jobs.length) {
-                jobEmpty.style.display = 'block';
+                jobEmpty.classList.add('active');
+                jobList.style.display = 'none';
                 return;
             }
-            jobEmpty.style.display = 'none';
+            jobEmpty.classList.remove('active');
+            jobList.style.display = 'block';
 
             jobs.forEach(job => {
                 const card = document.createElement('div');
@@ -297,9 +306,8 @@
                                 </button>
                             ` : `
                                 <div class="ai-warning">
-                                    <p><strong>AI model not configured.</strong> Please set up your text chat model in Settings to enable job analysis.</p>
-                                    <a href="/ai/settings" class="job-ghost">Go to Settings</a>
-                                    <button class="job-primary" disabled>Run Analysis (Locked)</button>
+                                    <div class="ai-warning-title">AI model not configured</div>
+                                    <p>Please set up your text chat model in Settings to enable job analysis.</p>
                                 </div>
                             `}
                         </div>
@@ -324,9 +332,8 @@
                             </button>
                         ` : `
                             <div class="ai-warning">
-                                <p><strong>AI model not configured.</strong> Please set up your text chat model in Settings to enable mock interviews.</p>
-                                <a href="/ai/settings" class="job-ghost">Go to Settings</a>
-                                <button class="job-primary" disabled>Start Mock Interview (Locked)</button>
+                                <div class="ai-warning-title">AI model not configured</div>
+                                <p>Please set up your text chat model in Settings to enable mock interviews.</p>
                             </div>
                         `}
                         <div class="mock-history">
