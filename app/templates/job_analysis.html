@@ -41,6 +41,7 @@
             </div>
 
             {% include 'partials/job_modal.html' %}
+            {% include 'components/print_modal.html' %}
 
             <div class="job-list" id="jobList"></div>
             <div class="job-empty" id="jobEmpty">
@@ -421,7 +422,7 @@
                 </div>
 
                 <div class="main-tab-pane" id="main-tab-curriculum">
-                    <div class="mock-interview-placeholder">
+                    <div class="mock-interview-placeholder" id="curriculumContent">
                         <div class="placeholder-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -434,9 +435,24 @@
                         <h4>Curriculum</h4>
                         <p>Generate a job-specific CV that highlights the exact skills and impact this role requires. Our AI rewrites your profile to speak the company's language.</p>
                         
-                        <div class="ai-warning" style="background: var(--bg-muted); border-style: dashed;">
-                            <p><strong>Coming Soon.</strong> This feature will allow you to export a customized PDF version of your curriculum optimized for this specific job posting.</p>
-                            <button class="job-primary" disabled>Generate Curriculum</button>
+                        <div id="curriculumActions">
+                            <div class="loading-state" style="display:none; text-align: center; padding: 2rem;">
+                                <div class="spinner"></div>
+                                <h3 style="margin-top: 1rem;">AI is tailoring your CV...</h3>
+                            </div>
+                            
+                            <div class="action-buttons" id="curriculumState">
+                                {% if ai_configured %}
+                                    <div id="curriculumPlaceholder">
+                                        <button class="job-primary" onclick="window.triggerGeneration()">Generate Curriculum</button>
+                                    </div>
+                                {% else %}
+                                    <div class="ai-warning">
+                                        <div class="ai-warning-title">AI model not configured</div>
+                                        <p>Please set up your text chat model in Settings to enable tailored CV generation.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -477,12 +493,82 @@
                 runAnalysisBtn.addEventListener('click', runAnalysis);
             }
 
-            const startMockBtn = analysisContent.querySelector('.start-mock-btn');
-            if (startMockBtn) {
-                startMockBtn.addEventListener('click', () => {
-                    window.location.href = `/jobs/${selectedId}/mock-setup`;
-                });
+            // Curriculum generation/preview logic
+            const curriculumContent = analysisContent.querySelector('#curriculumContent');
+            const generateBtn = curriculumContent.querySelector('#generateTailoredCv');
+            const curriculumState = curriculumContent.querySelector('#curriculumState');
+
+            async function checkExistingCurriculum() {
+                try {
+                    const result = await fetchJson(`/api/jobs/${selectedId}/curriculum`);
+                    if (result.exists) {
+                        renderCurriculumUI(true, result.created_at, result.updated_at);
+                    } else {
+                        renderCurriculumUI(false);
+                    }
+                } catch (error) {
+                    console.error('Failed to check curriculum', error);
+                }
             }
+
+            function renderCurriculumUI(exists, createdAt, updatedAt) {
+                const stateEl = analysisContent.querySelector('#curriculumState');
+                if (!stateEl) return;
+
+                if (exists) {
+                    const created = new Date(createdAt).toLocaleDateString();
+                    const updated = new Date(updatedAt).toLocaleDateString();
+                    stateEl.innerHTML = `
+                        <div class="analysis-report" style="margin-top: 1rem;">
+                            <div class="job-card" style="margin-bottom: 1.5rem; border: 1px solid var(--border-color); background: var(--bg-muted);">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+                                    <span>Generated: ${created}</span>
+                                    <span>Last Updated: ${updated}</span>
+                                </div>
+                            </div>
+                            <div class="action-buttons" style="display: flex; justify-content: center; gap: 1rem;">
+                                <button class="job-primary" onclick="openPrintModal('/profile/curriculum/preview?job_id=${selectedId}', 'Tailored Curriculum')">Preview Curriculum</button>
+                                <button class="job-ghost" onclick="triggerGeneration()">Re-generate</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    stateEl.innerHTML = `
+                        <div id="curriculumPlaceholder">
+                            <button class="job-primary" onclick="triggerGeneration()">Generate Curriculum</button>
+                        </div>
+                    `;
+                }
+            }
+
+            async function triggerGeneration() {
+                const contentEl = analysisContent.querySelector('#curriculumContent');
+                if (!contentEl) return;
+
+                contentEl.querySelector('.action-buttons').style.display = 'none';
+                contentEl.querySelector('.loading-state').style.display = 'block';
+                
+                try {
+                    await fetchJson(`/api/jobs/${selectedId}/curriculum/generate`, { method: 'POST' });
+                    await checkExistingCurriculum();
+                } catch (error) {
+                    console.error('Generation error object:', error);
+                    contentEl.querySelector('.action-buttons').style.display = 'block';
+                    contentEl.querySelector('.loading-state').style.display = 'none';
+                    
+                    let message = error.detail || error.message || 'Failed to generate tailored CV.';
+                    if (typeof message === 'string') {
+                        try {
+                            const parsed = JSON.parse(message);
+                            message = parsed.detail || message;
+                        } catch (e) {}
+                    }
+                    showAlert('Generation Failed', message);
+                }
+            }
+            window.triggerGeneration = triggerGeneration;
+
+            checkExistingCurriculum();
         }
 
         function editJob(job) {
@@ -557,10 +643,9 @@
             try {
                 const settings = await fetchJson('/ai/settings');
                 aiConfigured = !!(settings.provider && settings.model);
-                // If we have a selected job and it's not analyzed, re-render to unlock button
+                // Refresh if job selected
                 if (selectedId) {
-                    const analysis = await fetchJson(`/api/jobs/${selectedId}/analysis`);
-                    renderAnalysis(analysis);
+                    selectJob(selectedId);
                 }
             } catch (error) {
                 console.error('Failed to check AI config', error);

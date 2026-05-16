@@ -1,4 +1,5 @@
 import json as json_module
+from typing import Optional
 from pathlib import Path
 from datetime import date, datetime
 from fastapi import APIRouter, Request, Form, HTTPException
@@ -298,6 +299,52 @@ async def analyze_job(request: Request, job_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/api/jobs/{job_id}/curriculum")
+async def get_tailored_curriculum(request: Request, job_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    from app.repositories.job_profile import JobProfileRepository
+    from app.services.job_profile import JobProfileService
+    
+    jp_repo = JobProfileRepository()
+    jp_service = JobProfileService(jp_repo, job_repo, profile_service, ai_service)
+    
+    profile = await jp_service.get_job_profile(job_id, user_id)
+    if not profile:
+        return {"exists": False}
+    
+    return {
+        "exists": True,
+        "created_at": profile.created_at,
+        "updated_at": profile.updated_at
+    }
+
+
+@router.post("/api/jobs/{job_id}/curriculum/generate")
+async def generate_tailored_curriculum(request: Request, job_id: int):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    from app.repositories.job_profile import JobProfileRepository
+    from app.services.job_profile import JobProfileService
+    
+    jp_repo = JobProfileRepository()
+    jp_service = JobProfileService(jp_repo, job_repo, profile_service, ai_service)
+    
+    try:
+        profile = await jp_service.generate_tailored_profile(job_id, user_id)
+        return {"success": True, "id": profile.id}
+    except Exception as e:
+        # Check if error message indicates rate limit
+        msg = str(e).lower()
+        if "rate limit" in msg:
+            raise HTTPException(status_code=429, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/api/jobs/{job_id}/mock_sessions")
 async def get_job_mock_sessions(request: Request, job_id: int):
     user_id = get_current_user(request)
@@ -446,14 +493,25 @@ async def get_profile_completeness(request: Request, context: str = "general"):
 
 
 @router.get("/profile/curriculum/preview", response_class=HTMLResponse)
-async def get_curriculum_preview(request: Request):
+async def get_curriculum_preview(request: Request, job_id: Optional[int] = None):
     user_id = get_current_user(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
-    profile = await profile_service.get_profile(user_id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+    if job_id:
+        from app.repositories.job_profile import JobProfileRepository
+        from app.services.job_profile import JobProfileService
+        
+        jp_repo = JobProfileRepository()
+        jp_service = JobProfileService(jp_repo, job_repo, profile_service, ai_service)
+        
+        profile = await jp_service.get_job_profile(job_id, user_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Tailored profile not found")
+    else:
+        profile = await profile_service.get_profile(user_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
 
     template = env.get_template("curriculum_preview.html")
     return template.render(profile=profile)

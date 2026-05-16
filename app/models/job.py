@@ -48,3 +48,30 @@ class JobAnalysis(BaseModel):
     recommendations: list[str]
     positioning_strategy: str
     analyzed_at: Optional[str] = None
+
+
+class JobProfile(BaseModel):
+    id: Optional[int] = None
+    job_id: int
+    user_id: int
+    name: str
+    email: str
+    title: str = ""
+    summary: str = ""
+    location: str = ""
+    years_of_experience: int = 0
+    date_of_birth: str = ""
+    phone: str = ""
+    website: Optional[str] = None
+    linkedin: Optional[str] = None
+    github: Optional[str] = None
+    work_experience: list[dict] = []
+    education: list[dict] = []
+    certifications: list[dict] = []
+    courses: list[dict] = []
+    achievements: list[dict] = []
+    skills: list[dict] = []
+    projects: list[dict] = []
+    languages: list[dict] = []
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None

@@ -272,6 +272,38 @@ async def _create_tables(conn: aiosqlite.Connection):
     """)
 
     await conn.execute("""
+        CREATE TABLE IF NOT EXISTS job_profile (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            title TEXT DEFAULT '',
+            summary TEXT DEFAULT '',
+            location TEXT DEFAULT '',
+            years_of_experience INTEGER DEFAULT 0,
+            date_of_birth TEXT DEFAULT '',
+            phone TEXT DEFAULT '',
+            website TEXT DEFAULT '',
+            linkedin TEXT DEFAULT '',
+            github TEXT DEFAULT '',
+            work_experience TEXT DEFAULT '[]', -- JSON
+            education TEXT DEFAULT '[]', -- JSON
+            certifications TEXT DEFAULT '[]', -- JSON
+            courses TEXT DEFAULT '[]', -- JSON
+            achievements TEXT DEFAULT '[]', -- JSON
+            skills TEXT DEFAULT '[]', -- JSON
+            projects TEXT DEFAULT '[]', -- JSON
+            languages TEXT DEFAULT '[]', -- JSON
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+            UNIQUE(job_id, user_id)
+        )
+    """)
+
+    await conn.execute("""
         CREATE TABLE IF NOT EXISTS mock_sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
