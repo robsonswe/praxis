@@ -300,3 +300,36 @@ class ProfileService:
     
     async def delete_project(self, proj_id: int, user_id: int) -> bool:
         return await self.repository.delete_project(proj_id, user_id)
+
+    async def check_completeness(self, user_id: int, context: str = "general") -> dict:
+        """
+        Returns structured missing fields: {'essential': [], 'recommended': []}
+        Logic: 
+        - Essential: If no work experience, requires Summary, Skills, and Education.
+        - Recommended (Fit Analysis): Behavioral Profile.
+        """
+        profile = await self.get_profile(user_id)
+        if not profile:
+            return {"essential": ["Basic profile info"], "recommended": []}
+        
+        essential = []
+        recommended = []
+
+        # Logic: Experience overrides basic bare minimums
+        if not profile.work_experience:
+            if not profile.summary or not profile.summary.strip():
+                essential.append("Professional Summary")
+            if not profile.skills:
+                essential.append("Skills")
+            if not profile.education:
+                essential.append("Education")
+            
+        # Fit Analysis specific "nice-to-have"
+        if context == "fit_analysis":
+            from app.services.behavioral import BehavioralService
+            behavioral_service = BehavioralService()
+            behavioral = await behavioral_service.get_profile(user_id)
+            if not behavioral:
+                recommended.append("Behavioral Assessment")
+            
+        return {"essential": essential, "recommended": recommended}

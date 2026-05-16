@@ -1,6 +1,31 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .profile-heads-up {
+        background: #fef9c3;
+        border: 1px solid #fde047;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin: 1rem auto;
+        max-width: 600px;
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #854d0e;
+        text-align: left;
+    }
+    .profile-heads-up a {
+        color: #a16207;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+    .profile-heads-up strong {
+        color: #713f12;
+    }
+</style>
+
 <div class="job-analysis">
     <div class="job-grid">
         <!-- Left Panel: Job List -->
@@ -83,6 +108,8 @@
         let selectedId = null;
         let jobs = [];
         let mockSessions = [];
+        let fitCompleteness = {essential: [], recommended: []};
+        let mockCompleteness = {essential: [], recommended: []};
 
         async function loadJobs() {
             try {
@@ -146,16 +173,48 @@
             analysisStatus.textContent = 'Loading...';
             
             try {
-                const [analysis, sessions] = await Promise.all([
+                const [analysis, sessions, fitComp, mockComp] = await Promise.all([
                     fetchJson(`/api/jobs/${id}/analysis`),
-                    fetchJson(`/api/jobs/${id}/mock_sessions`)
+                    fetchJson(`/api/jobs/${id}/mock_sessions`),
+                    fetchJson('/api/profile/completeness?context=fit_analysis'),
+                    fetchJson('/api/profile/completeness?context=mock_interview')
                 ]);
                 mockSessions = sessions;
+                fitCompleteness = fitComp;
+                mockCompleteness = mockComp;
                 renderAnalysis(analysis);
             } catch (error) {
                 console.error('Failed to load analysis', error);
                 analysisContent.innerHTML = '<div class="error-state">Failed to load analysis results.</div>';
             }
+        }
+
+        function renderHeadsUp(context) {
+            const data = context === 'fit' ? fitCompleteness : mockCompleteness;
+            const hasEssential = data.essential && data.essential.length > 0;
+            const hasRecommended = data.recommended && data.recommended.length > 0;
+            
+            if (!hasEssential && !hasRecommended) return '';
+            
+            let message = '';
+            if (hasEssential) {
+                message = `<strong>Better accuracy:</strong> Adding your <span>${data.essential.join(', ').toLowerCase()}</span> would help the AI provide more precise insights.`;
+            } else if (hasRecommended) {
+                message = `<strong>Note:</strong> Completing your <span>${data.recommended.join(', ').toLowerCase()}</span> is recommended for a deeper cultural fit analysis.`;
+            }
+            
+            const link = hasRecommended && !hasEssential && data.recommended.includes('Behavioral Assessment') ? '/behavioral' : '/profile';
+            const linkText = hasRecommended && !hasEssential && data.recommended.includes('Behavioral Assessment') ? 'Start assessment →' : 'Complete profile →';
+
+            return `
+                <div class="profile-heads-up">
+                    <span style="font-size: 1.2rem;">💡</span>
+                    <div class="heads-up-content">
+                        ${message}
+                        <a href="${link}">${linkText}</a>
+                    </div>
+                </div>
+            `;
         }
 
         function renderAnalysis(analysis) {
@@ -214,6 +273,7 @@
                 <div class="main-tab-pane active" id="main-tab-analysis">
                     ${isAnalyzed ? `
                         <div class="analysis-report">
+                            ${renderHeadsUp('fit')}
                             <div class="score-summary">
                                 <div class="main-score">
                                     <div class="score-circle" style="--percent: ${analysis.overall_score}">
@@ -292,6 +352,7 @@
                         </div>
                     ` : `
                         <div class="mock-interview-placeholder">
+                            ${renderHeadsUp('fit')}
                             <div class="placeholder-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M10 4.5a2.5 2.5 0 1 1 4 0v1.5H18a2 2 0 0 1 2 2v4a2.5 2.5 0 1 1 0 4v4a2 2 0 0 1-2 2h-4v-1.5a2.5 2.5 0 1 0-4 0V22H6a2 2 0 0 1-2-2v-4a2.5 2.5 0 1 0 0-4V8a2 2 0 0 1 2-2h4V4.5z" />
@@ -316,6 +377,7 @@
 
                 <div class="main-tab-pane" id="main-tab-interviews">
                     <div class="mock-interview-placeholder">
+                        ${renderHeadsUp('interviews')}
                         <div class="placeholder-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                                 <rect x="6" y="3" width="12" height="12" rx="4" />

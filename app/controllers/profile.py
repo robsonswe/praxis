@@ -434,6 +434,18 @@ async def get_profile(request: Request):
     return profile
 
 
+@router.get("/api/profile/completeness")
+async def get_profile_completeness(request: Request, context: str = "general"):
+    user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    result = await profile_service.check_completeness(user_id, context)
+    return result
+
+
+
+
 @router.put("/api/profile/basic")
 async def update_basic(request: Request, basic: ProfileBasic):
     user_id = get_current_user(request)
