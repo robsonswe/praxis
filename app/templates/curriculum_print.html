@@ -1,0 +1,229 @@
+<head>
+    <title>{{ profile.name }}</title>
+    <meta name="author" content="{{ profile.name }}">
+    <meta name="description" content="{{ profile.name }} - {{ profile.title }}">
+</head>
+<style>
+    /* ATS-Optimized CSS: Single column, standard fonts, clear hierarchy */
+    .print-container {
+        font-family: Arial, Helvetica, sans-serif;
+        color: #000000;
+        line-height: 1.4;
+        max-width: 850px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: left; 
+    }
+    
+    /* Contact Header */
+    .print-header { 
+        margin-bottom: 15px; 
+    }
+    .print-header h1 { 
+        font-size: 24px; 
+        text-transform: uppercase; 
+        margin: 0 0 5px 0; 
+    }
+    .print-header h2 { 
+        font-size: 16px; 
+        font-weight: normal; 
+        margin: 0 0 5px 0; 
+    }
+    .contact-info { 
+        font-size: 14px; 
+    }
+    .contact-info a {
+        color: #000000;
+        text-decoration: none;
+    }
+
+    /* Standard Section Headings */
+    .print-container h2.section-title { 
+        font-size: 14px; 
+        text-transform: uppercase; 
+        border-bottom: 1px solid #000; 
+        padding-bottom: 2px; 
+        margin-top: 15px; 
+        margin-bottom: 10px; 
+        font-weight: bold;
+    }
+
+    /* Entry Layouts (Experience, Education, Projects) */
+    .entry-header {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: baseline;
+        margin-bottom: 5px;
+    }
+    .entry-title { 
+        font-size: 14px; 
+        font-weight: bold; 
+        margin: 0; 
+    }
+    .entry-date { 
+        font-size: 14px; 
+        white-space: nowrap; 
+    }
+    
+    /* Text formatting */
+    .text-block { 
+        margin: 0 0 10px 0; 
+        font-size: 14px; 
+        white-space: pre-wrap; /* Preserves newlines (\n) passed from your Pydantic string fields */
+    }
+    p { margin: 0 0 10px 0; font-size: 14px; }
+    ul { 
+        margin: 0 0 10px 0; 
+        padding-left: 20px; 
+    }
+    li { 
+        font-size: 14px; 
+        margin-bottom: 4px; 
+        list-style-type: disc;
+    }
+
+    @media print {
+        .print-container { padding: 0; max-width: 100%; }
+    }
+</style>
+
+<div class="print-container">
+    
+    <!-- HEADER: Dynamic contact logic to handle Optionals cleanly -->
+    <div class="print-header">
+        <h1>{{ profile.name }}</h1>
+        <h2>{{ profile.title }}</h2>
+        <div class="contact-info">
+            {{ profile.email }} &bull; {{ profile.phone }} &bull; {{ profile.location }}
+            {% if profile.linkedin %} &bull; {{ profile.linkedin }}{% endif %}
+            {% if profile.website %} &bull; {{ profile.website }}{% endif %}
+            {% if profile.github %} &bull; {{ profile.github }}{% endif %}
+        </div>
+    </div>
+
+    <!-- SUMMARY -->
+    {% if profile.summary %}
+    <section>
+        <h2 class="section-title">Professional Summary</h2>
+        <div class="text-block">{{ profile.summary }}</div>
+    </section>
+    {% endif %}
+
+    <!-- SKILLS -->
+    {% if profile.skills %}
+    <section>
+        <h2 class="section-title">Technical Skills</h2>
+        <!-- Using a comma-separated paragraph saves space and reads perfectly in an ATS -->
+        <p>
+            {% for skill in profile.skills %}
+                {{ skill.name }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    </section>
+    {% endif %}
+
+    <!-- PROFESSIONAL EXPERIENCE -->
+    {% if profile.work_experience %}
+    <section>
+        <h2 class="section-title">Professional Experience</h2>
+        {% for exp in profile.work_experience %}
+        <div>
+            <div class="entry-header">
+                <h3 class="entry-title">{{ exp.company }} &ndash; {{ exp.title }}</h3>
+                <span class="entry-date">{{ exp.start_date }} &ndash; {% if exp.current or not exp.end_date %}Present{% else %}{{ exp.end_date }}{% endif %}</span>
+            </div>
+            {% if exp.description %}
+            <div class="text-block">{{ exp.description }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- PROJECTS (Handles 'outcomes' and 'technologies' lists from Pydantic) -->
+    {% if profile.projects %}
+    <section>
+        <h2 class="section-title">Projects</h2>
+        {% for proj in profile.projects %}
+        <div>
+            <div class="entry-header">
+                <h3 class="entry-title">{{ proj.name }}{% if proj.role %} &ndash; {{ proj.role }}{% endif %}</h3>
+                <span class="entry-date">{{ proj.start_date }} &ndash; {% if proj.end_date %}{{ proj.end_date }}{% else %}Present{% endif %}</span>
+            </div>
+            
+            {% if proj.description %}
+            <div class="text-block">{{ proj.description }}</div>
+            {% endif %}
+
+            {% if proj.technologies %}
+            <p><strong>Technologies:</strong> {{ proj.technologies | join(', ') }}</p>
+            {% endif %}
+            
+            {% if proj.outcomes %}
+            <ul>
+                {% for outcome in proj.outcomes %}
+                <li>{{ outcome }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- EDUCATION -->
+    {% if profile.education %}
+    <section>
+        <h2 class="section-title">Education</h2>
+        {% for edu in profile.education %}
+        <div>
+            <div class="entry-header">
+                <h3 class="entry-title">{{ edu.institution }}</h3>
+                <span class="entry-date">{{ edu.start_date }} &ndash; {% if edu.end_date %}{{ edu.end_date }}{% else %}Present{% endif %}</span>
+            </div>
+            <p>{{ edu.degree }} in {{ edu.field }}{% if edu.gpa %} (GPA: {{ edu.gpa }}){% endif %}</p>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- ACHIEVEMENTS -->
+    {% if profile.achievements %}
+    <section>
+        <h2 class="section-title">Achievements & Awards</h2>
+        <ul>
+            {% for ach in profile.achievements %}
+            <li>
+                <strong>{{ ach.title }}</strong>{% if ach.organization %} &ndash; {{ ach.organization }}{% endif %} ({{ ach.date }})
+                {% if ach.description %}<br><span class="text-block">{{ ach.description }}</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <!-- CERTIFICATIONS -->
+    {% if profile.certifications %}
+    <section>
+        <h2 class="section-title">Certifications</h2>
+        <ul>
+            {% for cert in profile.certifications %}
+            <li><strong>{{ cert.name }}</strong> &ndash; {{ cert.issuer }} ({{ cert.issue_date }})</li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <!-- COURSES -->
+    {% if profile.courses %}
+    <section>
+        <h2 class="section-title">Courses</h2>
+        <ul>
+            {% for course in profile.courses %}
+            <li><strong>{{ course.name }}</strong> &ndash; {{ course.provider }} ({{ course.completion_date }})</li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+</div>

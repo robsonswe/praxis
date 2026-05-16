@@ -392,8 +392,11 @@ button, input, select, textarea { font-family: inherit; }
 .completeness-bar { height: 8px; background: var(--bg-muted); border-radius: 999px; margin-top: var(--space-3); overflow: hidden; }
 .completeness-fill { height: 100%; background: linear-gradient(90deg, var(--primary-strong), var(--primary)); border-radius: 999px; }
 
-.edit-profile-btn { display: inline-flex; justify-content: center; align-items: center; width: 100%; padding: 0.75rem 1.25rem; background: var(--primary); color: var(--surface); border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: background 0.2s ease; }
+.profile-actions { display: flex; gap: var(--space-3); margin-top: var(--space-4); }
+.edit-profile-btn { display: inline-flex; justify-content: center; align-items: center; flex: 1; padding: 0.75rem 1.25rem; background: var(--primary); color: var(--surface); border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: background 0.2s ease; }
 .edit-profile-btn:hover { background: var(--primary-strong); }
+.print-profile-btn { display: inline-flex; justify-content: center; align-items: center; padding: 0.75rem 1.25rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease; }
+.print-profile-btn:hover { background: var(--bg-muted); border-color: color-mix(in oklch, var(--text) 15%, var(--border)); }
 
 .skills-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: var(--space-5); }
 .skills-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: var(--space-4); }
