@@ -46,7 +46,7 @@ class ProfileRepository:
         if github is not None:
             fields.append("github = ?")
             values.append(github)
-        
+
         fields.append("updated_at = CURRENT_TIMESTAMP")
         
         values.append(user_id)

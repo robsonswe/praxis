@@ -49,16 +49,16 @@ class ProfileService:
     async def update_basic(self, user_id: int, basic: ProfileBasic) -> dict | None:
         return await self.repository.update_basic(
             user_id, 
-            name=basic.name if basic.name else None, 
-            title=basic.title if basic.title else None, 
-            summary=basic.summary if basic.summary else None, 
-            location=basic.location if basic.location else None, 
-            years_of_experience=basic.years_of_experience if basic.years_of_experience else None,
-            date_of_birth=basic.date_of_birth if basic.date_of_birth else None,
-            phone=basic.phone if basic.phone else None,
-            website=basic.website if basic.website else None,
-            linkedin=basic.linkedin if basic.linkedin else None,
-            github=basic.github if basic.github else None
+            name=basic.name, 
+            title=basic.title, 
+            summary=basic.summary, 
+            location=basic.location, 
+            years_of_experience=basic.years_of_experience,
+            date_of_birth=basic.date_of_birth,
+            phone=basic.phone,
+            website=basic.website,
+            linkedin=basic.linkedin,
+            github=basic.github
         )
     
     async def get_work_experience(self, user_id: int) -> list[WorkExperience]:
