@@ -3,8 +3,10 @@ from pathlib import Path
 from datetime import date, datetime
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+import io
+from xhtml2pdf import pisa
 from app.services.user import UserService
 from app.repositories.user import UserRepository
 from app.repositories.profile import ProfileRepository
@@ -762,6 +764,9 @@ async def update_project(request: Request, proj_id: int, data: ProjectCreate):
 @router.delete("/api/profile/projects/{proj_id}")
 async def delete_project(request: Request, proj_id: int):
     user_id = get_current_user(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    success = await profile_service.delete_project(proj_id, user_id)
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
     success = await profile_service.delete_project(proj_id, user_id)
