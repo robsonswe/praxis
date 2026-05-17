@@ -14,6 +14,7 @@ from app.repositories.job import JobRepository
 from app.services.job import JobService
 from app.services.behavioral import BehavioralService
 from app.repositories.job_analysis import JobAnalysisRepository
+from app.repositories.job_profile import JobProfileRepository
 from app.services.job_analysis import JobAnalysisService
 from app.repositories.mock_interview import MockInterviewRepository
 from app.services.mock_interview import MockInterviewService
@@ -55,10 +56,12 @@ job_service = JobService(job_repo)
 behavioral_service = BehavioralService()
 ai_service = AIService()
 job_analysis_repo = JobAnalysisRepository()
+job_profile_repo = JobProfileRepository()
 job_analysis_service = JobAnalysisService(
     job_analysis_repo,
     job_repo,
     profile_service,
+    job_profile_repo,
     behavioral_service,
     ai_service
 )
