@@ -309,7 +309,7 @@ async def get_tailored_curriculum(request: Request, job_id: int):
     from app.services.job_profile import JobProfileService
     
     jp_repo = JobProfileRepository()
-    jp_service = JobProfileService(jp_repo, job_repo, profile_service, ai_service)
+    jp_service = JobProfileService(jp_repo, job_repo, profile_service, behavioral_service, ai_service)
     
     profile = await jp_service.get_job_profile(job_id, user_id)
     if not profile:
@@ -332,7 +332,7 @@ async def generate_tailored_curriculum(request: Request, job_id: int):
     from app.services.job_profile import JobProfileService
     
     jp_repo = JobProfileRepository()
-    jp_service = JobProfileService(jp_repo, job_repo, profile_service, ai_service)
+    jp_service = JobProfileService(jp_repo, job_repo, profile_service, behavioral_service, ai_service)
     
     try:
         profile = await jp_service.generate_tailored_profile(job_id, user_id)
@@ -503,7 +503,7 @@ async def get_curriculum_preview(request: Request, job_id: Optional[int] = None)
         from app.services.job_profile import JobProfileService
         
         jp_repo = JobProfileRepository()
-        jp_service = JobProfileService(jp_repo, job_repo, profile_service, ai_service)
+        jp_service = JobProfileService(jp_repo, job_repo, profile_service, behavioral_service, ai_service)
         
         profile = await jp_service.get_job_profile(job_id, user_id)
         if not profile:
